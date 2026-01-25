@@ -1,0 +1,250 @@
+{
+  "fallout3": {
+    "id": "fallout3",
+    "name": "Fallout 3",
+    "icon": "fas fa-radiation",
+    "colors": {
+      "primary": "#1AFF80",
+      "secondary": "#15cc66",
+      "muted": "#10aa52",
+      "highlight": "#33FF99",
+      "hover": "#4dffad",
+      "background": "#0a0a0a",
+      "cardBg": "#1a1a1a",
+      "border": "#15cc66",
+      "shadow": "rgba(26, 255, 128, 0.2)",
+      "glow": "0 0 3px rgba(26, 255, 128, 0.6), 0 0 8px rgba(26, 255, 128, 0.4), 0 0 15px rgba(26, 255, 128, 0.2)",
+      "backgroundGlowCenter": "26, 255, 128",
+      "backgroundGlowMid": "20, 204, 102",
+      "backgroundEdge": "10, 10, 10"
+    },
+    "fonts": {
+      "terminal": "'VT323', monospace",
+      "body": "'Inconsolata', monospace",
+      "title": "'Courier Prime', 'Courier New', monospace"
+    },
+    "effects": {
+      "scanlines": true,
+      "glow": true,
+      "flicker": true,
+      "crtIntensity": 0.9
+    }
+  },
+  "fallout-nv": {
+    "id": "fallout-nv",
+    "name": "Fallout: New Vegas",
+    "icon": "fas fa-star",
+    "colors": {
+      "primary": "#FFB642",
+      "secondary": "#e6a33a",
+      "muted": "#cc9032",
+      "highlight": "#ffc460",
+      "hover": "#ffd280",
+      "background": "#1a0f0a",
+      "cardBg": "#2a1f1a",
+      "border": "#e6a33a",
+      "shadow": "rgba(255, 182, 66, 0.2)",
+      "glow": "0 0 3px rgba(255, 182, 66, 0.6), 0 0 8px rgba(255, 182, 66, 0.4), 0 0 15px rgba(255, 182, 66, 0.2)",
+      "backgroundGlowCenter": "255, 182, 66",
+      "backgroundGlowMid": "204, 146, 53",
+      "backgroundEdge": "20, 15, 10"
+    },
+    "fonts": {
+      "terminal": "'Share Tech Mono', monospace",
+      "body": "'Inconsolata', monospace",
+      "title": "'Courier Prime', 'Courier New', monospace"
+    },
+    "effects": {
+      "scanlines": true,
+      "glow": true,
+      "flicker": false,
+      "crtIntensity": 0.7
+    }
+  },
+  "fallout4": {
+    "id": "fallout4",
+    "name": "Fallout 4",
+    "icon": "fas fa-cog",
+    "colors": {
+      "primary": "#1AFF80",
+      "secondary": "#15cc66",
+      "muted": "#10aa52",
+      "highlight": "#33FF99",
+      "hover": "#4dffad",
+      "background": "#0a0f1a",
+      "cardBg": "#1a1f2a",
+      "border": "#15cc66",
+      "shadow": "rgba(26, 255, 128, 0.2)",
+      "glow": "0 0 3px rgba(26, 255, 128, 0.6), 0 0 8px rgba(26, 255, 128, 0.4), 0 0 15px rgba(26, 255, 128, 0.2)",
+      "backgroundGlowCenter": "26, 255, 128",
+      "backgroundGlowMid": "20, 204, 102",
+      "backgroundEdge": "10, 15, 20"
+    },
+    "fonts": {
+      "terminal": "'VT323', monospace",
+      "body": "'Inconsolata', monospace",
+      "title": "'Courier Prime', 'Courier New', monospace"
+    },
+    "effects": {
+      "scanlines": true,
+      "glow": true,
+      "flicker": false,
+      "crtIntensity": 0.8
+    }
+  },
+  "fallout76": {
+    "id": "fallout76",
+    "name": "Fallout 76",
+    "icon": "fas fa-users",
+    "colors": {
+      "primary": "#f5cb5b",
+      "secondary": "#d8b252",
+      "muted": "#b8860b",
+      "highlight": "#fff5a3",
+      "hover": "#f9e390",
+      "background": "#181c1d",
+      "cardBg": "#2c3133",
+      "border": "#d8b252",
+      "shadow": "rgba(245, 203, 91, 0.2)",
+      "glow": "0 0 3px rgba(245, 203, 91, 0.6), 0 0 8px rgba(245, 203, 91, 0.4), 0 0 15px rgba(245, 203, 91, 0.2)",
+      "backgroundGlowCenter": "245, 203, 91",
+      "backgroundGlowMid": "216, 178, 82",
+      "backgroundEdge": "24, 28, 29"
+    },
+    "fonts": {
+      "terminal": "'Share Tech Mono', monospace",
+      "body": "'Inconsolata', monospace",
+      "title": "'Courier Prime', 'Courier New', monospace"
+    },
+    "effects": {
+      "scanlines": true,
+      "glow": true,
+      "flicker": false,
+      "crtIntensity": 0.6
+    }
+  },
+  "enclave": {
+    "id": "enclave",
+    "name": "The Enclave",
+    "icon": "fas fa-flag-usa",
+    "colors": {
+      "primary": "#FF3B3B",
+      "secondary": "#CC2F2F",
+      "muted": "#AA2525",
+      "highlight": "#FF5C5C",
+      "hover": "#FF7D7D",
+      "background": "#0d0d0d",
+      "cardBg": "#1e1e1e",
+      "border": "#CC2F2F",
+      "shadow": "rgba(255, 59, 59, 0.15)",
+      "glow": "0 0 4px rgba(255, 59, 59, 0.6), 0 0 10px rgba(255, 59, 59, 0.4), 0 0 18px rgba(255, 59, 59, 0.2)",
+      "backgroundGlowCenter": "150, 40, 40",
+      "backgroundGlowMid": "120, 30, 30",
+      "backgroundEdge": "13, 13, 13"
+    },
+    "fonts": {
+      "terminal": "'Orbitron', sans-serif",
+      "body": "'Roboto Mono', monospace",
+      "title": "'Exo 2', sans-serif"
+    },
+    "effects": {
+      "scanlines": false,
+      "glow": true,
+      "flicker": true,
+      "crtIntensity": 0.5
+    }
+  },
+  "brotherhood": {
+    "id": "brotherhood",
+    "name": "Brotherhood of Steel",
+    "icon": "fas fa-shield-alt",
+    "colors": {
+      "primary": "#FFAA00",
+      "secondary": "#D99000",
+      "muted": "#B37700",
+      "highlight": "#FFC54A",
+      "hover": "#FFD684",
+      "background": "#1a1a1a",
+      "cardBg": "#2b2b2b",
+      "border": "#D99000",
+      "shadow": "rgba(255, 170, 0, 0.15)",
+      "glow": "0 0 3px rgba(255, 170, 0, 0.6), 0 0 8px rgba(255, 170, 0, 0.4), 0 0 15px rgba(255, 170, 0, 0.2)",
+      "backgroundGlowCenter": "150, 100, 0",
+      "backgroundGlowMid": "120, 80, 0",
+      "backgroundEdge": "26, 26, 26"
+    },
+    "fonts": {
+      "terminal": "'Share Tech Mono', monospace",
+      "body": "'Inconsolata', monospace",
+      "title": "'Courier Prime', 'Courier New', monospace"
+    },
+    "effects": {
+      "scanlines": true,
+      "glow": true,
+      "flicker": false,
+      "crtIntensity": 0.6
+    }
+  },
+  "institute": {
+    "id": "institute",
+    "name": "The Institute",
+    "icon": "fas fa-atom",
+    "colors": {
+      "primary": "#FFFFFF",
+      "secondary": "#E0E0E0",
+      "muted": "#C0C0C0",
+      "highlight": "#FFFFFF",
+      "hover": "#F0F0F0",
+      "background": "#101520",
+      "cardBg": "#202838",
+      "border": "#FFFFFF",
+      "shadow": "rgba(255, 255, 255, 0.1)",
+      "glow": "0 0 5px rgba(255, 255, 255, 0.4), 0 0 12px rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 255, 255, 0.1)",
+      "backgroundGlowCenter": "180, 200, 220",
+      "backgroundGlowMid": "120, 140, 160",
+      "backgroundEdge": "16, 21, 32"
+    },
+    "fonts": {
+      "terminal": "'Roboto Mono', monospace",
+      "body": "'Open Sans', sans-serif",
+      "title": "'Exo 2', sans-serif"
+    },
+    "effects": {
+      "scanlines": false,
+      "glow": true,
+      "flicker": false,
+      "crtIntensity": 0.3
+    }
+  },
+  "classic": {
+    "id": "classic",
+    "name": "Classic Fallout",
+    "icon": "fas fa-desktop",
+    "colors": {
+      "primary": "#FFD700",
+      "secondary": "#DAA520",
+      "muted": "#B8860B",
+      "highlight": "#FFEC8B",
+      "hover": "#FFFACD",
+      "background": "#000000",
+      "cardBg": "#151515",
+      "border": "#8B4513",
+      "shadow": "rgba(255, 215, 0, 0.15)",
+      "glow": "0 0 2px rgba(255, 215, 0, 0.5), 0 0 6px rgba(255, 215, 0, 0.3)",
+      "backgroundGlowCenter": "50, 40, 10",
+      "backgroundGlowMid": "30, 20, 5",
+      "backgroundEdge": "0, 0, 0"
+    },
+    "fonts": {
+      "terminal": "'Fixedsys', 'Courier New', monospace",
+      "body": "'Lucida Console', Monaco, monospace",
+      "title": "'Arial Black', Gadget, sans-serif"
+    },
+    "effects": {
+      "scanlines": true,
+      "glow": true,
+      "flicker": false,
+      "crtIntensity": 0.8
+    }
+  }
+}
