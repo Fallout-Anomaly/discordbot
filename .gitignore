@@ -1,25 +1,8 @@
-# Exclude requested items
-DiscordModBot/
-websitedev-main/
-"Anomaly - 🎮 _ ANOMALY STUFF _ 🎮 - 💬chat [1140788648783138817].txt"
-findings.txt
-docs-main/
-.idea/
-"Hosting a Reddit API Discord app on Cloudflare Workers _ Documentation _ Discord Developer Portal.pdf"
+node_modules
+package-lock.json
 
-# Bot Template (keep the folder but ignore its heavy stuff)
-DiscordJS-V14-Bot-Template-3.0.1/node_modules/
-DiscordJS-V14-Bot-Template-3.0.1/.env
-DiscordJS-V14-Bot-Template-3.0.1/terminal.log
-
-# Worker Specifics (now at root)
-node_modules/
+# DO NOT REMOVE THESE FOR SECURITY
+src/config.js
 .env
-.vrangler/
-.dev.vars
+database.yml
 terminal.log
-*.log
-
-# OS junk
-.DS_Store
-Thumbs.db

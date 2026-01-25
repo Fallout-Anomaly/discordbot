@@ -1,0 +1,146 @@
+{
+  "Lead Developer": [
+    {
+      "name": "Nomad",
+      "rank": "Lead Developer",
+      "role": "Project lead, Quests, Support",
+      "image": "https://cdn.discordapp.com/guilds/1113971680419782666/users/96138617981792256/avatars/8f0e15e99330e459b96b2a9fe896fd25.webp?size=4096",
+      "tagline": "Guiding the vision.",
+      "social": "https://www.youtube.com/@FalloutAnomaly, https://www.tiktok.com/@fallout.anomaly, https://www.nexusmods.com/fallout4/mods/74075"
+    }
+  ],
+  "Assistant Lead Developer": [
+    {
+      "name": "Eizer",
+      "rank": "Assistant Lead Developer",
+      "role": "Moo, MOOOO, Moo?",
+      "image": "https://cdn.discordapp.com/avatars/152040815621963776/b043af5a54cb3573a60e3574e98db575.webp?size=4096",
+      "tagline": "MOOOOOO",
+      "social": "https://next.nexusmods.com/profile/StreikEizer"
+    }
+  ],
+  "Senior Developer": [
+    {
+      "name": "Stiles",
+      "rank": "Senior Developer",
+      "role": "The, Previs, God",
+      "image": "https://cdn.discordapp.com/avatars/485596984351391744/965d6eab50f22411bb98eaf8f5881952.webp?size=4096",
+      "tagline": "The king of Previs!",
+      "social": ""
+    }
+  ],
+  "Developer": [
+    {
+      "name": "Ferud",
+      "rank": "Developer",
+      "role": "Balancing, Leveled lists, Bug Fixing",
+      "image": "https://cdn.discordapp.com/avatars/1084643399400960021/aa86a9a8efebdd9578560909a627e8ac.webp?size=4096",
+      "tagline": "Leveling the field.",
+      "social": ""
+    },
+    {
+      "name": "Baked",
+      "rank": "Developer",
+      "role": "HUD, General Support",
+      "image": "https://cdn.discordapp.com/guilds/1113971680419782666/users/337455184579919874/avatars/6c2628813730c76f37c18e9d7f75ddcc.webp?size=4096",
+      "tagline": "Nomad's A Fed"
+    },
+	{
+      "name": "Joel",
+      "rank": "Developer",
+      "role": "LL, Patching Weapons",
+      "image": "https://cdn.discordapp.com/avatars/1106566423909769317/503f359740dfc6883f6c7c76cd7b0320.webp?size=4096",
+      "tagline": ""
+    }
+  ],
+  "Developer (On Leave)": [],
+  "Website Dev": [
+    {
+      "name": "PatrickJr.",
+      "rank": "Website Dev",
+      "role": "Website Developer, Random other Stuff",
+      "image": "https://cdn.discordapp.com/avatars/219086664587280385/0d6d65544e59beb7e89fa3757dd4a629.webp?size=4096",
+      "tagline": "Consistency Expert",
+      "social": "https://grimtech.co.uk, https://twitter.com/_PatrickJnr, https://www.flickr.com/photos/patrickjrcaulton/, http://steamcommunity.com/id/patrickjr, https://bsky.app/profile/patrickjr.bsky.social"
+    }
+  ],
+  "Community Manager": [
+    {
+      "name": "David",
+      "rank": "Community Manager",
+      "role": "Keeper, Of the, Orb",
+      "image": "https://cdn.discordapp.com/avatars/982397818020978688/f61d519aca1d05421d803c72b488ffd5.webp?size=4096",
+      "tagline": "Keeper of The Orb.",
+      "social": ""
+    }
+  ],
+  "Moderator": [
+    {
+      "name": "Camelopardus",
+      "rank": "Moderator",
+      "role": "Discord Moderator",
+      "image": "https://cdn.discordapp.com/avatars/219412105911074816/6a689dd84374332014852f63972cd454.webp?size=4096",
+      "tagline": "Taming the chaos.",
+      "social": ""
+    },
+    {
+      "name": "Ally_J",
+      "rank": "Moderator",
+      "role": "Discord Moderator",
+      "image": "https://cdn.discordapp.com/avatars/136615483532115968/73c8fb3f4442fa655a429e13d3700563.webp?size=1024",
+      "tagline": "",
+      "social": ""
+    }
+  ],
+  "Media Team": [
+    {
+      "name": "Keldar",
+      "rank": "Media Team",
+      "role": "Video editing, Trailers, Promotional content",
+      "image": "https://cdn.discordapp.com/avatars/249915454636687360/ebf8d82cd43549b726f728121ee5ebeb.webp?size=4096",
+      "tagline": "Editor of epicness.",
+      "social": ""
+    },
+    {
+      "name": "Blaze",
+      "rank": "Media Team",
+      "role": "Tiktok Creator, Youtube Creator",
+      "image": "https://cdn.discordapp.com/avatars/308378847265685524/9281a5d3131eafaabf56cee665832a52.webp?size=4096",
+      "tagline": "Content Creator",
+      "social": "https://steamcommunity.com/profiles/76561198348015166, https://www.youtube.com/@blazix_0, https://x.com/Blazix287145"
+    }
+  ],
+  "Retired": [
+    {
+      "name": "Zatos",
+      "rank": "Retired",
+      "role": "Weapons, Balancing, Bug Fixing",
+      "image": "https://cdn.discordapp.com/avatars/698920922404487168/0d5f63fe407f9e585612762d5c2667b0.webp?size=4096",
+      "tagline": "Tweaker of stats, squasher of bugs.",
+      "social": "https://next.nexusmods.com/profile/ZatosF4A"
+    },
+    {
+      "name": "Hawkins",
+      "rank": "Retired",
+      "role": "Server oversight, Moderation, Administration",
+      "image": "https://cdn.discordapp.com/avatars/281730257390796810/959b41962ffdcd8d0ea6d39e6463c8a8.webp?size=4096",
+      "tagline": "Has seen more Game-Over screens than recorded deaths in history.",
+      "social": ""
+    },
+    {
+      "name": "Cat",
+      "rank": "Retired",
+      "role": "Community Engagement, Feedback, Event Coordination, Felis Catus",
+      "image": "https://cdn.discordapp.com/avatars/176283923628687360/570889644f3bab548b3b7182137c542a.webp?size=4096",
+      "tagline": "Purrveyor of good vibes."
+    },
+    {
+      "name": "John",
+      "rank": "Retired",
+      "role": "Former contributor",
+      "image": "https://cdn.discordapp.com/avatars/556236275603210251/ce9c4aaa304551f483a0be87242d68a2.webp?size=4096",
+      "tagline": "Left a mark in code.",
+      "social": ""
+    }
+  ]
+}
