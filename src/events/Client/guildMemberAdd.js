@@ -18,6 +18,11 @@ module.exports = new Event({
                 return n + (s[(v - 20) % 10] || s[v] || s[0]);
             };
 
+            // Force fetch member count to ensure accuracy
+            try {
+                await member.guild.fetch(); 
+            } catch (e) {}
+
             const memberCount = getOrdinal(member.guild.memberCount);
 
             const embed = new EmbedBuilder()
