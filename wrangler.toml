@@ -1,6 +1,6 @@
 name = "discordbot"
 main = "src/server.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-01-25"
 
 [vars]
 # Add non-secret variables here
