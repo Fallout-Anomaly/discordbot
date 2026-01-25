@@ -46,7 +46,7 @@ export async function askAI(userQuestion, env) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'deepseek-r1-distill-llama-70b',
         messages: [
           { role: 'system', content: 'Output 2-5 search keywords for the user question. Only output keywords.' },
           { role: 'user', content: userQuestion }
@@ -66,7 +66,7 @@ export async function askAI(userQuestion, env) {
       return `Name: ${item.fullName}\nContent: ${item.fullContent}\n`;
     }).join("\n---\n");
 
-    // 3. Generate Answer using direct fetch (lighter for Worker)
+    // 3. Generate Answer using DeepSeek R1 (Llama 70B Distill)
     const answerResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -74,26 +74,29 @@ export async function askAI(userQuestion, env) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'deepseek-r1-distill-llama-70b',
           messages: [
             {
               role: 'system',
-              content: `You are 'Anomaly Support', a helpful assistant for the 'Fallout Anomaly' modpack.
-- Answer the user's question using ONLY the provided Context.
-- Do NOT mention internal filenames. Just give the answer naturally.
-- If context is missing info, politely say you don't know.`
+              content: `You are 'Anomaly Support', a high-performance support AI for the 'Fallout Anomaly' modpack.
+You MUST think through the user's problem step-by-step using the provided Context.
+- Answer using ONLY the provided Context.
+- Provide clear, numbered troubleshooting steps if appropriate.
+- Do NOT mention internal filenames or say "Based on the documentation".
+- If the context doesn't have the answer, politely guide the user to the staff team.`
             },
             {
               role: 'user', 
               content: `Context:\n${contextString}\n\nQuestion: ${userQuestion}`
             }
-          ]
+          ],
+          temperature: 0.6
         })
       });
 
     if (!answerResponse.ok) {
         const err = await answerResponse.text();
-        return `Groq Error (${answerResponse.status}): ${err.substring(0, 100)}`;
+        return `Groq AI Error (${answerResponse.status}): ${err.substring(0, 100)}`;
     }
 
     const answerData = await answerResponse.json();
