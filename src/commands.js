@@ -43,3 +43,79 @@ export const ASK_COMMAND = {
     }
   ]
 };
+
+export const KICK_COMMAND = {
+  name: 'kick',
+  description: 'Kick a user from the server.',
+  options: [
+    {
+      name: 'user',
+      description: 'The user to kick',
+      type: 6, // USER
+      required: true,
+    },
+    {
+      name: 'reason',
+      description: 'Reason for the kick',
+      type: 3, // STRING
+      required: false,
+    }
+  ]
+};
+
+export const BAN_COMMAND = {
+  name: 'ban',
+  description: 'Ban a user from the server.',
+  options: [
+    {
+      name: 'user',
+      description: 'The user to ban',
+      type: 6, // USER
+      required: true,
+    },
+    {
+      name: 'reason',
+      description: 'Reason for the ban',
+      type: 3, // STRING
+      required: false,
+    }
+  ]
+};
+
+export const TIMEOUT_COMMAND = {
+  name: 'timeout',
+  description: 'Put a user in timeout.',
+  options: [
+    {
+      name: 'user',
+      description: 'The user to timeout',
+      type: 6, // USER
+      required: true,
+    },
+    {
+      name: 'duration',
+      description: 'Duration in minutes',
+      type: 4, // INTEGER
+      required: true,
+    },
+    {
+      name: 'reason',
+      description: 'Reason for the timeout',
+      type: 3, // STRING
+      required: false,
+    }
+  ]
+};
+
+export const CLEAR_COMMAND = {
+  name: 'clear',
+  description: 'Purge messages from the channel.',
+  options: [
+    {
+      name: 'amount',
+      description: 'Number of messages to delete (1-100)',
+      type: 4, // INTEGER
+      required: true,
+    }
+  ]
+};
