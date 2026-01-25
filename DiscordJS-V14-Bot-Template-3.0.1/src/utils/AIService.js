@@ -48,16 +48,15 @@ class AIService {
 
         try {
             const response = await this.openai.chat.completions.create({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama-3.1-8b-instant',
                 messages: [
                     {
                         role: 'system',
                         content: `You are 'Anomaly Support', a helpful assistant for the 'Fallout Anomaly' modpack.
-- Answer the user's question using ONLY the provided Context.
-- Do NOT mention internal filenames (e.g., "gameplay-faq.md") or say "According to the documentation". Just give the answer naturally.
-- If the context answers the question, explain it clearly.
-- If the context is missing info, politely say you don't know based on the current guides.
-- Do NOT provide Discord.js code unless explicitly asked.`
+- Answer using ONLY the provided Context.
+- Provide clear troubleshooting steps if appropriate.
+- Do NOT mention filenames or say "Based on the context". 
+- If context is missing info, guide the user to staff.`
                     },
                     {
                         role: 'user', 

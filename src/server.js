@@ -9,7 +9,11 @@ import {
   PING_COMMAND, 
   HELP_COMMAND, 
   REPORT_COMMAND, 
-  ASK_COMMAND 
+  ASK_COMMAND,
+  KICK_COMMAND,
+  BAN_COMMAND,
+  TIMEOUT_COMMAND,
+  CLEAR_COMMAND
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -74,8 +78,102 @@ app.post('/', async (c) => {
       return c.json({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: "### ☢️ Anomaly Support\n- `/ask` - AI Search\n- `/report` - Staff Alert\n- `/ping` - Status"
+          content: "### ☢️ Anomaly Support\n- `/ask` - AI Search\n- `/report` - Staff Alert\n- `/ping` - Status\n- `/kick /ban /timeout /clear` - Moderation"
         }
+      });
+    }
+
+    if (name === KICK_COMMAND.name) {
+      const user = interaction.data.options.find(o => o.name === 'user')?.value;
+      const reason = interaction.data.options.find(o => o.name === 'reason')?.value || 'No reason provided';
+      const guildId = interaction.guild_id;
+
+      c.executionCtx.waitUntil((async () => {
+        await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 'X-Audit-Log-Reason': reason }
+        });
+      })());
+
+      return c.json({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: `👢 Kicked <@${user}>.`, flags: InteractionResponseFlags.EPHEMERAL }
+      });
+    }
+
+    if (name === BAN_COMMAND.name) {
+      const user = interaction.data.options.find(o => o.name === 'user')?.value;
+      const reason = interaction.data.options.find(o => o.name === 'reason')?.value || 'No reason provided';
+      const guildId = interaction.guild_id;
+
+      c.executionCtx.waitUntil((async () => {
+        await fetch(`https://discord.com/api/v10/guilds/${guildId}/bans/${user}`, {
+          method: 'PUT',
+          headers: { 
+            'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+            'Content-Type': 'application/json' 
+          },
+          body: JSON.stringify({ reason })
+        });
+      })());
+
+      return c.json({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: `🔨 Banned <@${user}>.`, flags: InteractionResponseFlags.EPHEMERAL }
+      });
+    }
+
+    if (name === TIMEOUT_COMMAND.name) {
+      const user = interaction.data.options.find(o => o.name === 'user')?.value;
+      const duration = interaction.data.options.find(o => o.name === 'duration')?.value;
+      const reason = interaction.data.options.find(o => o.name === 'reason')?.value || 'No reason provided';
+      const guildId = interaction.guild_id;
+      const until = new Date(Date.now() + duration * 60000).toISOString();
+
+      c.executionCtx.waitUntil((async () => {
+        await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
+          method: 'PATCH',
+          headers: { 
+            'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+            'Content-Type': 'application/json' 
+          },
+          body: JSON.stringify({ communication_disabled_until: until, reason })
+        });
+      })());
+
+      return c.json({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: `⏳ Timed out <@${user}> for ${duration}m.`, flags: InteractionResponseFlags.EPHEMERAL }
+      });
+    }
+
+    if (name === CLEAR_COMMAND.name) {
+      const amount = interaction.data.options.find(o => o.name === 'amount')?.value;
+      const channelId = interaction.channel_id;
+
+      c.executionCtx.waitUntil((async () => {
+        // Fetch messages first
+        const msgRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=${amount}`, {
+          headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}` }
+        });
+        const messages = await msgRes.json();
+        const ids = messages.map(m => m.id);
+
+        if (ids.length > 0) {
+          await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/bulk-delete`, {
+            method: 'POST',
+            headers: { 
+              'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+              'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ messages: ids })
+          });
+        }
+      })());
+
+      return c.json({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: `🧹 Cleared ${amount} messages.`, flags: InteractionResponseFlags.EPHEMERAL }
       });
     }
 
