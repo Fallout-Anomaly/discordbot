@@ -4,7 +4,6 @@ compatibility_date = "2024-01-01"
 
 [vars]
 # Add non-secret variables here
-DISCORD_APP_ID = "1226374898289741914" 
 
 # Secrets should be added via 'wrangler secret put NAME' or in a .dev.vars file for local development
 # Required secrets:
