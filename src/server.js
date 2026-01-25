@@ -16,7 +16,11 @@ import {
   CLEAR_COMMAND,
   LOCK_COMMAND,
   UNLOCK_COMMAND,
-  SETNICK_COMMAND
+  SETNICK_COMMAND,
+  USERINFO_COMMAND,
+  AVATAR_COMMAND,
+  SERVERINFO_COMMAND,
+  BANNER_COMMAND
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -453,6 +457,140 @@ app.post('/', async (c) => {
             type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
             data: { flags: InteractionResponseFlags.EPHEMERAL }
         });
+    }
+
+    if (name === USERINFO_COMMAND.name) {
+        const targetId = interaction.data.options?.find(o => o.name === 'user')?.value || interaction.member.user.id;
+        const guildId = interaction.guild_id;
+
+        c.executionCtx.waitUntil((async () => {
+            try {
+                const memberRes = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${targetId}`, {
+                    headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}` }
+                });
+                const member = await memberRes.json();
+                const user = member.user;
+
+                // Snowflake to Timestamp
+                const getCreationDate = (id) => Math.floor((Number(BigInt(id) >> BigInt(22)) + 1420070400000) / 1000);
+                const creationDate = getCreationDate(user.id);
+                const joinDate = Math.floor(new Date(member.joined_at).getTime() / 1000);
+
+                const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+                await fetch(patchUrl, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        embeds: [{
+                            title: `User Information: ${user.username}`,
+                            thumbnail: { url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` },
+                            color: 0x3498db,
+                            fields: [
+                                { name: 'Tag', value: `${user.username}#${user.discriminator}`, inline: true },
+                                { name: 'ID', value: user.id, inline: true },
+                                { name: 'Created', value: `<t:${creationDate}:R>`, inline: true },
+                                { name: 'Joined', value: `<t:${joinDate}:R>`, inline: true },
+                                { name: 'Roles', value: member.roles.map(r => `<@&${r}>`).join(' ') || 'None' }
+                            ]
+                        }]
+                    }),
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        })());
+
+        return c.json({ type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE });
+    }
+
+    if (name === AVATAR_COMMAND.name) {
+        const targetId = interaction.data.options?.find(o => o.name === 'user')?.value || interaction.member.user.id;
+        const user = interaction.data.resolved?.users?.[targetId] || interaction.member.user;
+
+        return c.json({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+                embeds: [{
+                    title: `${user.username}'s Avatar`,
+                    image: { url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=1024` },
+                    color: 0x3498db
+                }]
+            }
+        });
+    }
+
+    if (name === SERVERINFO_COMMAND.name) {
+        const guildId = interaction.guild_id;
+
+        c.executionCtx.waitUntil((async () => {
+            try {
+                const guildRes = await fetch(`https://discord.com/api/v10/guilds/${guildId}?with_counts=true`, {
+                    headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}` }
+                });
+                const guild = await guildRes.json();
+                const creationDate = Math.floor((Number(BigInt(guildId) >> BigInt(22)) + 1420070400000) / 1000);
+
+                const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+                await fetch(patchUrl, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        embeds: [{
+                            title: `Server Information: ${guild.name}`,
+                            thumbnail: { url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` },
+                            color: 0x3498db,
+                            fields: [
+                                { name: 'Owner ID', value: guild.owner_id, inline: true },
+                                { name: 'Members', value: `${guild.approximate_member_count}`, inline: true },
+                                { name: 'Created', value: `<t:${creationDate}:R>`, inline: true },
+                                { name: 'Boosts', value: `${guild.premium_subscription_count || 0} (Level ${guild.premium_tier})`, inline: true }
+                            ]
+                        }]
+                    }),
+                });
+            } catch (e) {}
+        })());
+
+        return c.json({ type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE });
+    }
+
+    if (name === BANNER_COMMAND.name) {
+        const targetId = interaction.data.options?.find(o => o.name === 'user')?.value || interaction.member.user.id;
+        
+        c.executionCtx.waitUntil((async () => {
+            try {
+                const userRes = await fetch(`https://discord.com/api/v10/users/${targetId}`, {
+                    headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}` }
+                });
+                const user = await userRes.json();
+
+                const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+                if (user.banner) {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            embeds: [{
+                                title: `${user.username}'s Banner`,
+                                image: { url: `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.png?size=1024` },
+                                color: 0x3498db
+                            }]
+                        }),
+                    });
+                } else {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: `❌ This user does not have a banner.` }),
+                    });
+                }
+            } catch (e) {}
+        })());
+
+        return c.json({ type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE });
     }
 
     if (name === REPORT_COMMAND.name) {

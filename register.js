@@ -9,7 +9,11 @@ import {
   CLEAR_COMMAND,
   LOCK_COMMAND,
   UNLOCK_COMMAND,
-  SETNICK_COMMAND
+  SETNICK_COMMAND,
+  USERINFO_COMMAND,
+  AVATAR_COMMAND,
+  SERVERINFO_COMMAND,
+  BANNER_COMMAND
 } from './src/commands.js';
 import process from 'node:process';
 import dotenv from 'dotenv';
@@ -40,7 +44,11 @@ const commands = [
   CLEAR_COMMAND,
   LOCK_COMMAND,
   UNLOCK_COMMAND,
-  SETNICK_COMMAND
+  SETNICK_COMMAND,
+  USERINFO_COMMAND,
+  AVATAR_COMMAND,
+  SERVERINFO_COMMAND,
+  BANNER_COMMAND
 ];
 
 async function registerGuildCommands() {
