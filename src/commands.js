@@ -156,3 +156,47 @@ export const SETNICK_COMMAND = {
     }
   ]
 };
+
+export const USERINFO_COMMAND = {
+  name: 'userinfo',
+  description: 'Display information about a user.',
+  options: [
+    {
+      name: 'user',
+      description: 'Select a user',
+      type: 6, // USER
+      required: false,
+    }
+  ]
+};
+
+export const AVATAR_COMMAND = {
+  name: 'avatar',
+  description: 'Display a user\'s avatar.',
+  options: [
+    {
+      name: 'user',
+      description: 'Select a user',
+      type: 6, // USER
+      required: false,
+    }
+  ]
+};
+
+export const SERVERINFO_COMMAND = {
+  name: 'serverinfo',
+  description: 'Display information about the server.',
+};
+
+export const BANNER_COMMAND = {
+  name: 'banner',
+  description: 'Display a user\'s banner.',
+  options: [
+    {
+      name: 'user',
+      description: 'Select a user',
+      type: 6, // USER
+      required: false,
+    }
+  ]
+};
