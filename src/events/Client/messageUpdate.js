@@ -14,7 +14,8 @@ module.exports = new Event({
         // Ignore if content is the same (usually just an embed update)
         if (oldMessage.content === newMessage.content) return;
 
-        const logChannelId = process.env.LOGS_CHANNEL_ID;
+        // Use dedicated audit log channel if available, otherwise fallback to main logs
+        const logChannelId = process.env.AUDIT_LOG_CHANNEL_ID || process.env.LOGS_CHANNEL_ID;
         if (!logChannelId) return;
         
         const logChannel = client.channels.cache.get(logChannelId);
