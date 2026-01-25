@@ -4,16 +4,24 @@ websitedev-main/
 findings.txt
 docs-main/
 .idea/
+"Hosting a Reddit API Discord app on Cloudflare Workers _ Documentation _ Discord Developer Portal.pdf"
 
 # Common Node.js exclusions
 node_modules/
+**/node_modules/
 .env
+**/.env
 terminal.log
 database.yml
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Wrangler / Cloudflare
+.wrangler/
+**/.wrangler/
+.dev.vars
 
 # OS junk
 .DS_Store
