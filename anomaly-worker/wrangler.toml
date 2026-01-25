@@ -13,6 +13,7 @@ compatibility_date = "2026-01-25"
 # ASK_CHANNEL_ID
 # REPORT_CHANNEL_ID
 # STAFF_ROLE_ID
+# MEMBER_ROLE_ID
 
 [observability]
 enabled = false
