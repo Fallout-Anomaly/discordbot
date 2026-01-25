@@ -23,9 +23,13 @@ module.exports = new Event({
         const linkPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi;
         if (linkPattern.test(message.content)) {
             try {
-                await message.delete();
-                const warning = await message.channel.send(`<@${message.author.id}>, external links are not allowed in this channel.`);
-                setTimeout(() => warning.delete().catch(() => {}), 5000);
+                await message.delete().catch(() => {});
+                
+                // Only send warning if we have permission
+                if (message.channel.permissionsFor(client.user)?.has('SendMessages')) {
+                    const warning = await message.channel.send(`<@${message.author.id}>, external links are not allowed in this channel.`);
+                    setTimeout(() => warning.delete().catch(() => {}), 5000);
+                }
 
                 if (logChannel) {
                     const embed = new EmbedBuilder()
@@ -54,6 +58,12 @@ module.exports = new Event({
 
         if (recentMessages.length > SPAM_THRESHOLD) {
             try {
+                // Check if user can be timed out
+                if (!message.member.moderatable) {
+                    console.warn(`[PROTECTION] User ${message.author.tag} is not moderatable, skipping timeout.`);
+                    return;
+                }
+
                 // Timeout user for 10 minutes
                 await message.member.timeout(10 * 60 * 1000, "Automated Anti-Spam");
                 await message.channel.send(`⚠️ <@${message.author.id}> has been timed out for spamming.`);

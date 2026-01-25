@@ -5,24 +5,57 @@ module.exports = new Event({
     event: Events.MessageDelete,
     once: false,
     run: async (client, message) => {
-        // Ignore partials (We can't log content we never saw)
-        if (message.partial) return;
+        // Handle partials so we can log content for uncached messages
+        if (message.partial) {
+            try {
+                await message.fetch();
+            } catch (e) {
+                // If message isn't fetchable (e.g. was deleted even before fetch), we log as much as we can.
+            }
+        }
 
         // Ignore bots
         if (message.author?.bot) return;
 
-        // Use dedicated audit log channel if available, otherwise fallback to main logs
-        const logChannelId = process.env.AUDIT_LOG_CHANNEL_ID || process.env.LOGS_CHANNEL_ID;
+        const logChannelId = process.env.LOGS_CHANNEL_ID;
         if (!logChannelId) return;
 
         const logChannel = client.channels.cache.get(logChannelId);
         if (!logChannel) return;
 
         let content = message.content;
-        if (!content && message.attachments.size > 0) {
+        if (!content && message.attachments && message.attachments.size > 0) {
             content = '*[Image/File Only]*';
         } else if (!content) {
             content = '*[Unknown Content]*';
+        }
+
+        // Wait a moment for Discord to populate audit logs
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Try to identify the executor (requires GuildModeration intent/permission)
+        let executor = 'Unknown (User or Bot)';
+        try {
+            const fetchedLogs = await message.guild.fetchAuditLogs({
+                limit: 5,
+                type: AuditLogEvent.MessageDelete,
+            });
+            
+            // Find the most relevant log entry within a reasonable timeframe
+            const deletionLog = fetchedLogs.entries.find(entry => 
+                entry.target.id === message.author.id && 
+                Math.abs(entry.createdTimestamp - Date.now()) < 10000
+            );
+
+            if (deletionLog) {
+                const { executor: logExecutor } = deletionLog;
+                executor = `${logExecutor.tag} (${logExecutor.id})`;
+            } else {
+                executor = `${message.author.tag} (Self-Delete/Manual)`;
+            }
+        } catch (e) {
+            // Logs likely failed due to permissions
+            executor = `${message.author?.tag || 'Unknown User'} (Self-Delete or Missing Perms)`;
         }
 
         const embed = new EmbedBuilder()
@@ -31,7 +64,8 @@ module.exports = new Event({
             .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL() })
             .addFields(
                 { name: 'Content', value: content.substring(0, 1024) },
-                { name: 'Channel', value: `<#${message.channel.id}>` }
+                { name: 'Channel', value: `<#${message.channel.id}>` },
+                { name: 'Deleted By', value: executor }
             )
             .setFooter({ text: `Author ID: ${message.author.id}` })
             .setTimestamp();

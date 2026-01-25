@@ -11,6 +11,16 @@ module.exports = new Event({
         try {
             const role = member.guild.roles.cache.get(roleId);
             if (role) {
+                // Check if bot can manage roles and if role is assignable
+                if (!member.guild.members.me.permissions.has('ManageRoles')) {
+                    console.error('[AUTOROLE] Missing "ManageRoles" permission.');
+                    return;
+                }
+                if (role.position >= member.guild.members.me.roles.highest.position) {
+                    console.error(`[AUTOROLE] Cannot assign role "${role.name}" because it is equal to or higher than the bot's highest role.`);
+                    return;
+                }
+
                 await member.roles.add(role);
                 console.log(`[AUTOROLE] Assigned role to ${member.user.tag}`);
             }

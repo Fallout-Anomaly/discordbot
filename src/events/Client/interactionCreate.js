@@ -26,10 +26,13 @@ module.exports = new Event({
             await command.run(client, interaction);
         } catch (err) {
             error(err);
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+            const content = 'There was an error while executing this command!';
+            if (interaction.replied) {
+                await interaction.followUp({ content, ephemeral: true }).catch(() => {});
+            } else if (interaction.deferred) {
+                await interaction.editReply({ content }).catch(() => {});
             } else {
-                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+                await interaction.reply({ content, ephemeral: true }).catch(() => {});
             }
         }
     }
