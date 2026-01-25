@@ -200,3 +200,16 @@ export const BANNER_COMMAND = {
     }
   ]
 };
+
+export const BF_COMMAND = {
+  name: 'bf',
+  description: 'Submit feedback/requests specifically for the BOT. Sent directly to dev team.',
+  options: [
+    {
+      name: 'feedback',
+      description: 'Your bot-related feedback or feature idea',
+      type: 3, // STRING
+      required: true,
+    }
+  ]
+};

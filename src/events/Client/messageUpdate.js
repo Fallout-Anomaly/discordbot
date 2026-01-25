@@ -8,14 +8,19 @@ module.exports = new Event({
         // Ignore bots and webhooks
         if (newMessage.author?.bot) return;
 
-        // Ignore partials (if we can't see the old message content, we can't log the diff)
-        if (oldMessage.partial) return;
+        // Handle partials so we can log content for uncached messages
+        if (oldMessage.partial) {
+            try {
+                await oldMessage.fetch();
+            } catch (e) {
+                // If old message isn't fetchable, we can't show the original content
+            }
+        }
 
         // Ignore if content is the same (usually just an embed update)
         if (oldMessage.content === newMessage.content) return;
 
-        // Use dedicated audit log channel if available, otherwise fallback to main logs
-        const logChannelId = process.env.AUDIT_LOG_CHANNEL_ID || process.env.LOGS_CHANNEL_ID;
+        const logChannelId = process.env.LOGS_CHANNEL_ID;
         if (!logChannelId) return;
         
         const logChannel = client.channels.cache.get(logChannelId);

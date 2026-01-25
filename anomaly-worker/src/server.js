@@ -20,7 +20,8 @@ import {
   USERINFO_COMMAND,
   AVATAR_COMMAND,
   SERVERINFO_COMMAND,
-  BANNER_COMMAND
+  BANNER_COMMAND,
+  BF_COMMAND
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -58,21 +59,31 @@ app.post('/', async (c) => {
     return c.json({ type: InteractionResponseType.PONG });
   }
 
+  // Verification of environment variables
+  const checkSecrets = (env) => {
+    const required = ['DISCORD_TOKEN', 'DISCORD_PUBLIC_KEY', 'GROQ_API_KEY', 'DISCORD_APP_ID'];
+    for (const s of required) {
+        if (!env[s]) {
+            console.error(`[FATAL] Missing Secret: ${s}`);
+            return false;
+        }
+    }
+    return true;
+  };
+
   if (interaction.type === InteractionType.APPLICATION_COMMAND) {
     const { name, id } = interaction.data;
     console.log(`[CORE] Command: /${name} (${id})`);
 
-    // Verification of environment variables
-    const checkSecrets = () => {
-        const required = ['DISCORD_TOKEN', 'DISCORD_PUBLIC_KEY', 'GROQ_API_KEY', 'DISCORD_APP_ID'];
-        for (const s of required) {
-            if (!c.env[s]) {
-                console.error(`[FATAL] Missing Secret: ${s}`);
-                return false;
+    if (!checkSecrets(c.env)) {
+        return c.json({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { 
+                content: '⚠️ Fatal: Bot is missing configuration secrets. Please contact an administrator.', 
+                flags: InteractionResponseFlags.EPHEMERAL 
             }
-        }
-        return true;
-    };
+        });
+    }
 
     if (name === PING_COMMAND.name) {
       return c.json({
@@ -116,7 +127,21 @@ app.post('/', async (c) => {
         }
     };
 
+    // Permission Helper
+    const hasPermission = () => {
+        // Check if user has the STAFF_ROLE_ID
+        if (!c.env.STAFF_ROLE_ID) return false; // Fail safe if role not configured
+        if (!interaction.member || !interaction.member.roles) return false; // DM or weird state check
+        return interaction.member.roles.includes(c.env.STAFF_ROLE_ID);
+    };
+
     if (name === KICK_COMMAND.name) {
+      if (!hasPermission()) {
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ You do not have permission to use this command.', flags: InteractionResponseFlags.EPHEMERAL }
+            });
+      }
       const user = interaction.data.options.find(o => o.name === 'user')?.value;
       const reason = interaction.data.options.find(o => o.name === 'reason')?.value || 'No reason provided';
       const guildId = interaction.guild_id;
@@ -134,8 +159,14 @@ app.post('/', async (c) => {
             await fetch(patchUrl, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: `✅ Successfully kicked <@${user}>.` }),
+              body: JSON.stringify({ 
+                content: `✅ Successfully kicked <@${user}>.`,
+                flags: InteractionResponseFlags.EPHEMERAL
+              }),
             });
+
+            // We do NOT send ephemeral flag here because the deferred response was ephemeral,
+            // so this patch will update that ephemeral message.
 
             await logAction('User Kicked', 0xffa500, [
                 { name: 'Target', value: `<@${user}>`, inline: true },
@@ -148,7 +179,10 @@ app.post('/', async (c) => {
             await fetch(patchUrl, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: `❌ Failed to kick <@${user}>. (Likely hierarchy or permission issue)` }),
+              body: JSON.stringify({ 
+                content: `❌ Failed to kick <@${user}>. (Likely hierarchy or permission issue)`,
+                flags: InteractionResponseFlags.EPHEMERAL
+              }),
             });
           }
         } catch (e) {
@@ -163,6 +197,12 @@ app.post('/', async (c) => {
     }
 
     if (name === BAN_COMMAND.name) {
+      if (!hasPermission()) {
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ You do not have permission to use this command.', flags: InteractionResponseFlags.EPHEMERAL }
+            });
+      }
       const user = interaction.data.options.find(o => o.name === 'user')?.value;
       const reason = interaction.data.options.find(o => o.name === 'reason')?.value || 'No reason provided';
       const guildId = interaction.guild_id;
@@ -184,7 +224,10 @@ app.post('/', async (c) => {
             await fetch(patchUrl, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: `🔨 Successfully banned <@${user}>.` }),
+              body: JSON.stringify({ 
+                content: `🔨 Successfully banned <@${user}>.`,
+                flags: InteractionResponseFlags.EPHEMERAL
+              }),
             });
 
             await logAction('User Banned', 0xff0000, [
@@ -198,7 +241,10 @@ app.post('/', async (c) => {
             await fetch(patchUrl, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: `❌ Failed to ban <@${user}>. (Likely hierarchy or permission issue)` }),
+              body: JSON.stringify({ 
+                content: `❌ Failed to ban <@${user}>. (Likely hierarchy or permission issue)`,
+                flags: InteractionResponseFlags.EPHEMERAL
+              }),
             });
           }
         } catch (e) {
@@ -213,6 +259,12 @@ app.post('/', async (c) => {
     }
 
     if (name === TIMEOUT_COMMAND.name) {
+      if (!hasPermission()) {
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ You do not have permission to use this command.', flags: InteractionResponseFlags.EPHEMERAL }
+            });
+      }
       const user = interaction.data.options.find(o => o.name === 'user')?.value;
       const duration = interaction.data.options.find(o => o.name === 'duration')?.value;
       const reason = interaction.data.options.find(o => o.name === 'reason')?.value || 'No reason provided';
@@ -236,7 +288,10 @@ app.post('/', async (c) => {
             await fetch(patchUrl, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: `⏳ Timed out <@${user}> for ${duration}m.` }),
+              body: JSON.stringify({ 
+                content: `⏳ Timed out <@${user}> for ${duration}m.`,
+                flags: InteractionResponseFlags.EPHEMERAL
+              }),
             });
 
             await logAction('User Timed Out', 0xffff00, [
@@ -251,7 +306,10 @@ app.post('/', async (c) => {
              await fetch(patchUrl, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: `❌ Failed to timeout <@${user}>. (Likely hierarchy or permission issue)` }),
+              body: JSON.stringify({ 
+                content: `❌ Failed to timeout <@${user}>. (Likely hierarchy or permission issue)`,
+                flags: InteractionResponseFlags.EPHEMERAL
+              }),
             });
           }
         } catch (e) {
@@ -266,6 +324,12 @@ app.post('/', async (c) => {
     }
 
     if (name === CLEAR_COMMAND.name) {
+      if (!hasPermission()) {
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ You do not have permission to use this command.', flags: InteractionResponseFlags.EPHEMERAL }
+            });
+      }
       const amount = interaction.data.options.find(o => o.name === 'amount')?.value;
       const channelId = interaction.channel_id;
 
@@ -279,33 +343,46 @@ app.post('/', async (c) => {
 
           const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
-          if (ids.length > 0) {
-            const bulkRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/bulk-delete`, {
-              method: 'POST',
-              headers: { 
-                'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
-                'Content-Type': 'application/json' 
-              },
-              body: JSON.stringify({ messages: ids })
-            });
+            // Filter out messages older than 14 days (Discord API Limitation for Bulk Delete)
+            const twoWeeksAgo = Date.now() - 1209600000;
+            const validIds = messages.filter(m => {
+                const timestamp = Number((BigInt(m.id) >> 22n) + 1420070400000n);
+                return timestamp > twoWeeksAgo;
+            }).map(m => m.id);
 
-            if (bulkRes.ok) {
-              await fetch(patchUrl, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: `🧹 Successfully cleared ${ids.length} messages.` }),
+            if (validIds.length > 0) {
+              const bulkRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/bulk-delete`, {
+                method: 'POST',
+                headers: { 
+                  'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+                  'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ messages: validIds })
               });
 
-              await logAction('Messages Purged', 0x00ff00, [
-                  { name: 'Channel', value: `<#${channelId}>`, inline: true },
-                  { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
-                  { name: 'Amount', value: `${ids.length}`, inline: true }
-              ]);
-            } else {
+              if (bulkRes.ok) {
+                await fetch(patchUrl, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                    content: `🧹 Successfully cleared ${validIds.length} messages. (${ids.length - validIds.length} were too old to delete)`,
+                    flags: InteractionResponseFlags.EPHEMERAL
+                  }),
+                });
+
+                await logAction('Messages Purged', 0x00ff00, [
+                    { name: 'Channel', value: `<#${channelId}>`, inline: true },
+                    { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
+                    { name: 'Amount', value: `${validIds.length}`, inline: true }
+                ]);
+              } else {
               await fetch(patchUrl, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: `❌ Failed to purge messages. (Likely too old or permission issue)` }),
+                body: JSON.stringify({ 
+                  content: `❌ Failed to purge messages. (Likely too old or permission issue)`,
+                  flags: InteractionResponseFlags.EPHEMERAL
+                }),
               });
             }
           } else {
@@ -327,6 +404,12 @@ app.post('/', async (c) => {
     }
 
     if (name === LOCK_COMMAND.name) {
+        if (!hasPermission()) {
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ You do not have permission to use this command.', flags: InteractionResponseFlags.EPHEMERAL }
+            });
+        }
         const reason = interaction.data.options?.find(o => o.name === 'reason')?.value || 'No reason provided';
         const channelId = interaction.channel_id;
         const guildId = interaction.guild_id;
@@ -353,7 +436,10 @@ app.post('/', async (c) => {
                     await fetch(patchUrl, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: `🔒 Channel locked. Reason: ${reason}` }),
+                        body: JSON.stringify({ 
+                            content: `🔒 Channel locked. Reason: ${reason}`,
+                            flags: InteractionResponseFlags.EPHEMERAL
+                        }),
                     });
                     await logAction('Channel Locked', 0xff0000, [
                         { name: 'Channel', value: `<#${channelId}>`, inline: true },
@@ -363,7 +449,10 @@ app.post('/', async (c) => {
                     await fetch(patchUrl, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: `❌ Failed to lock channel.` }),
+                        body: JSON.stringify({ 
+                            content: `❌ Failed to lock channel.`,
+                            flags: InteractionResponseFlags.EPHEMERAL
+                        }),
                     });
                 }
             } catch (e) {}
@@ -376,6 +465,12 @@ app.post('/', async (c) => {
     }
 
     if (name === UNLOCK_COMMAND.name) {
+        if (!hasPermission()) {
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ You do not have permission to use this command.', flags: InteractionResponseFlags.EPHEMERAL }
+            });
+        }
         const channelId = interaction.channel_id;
         const guildId = interaction.guild_id;
 
@@ -392,7 +487,10 @@ app.post('/', async (c) => {
                     await fetch(patchUrl, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: `🔓 Channel unlocked.` }),
+                        body: JSON.stringify({ 
+                            content: `🔓 Channel unlocked.`,
+                            flags: InteractionResponseFlags.EPHEMERAL
+                        }),
                     });
                     await logAction('Channel Unlocked', 0x00ff00, [
                         { name: 'Channel', value: `<#${channelId}>`, inline: true },
@@ -402,7 +500,10 @@ app.post('/', async (c) => {
                     await fetch(patchUrl, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: `❌ Failed to unlock channel.` }),
+                        body: JSON.stringify({ 
+                            content: `❌ Failed to unlock channel.`,
+                            flags: InteractionResponseFlags.EPHEMERAL
+                        }),
                     });
                 }
             } catch (e) {}
@@ -415,6 +516,12 @@ app.post('/', async (c) => {
     }
 
     if (name === SETNICK_COMMAND.name) {
+        if (!hasPermission()) {
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ You do not have permission to use this command.', flags: InteractionResponseFlags.EPHEMERAL }
+            });
+        }
         const user = interaction.data.options.find(o => o.name === 'user')?.value;
         const nickname = interaction.data.options.find(o => o.name === 'nickname')?.value;
         const guildId = interaction.guild_id;
@@ -436,7 +543,10 @@ app.post('/', async (c) => {
                     await fetch(patchUrl, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: `✅ Substituted nickname for <@${user}> to **${nickname}**.` }),
+                        body: JSON.stringify({ 
+                            content: `✅ Substituted nickname for <@${user}> to **${nickname}**.`,
+                            flags: InteractionResponseFlags.EPHEMERAL
+                        }),
                     });
                     await logAction('Nickname Changed', 0x3498db, [
                         { name: 'Target', value: `<@${user}>`, inline: true },
@@ -447,7 +557,10 @@ app.post('/', async (c) => {
                     await fetch(patchUrl, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: `❌ Failed to change nickname. (Likely hierarchy issue)` }),
+                        body: JSON.stringify({ 
+                            content: `❌ Failed to change nickname. (Likely hierarchy issue)`,
+                            flags: InteractionResponseFlags.EPHEMERAL
+                        }),
                     });
                 }
             } catch (e) {}
@@ -513,7 +626,7 @@ app.post('/', async (c) => {
             data: {
                 embeds: [{
                     title: `${user.username}'s Avatar`,
-                    image: { url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=1024` },
+                    image: { url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar?.startsWith('a_') ? 'gif' : 'png'}?size=1024` },
                     color: 0x3498db
                 }]
             }
@@ -575,7 +688,7 @@ app.post('/', async (c) => {
                         body: JSON.stringify({
                             embeds: [{
                                 title: `${user.username}'s Banner`,
-                                image: { url: `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.png?size=1024` },
+                                image: { url: `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${user.banner?.startsWith('a_') ? 'gif' : 'png'}?size=1024` },
                                 color: 0x3498db
                             }]
                         }),
@@ -591,6 +704,48 @@ app.post('/', async (c) => {
         })());
 
         return c.json({ type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE });
+    }
+
+    if (name === BF_COMMAND.name) {
+        const feedback = interaction.data.options.find(o => o.name === 'feedback')?.value;
+        const guildId = interaction.guild_id;
+
+        c.executionCtx.waitUntil((async () => {
+            try {
+                // Determine channel to send feedback to (use BOT_FEEDBACK_CHANNEL_ID or REPORT_CHANNEL_ID as fallback)
+                const targetChannel = c.env.BOT_FEEDBACK_CHANNEL_ID || c.env.REPORT_CHANNEL_ID;
+                if (!targetChannel) return;
+
+                const res = await fetch(`https://discord.com/api/v10/channels/${targetChannel}/messages`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bot ${c.env.DISCORD_TOKEN}`
+                  },
+                  body: JSON.stringify({
+                      embeds: [{
+                          title: '💡 Bot Feedback / Request',
+                          color: 0x9b59b6, // Purple
+                          fields: [
+                              { name: 'User', value: `<@${interaction.member.user.id}>` },
+                              { name: 'Feedback', value: feedback }
+                          ],
+                          timestamp: new Date().toISOString()
+                      }]
+                  }),
+                });
+            } catch (e) {
+                console.error(`[BF] Error: ${e.message}`);
+            }
+        })());
+
+        return c.json({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { 
+                content: 'Thank you for your feedback! We will review it shortly. - Anomaly Team', 
+                flags: InteractionResponseFlags.EPHEMERAL 
+            },
+        });
     }
 
     if (name === REPORT_COMMAND.name) {

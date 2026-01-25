@@ -10,7 +10,9 @@ export function searchKB(query) {
     const contentLower = doc.content.toLowerCase();
     if (contentLower.includes(q)) score += 20;
 
-    const queryParts = q.split(' ');
+    const queryParts = q.split(' ').filter(word => 
+      !['is', 'at', 'the', 'of', 'in', 'and', 'a', 'to', 'for', 'on'].includes(word) && word.length > 2
+    );
     for (const part of queryParts) {
       if (doc.keywords.includes(part)) score += 10;
       if (contentLower.includes(part)) score += 5;
@@ -58,7 +60,7 @@ export async function askAI(userQuestion, env) {
         temperature: 0.6,
         max_tokens: 4096 // Ensure reasoning can actually fit
       })
-    });
+    }, { signal: AbortSignal.timeout(10000) }); // 10-second timeout
 
     if (!res.ok) {
         const err = await res.text();
