@@ -1,4 +1,13 @@
-import { PING_COMMAND, HELP_COMMAND, REPORT_COMMAND, ASK_COMMAND } from './src/commands.js';
+import { 
+  PING_COMMAND, 
+  HELP_COMMAND, 
+  REPORT_COMMAND, 
+  ASK_COMMAND,
+  KICK_COMMAND,
+  BAN_COMMAND,
+  TIMEOUT_COMMAND,
+  CLEAR_COMMAND
+} from './src/commands.js';
 import process from 'node:process';
 import dotenv from 'dotenv';
 
@@ -21,7 +30,11 @@ const commands = [
   PING_COMMAND,
   HELP_COMMAND,
   REPORT_COMMAND,
-  ASK_COMMAND
+  ASK_COMMAND,
+  KICK_COMMAND,
+  BAN_COMMAND,
+  TIMEOUT_COMMAND,
+  CLEAR_COMMAND
 ];
 
 async function registerGuildCommands() {
