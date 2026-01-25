@@ -89,11 +89,14 @@ class CommandsHandler {
     registerApplicationCommands = async (development, restOptions = null) => {
         const rest = new REST(restOptions ? restOptions : { version: '10' }).setToken(this.client.token);
 
-        if (development.enabled) {
-            await rest.put(Routes.applicationGuildCommands(this.client.user.id, development.guildId), { body: this.client.rest_application_commands_array });
+        if (development?.enabled) {
+            // Disabled to prevent conflicts with Cloudflare Worker
+            // await rest.put(Routes.applicationGuildCommands(this.client.user.id, development.guildId), { body: this.client.rest_application_commands_array });
         } else {
-            await rest.put(Routes.applicationCommands(this.client.user.id), { body: this.client.rest_application_commands_array });
+            // Disabled to prevent conflicts with Cloudflare Worker
+            // await rest.put(Routes.applicationCommands(this.client.user.id), { body: this.client.rest_application_commands_array });
         }
+        success('Skipped duplicate command registration (Cloudflare Worker is handling this).');
     }
 }
 
