@@ -109,43 +109,43 @@ app.post('/', async (c) => {
 
     if (name === ASK_COMMAND.name) {
       const question = interaction.data.options.find(o => o.name === 'question')?.value;
-      
-      if (!checkSecrets()) {
-          return c.json({
-                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { content: "❌ Error: Bot configuration is incomplete (Missing Secrets).", flags: InteractionResponseFlags.EPHEMERAL }
-          });
-      }
+      console.log(`[ASK] Question: ${question}`);
 
-      // Background task
+      // Defer response to allow time for AI generation
       c.executionCtx.waitUntil((async () => {
         try {
-          console.log(`[ASK] Calling AI for: ${question}`);
+          console.log(`[ASK] Handing off to AI...`);
           const answer = await askAI(question, c.env);
+          console.log(`[ASK] AI answered. Length: ${answer.length}`);
           
-          const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
-          console.log(`[ASK] Updating response...`);
+          const appId = c.env.DISCORD_APP_ID;
+          if (!appId) {
+              console.error("[ASK] FATAL: DISCORD_APP_ID secret is missing.");
+              return;
+          }
 
-          const res = await fetch(patchUrl, {
+          const url = `https://discord.com/api/v10/webhooks/${appId}/${interaction.token}/messages/@original`;
+          console.log(`[ASK] Patching Discord: ${url}`);
+
+          const response = await fetch(url, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ content: answer }),
           });
 
-          if (!res.ok) {
-              const body = await res.text();
-              console.error(`[ASK] Patch Error ${res.status}: ${body}`);
+          if (!response.ok) {
+              const txt = await response.text();
+              console.error(`[ASK] Discord API Error: ${response.status} - ${txt}`);
           } else {
-              console.log(`[ASK] Success.`);
+              console.log(`[ASK] Success! Message updated.`);
           }
         } catch (error) {
-          console.error("[ASK] Webhook Error:", error);
+          console.error("[ASK] Generic Async Error:", error);
         }
       })());
 
       return c.json({
-        type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { flags: InteractionResponseFlags.EPHEMERAL }
+        type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
       });
     }
   }
