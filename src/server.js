@@ -83,16 +83,50 @@ app.post('/', async (c) => {
       });
     }
 
+    // Logging Helper
+    const logAction = async (title, color, details) => {
+        const channelId = c.env.LOGS_CHANNEL_ID || c.env.REPORT_CHANNEL_ID;
+        if (!channelId) return;
+
+        try {
+            await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bot ${c.env.DISCORD_TOKEN}`
+                },
+                body: JSON.stringify({
+                    embeds: [{
+                        title: `🛡️ Moderation Log: ${title}`,
+                        color: color,
+                        fields: details,
+                        timestamp: new Date().toISOString()
+                    }]
+                }),
+            });
+        } catch (e) {
+            console.error(`[LOG] Failed: ${e.message}`);
+        }
+    };
+
     if (name === KICK_COMMAND.name) {
       const user = interaction.data.options.find(o => o.name === 'user')?.value;
       const reason = interaction.data.options.find(o => o.name === 'reason')?.value || 'No reason provided';
       const guildId = interaction.guild_id;
 
       c.executionCtx.waitUntil((async () => {
-        await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
+        const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 'X-Audit-Log-Reason': reason }
         });
+
+        if (res.ok) {
+            await logAction('User Kicked', 0xffa500, [
+                { name: 'Target', value: `<@${user}>`, inline: true },
+                { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
+                { name: 'Reason', value: reason }
+            ]);
+        }
       })());
 
       return c.json({
@@ -107,7 +141,7 @@ app.post('/', async (c) => {
       const guildId = interaction.guild_id;
 
       c.executionCtx.waitUntil((async () => {
-        await fetch(`https://discord.com/api/v10/guilds/${guildId}/bans/${user}`, {
+        const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/bans/${user}`, {
           method: 'PUT',
           headers: { 
             'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
@@ -115,6 +149,14 @@ app.post('/', async (c) => {
           },
           body: JSON.stringify({ reason })
         });
+
+        if (res.ok) {
+            await logAction('User Banned', 0xff0000, [
+                { name: 'Target', value: `<@${user}>`, inline: true },
+                { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
+                { name: 'Reason', value: reason }
+            ]);
+        }
       })());
 
       return c.json({
@@ -131,7 +173,7 @@ app.post('/', async (c) => {
       const until = new Date(Date.now() + duration * 60000).toISOString();
 
       c.executionCtx.waitUntil((async () => {
-        await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
+        const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
           method: 'PATCH',
           headers: { 
             'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
@@ -139,6 +181,15 @@ app.post('/', async (c) => {
           },
           body: JSON.stringify({ communication_disabled_until: until, reason })
         });
+
+        if (res.ok) {
+            await logAction('User Timed Out', 0xffff00, [
+                { name: 'Target', value: `<@${user}>`, inline: true },
+                { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
+                { name: 'Duration', value: `${duration}m`, inline: true },
+                { name: 'Reason', value: reason }
+            ]);
+        }
       })());
 
       return c.json({
@@ -160,7 +211,7 @@ app.post('/', async (c) => {
         const ids = messages.map(m => m.id);
 
         if (ids.length > 0) {
-          await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/bulk-delete`, {
+          const bulkRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/bulk-delete`, {
             method: 'POST',
             headers: { 
               'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
@@ -168,6 +219,14 @@ app.post('/', async (c) => {
             },
             body: JSON.stringify({ messages: ids })
           });
+
+          if (bulkRes.ok) {
+            await logAction('Messages Purged', 0x00ff00, [
+                { name: 'Channel', value: `<#${channelId}>`, inline: true },
+                { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
+                { name: 'Amount', value: `${ids.length}`, inline: true }
+            ]);
+          }
         }
       })());
 
