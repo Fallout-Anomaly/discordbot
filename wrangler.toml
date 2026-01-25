@@ -14,3 +14,7 @@ DISCORD_APP_ID = "1226374898289741914"
 # ASK_CHANNEL_ID
 # REPORT_CHANNEL_ID
 # STAFF_ROLE_ID
+
+[observability.logs]
+enabled = true
+invocation_logs = true
