@@ -1,4 +1,3 @@
-import { OpenAI } from 'openai';
 import { KNOWLEDGE_BASE } from './knowledge.js';
 
 export function searchKB(query) {
@@ -35,53 +34,72 @@ export function searchKB(query) {
 }
 
 export async function askAI(userQuestion, env) {
-  if (!env.GROQ_API_KEY) return "AI key not configured.";
+  if (!env.GROQ_API_KEY) return "AI key not configured in Cloudflare secrets.";
 
-  const openai = new OpenAI({ 
-    apiKey: env.GROQ_API_KEY,
-    baseURL: 'https://api.groq.com/openai/v1' 
-  });
-
-  // 1. Refine question for search
-  let refinedQuery = userQuestion;
   try {
-    const refineResponse = await openai.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: 'You are a technical assistant. Output 2-5 search keywords for the user question. Only output keywords.' },
-        { role: 'user', content: userQuestion }
-      ],
-      max_tokens: 20
+    // 1. Refine question using direct fetch
+    let refinedQuery = userQuestion;
+    const refineResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: 'Output 2-5 search keywords for the user question. Only output keywords.' },
+          { role: 'user', content: userQuestion }
+        ],
+        max_tokens: 20
+      })
     });
-    refinedQuery = refineResponse.choices[0].message.content.trim();
-  } catch (e) {}
 
-  // 2. Search KB
-  const contextItems = searchKB(refinedQuery);
-  const contextString = contextItems.map(item => {
-    return `Name: ${item.fullName}\nContent: ${item.fullContent}\n`;
-  }).join("\n---\n");
+    if (refineResponse.ok) {
+        const data = await refineResponse.json();
+        refinedQuery = data.choices[0].message.content.trim();
+    }
 
-  // 3. Generate Answer
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        {
-          role: 'system',
-          content: `You are 'Anomaly Support', a helpful assistant for the 'Fallout Anomaly' modpack.
+    // 2. Search KB
+    const contextItems = searchKB(refinedQuery);
+    const contextString = contextItems.map(item => {
+      return `Name: ${item.fullName}\nContent: ${item.fullContent}\n`;
+    }).join("\n---\n");
+
+    // 3. Generate Answer using direct fetch (lighter for Worker)
+    const answerResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: `You are 'Anomaly Support', a helpful assistant for the 'Fallout Anomaly' modpack.
 - Answer the user's question using ONLY the provided Context.
 - Do NOT mention internal filenames. Just give the answer naturally.
 - If context is missing info, politely say you don't know.`
-        },
-        {
-          role: 'user', 
-          content: `Context:\n${contextString}\n\nQuestion: ${userQuestion}`
-        }
-      ]
-    });
-    return response.choices[0].message.content.trim();
+            },
+            {
+              role: 'user', 
+              content: `Context:\n${contextString}\n\nQuestion: ${userQuestion}`
+            }
+          ]
+        })
+      });
+
+    if (!answerResponse.ok) {
+        const err = await answerResponse.text();
+        return `Groq Error (${answerResponse.status}): ${err.substring(0, 100)}`;
+    }
+
+    const answerData = await answerResponse.json();
+    return answerData.choices[0].message.content.trim();
+
   } catch (e) {
-    return "Error generating AI response.";
+    return `Worker Error: ${e.message}`;
   }
 }
