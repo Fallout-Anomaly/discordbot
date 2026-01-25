@@ -119,3 +119,40 @@ export const CLEAR_COMMAND = {
     }
   ]
 };
+
+export const LOCK_COMMAND = {
+  name: 'lock',
+  description: 'Lock the current channel.',
+  options: [
+    {
+      name: 'reason',
+      description: 'Reason for locking',
+      type: 3, // STRING
+      required: false,
+    }
+  ]
+};
+
+export const UNLOCK_COMMAND = {
+  name: 'unlock',
+  description: 'Unlock the current channel.',
+};
+
+export const SETNICK_COMMAND = {
+  name: 'setnick',
+  description: 'Change a user\'s nickname.',
+  options: [
+    {
+      name: 'user',
+      description: 'The user to change',
+      type: 6, // USER
+      required: true,
+    },
+    {
+      name: 'nickname',
+      description: 'The new nickname',
+      type: 3, // STRING
+      required: true,
+    }
+  ]
+};

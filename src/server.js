@@ -13,7 +13,10 @@ import {
   KICK_COMMAND,
   BAN_COMMAND,
   TIMEOUT_COMMAND,
-  CLEAR_COMMAND
+  CLEAR_COMMAND,
+  LOCK_COMMAND,
+  UNLOCK_COMMAND,
+  SETNICK_COMMAND
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -115,23 +118,43 @@ app.post('/', async (c) => {
       const guildId = interaction.guild_id;
 
       c.executionCtx.waitUntil((async () => {
-        const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 'X-Audit-Log-Reason': reason }
-        });
+        try {
+          const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 'X-Audit-Log-Reason': reason }
+          });
 
-        if (res.ok) {
+          const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+          
+          if (res.ok) {
+            await fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: `✅ Successfully kicked <@${user}>.` }),
+            });
+
             await logAction('User Kicked', 0xffa500, [
                 { name: 'Target', value: `<@${user}>`, inline: true },
                 { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
                 { name: 'Reason', value: reason }
             ]);
+          } else {
+            const err = await res.text();
+            console.error(`[KICK] Failed: ${err}`);
+            await fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: `❌ Failed to kick <@${user}>. (Likely hierarchy or permission issue)` }),
+            });
+          }
+        } catch (e) {
+          console.error(`[KICK] Async Error: ${e.message}`);
         }
       })());
 
       return c.json({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: `👢 Kicked <@${user}>.`, flags: InteractionResponseFlags.EPHEMERAL }
+        type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { flags: InteractionResponseFlags.EPHEMERAL }
       });
     }
 
@@ -141,27 +164,47 @@ app.post('/', async (c) => {
       const guildId = interaction.guild_id;
 
       c.executionCtx.waitUntil((async () => {
-        const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/bans/${user}`, {
-          method: 'PUT',
-          headers: { 
-            'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
-            'Content-Type': 'application/json' 
-          },
-          body: JSON.stringify({ reason })
-        });
+        try {
+          const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/bans/${user}`, {
+            method: 'PUT',
+            headers: { 
+              'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+              'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ reason })
+          });
 
-        if (res.ok) {
+          const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+          if (res.ok) {
+            await fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: `🔨 Successfully banned <@${user}>.` }),
+            });
+
             await logAction('User Banned', 0xff0000, [
                 { name: 'Target', value: `<@${user}>`, inline: true },
                 { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
                 { name: 'Reason', value: reason }
             ]);
+          } else {
+            const err = await res.text();
+            console.error(`[BAN] Failed: ${err}`);
+            await fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: `❌ Failed to ban <@${user}>. (Likely hierarchy or permission issue)` }),
+            });
+          }
+        } catch (e) {
+          console.error(`[BAN] Async Error: ${e.message}`);
         }
       })());
 
       return c.json({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: `🔨 Banned <@${user}>.`, flags: InteractionResponseFlags.EPHEMERAL }
+        type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { flags: InteractionResponseFlags.EPHEMERAL }
       });
     }
 
@@ -173,28 +216,48 @@ app.post('/', async (c) => {
       const until = new Date(Date.now() + duration * 60000).toISOString();
 
       c.executionCtx.waitUntil((async () => {
-        const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
-          method: 'PATCH',
-          headers: { 
-            'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
-            'Content-Type': 'application/json' 
-          },
-          body: JSON.stringify({ communication_disabled_until: until, reason })
-        });
+        try {
+          const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
+            method: 'PATCH',
+            headers: { 
+              'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+              'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ communication_disabled_until: until, reason })
+          });
 
-        if (res.ok) {
+          const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+          if (res.ok) {
+            await fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: `⏳ Timed out <@${user}> for ${duration}m.` }),
+            });
+
             await logAction('User Timed Out', 0xffff00, [
                 { name: 'Target', value: `<@${user}>`, inline: true },
                 { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
                 { name: 'Duration', value: `${duration}m`, inline: true },
                 { name: 'Reason', value: reason }
             ]);
+          } else {
+            const err = await res.text();
+            console.error(`[TIMEOUT] Failed: ${err}`);
+             await fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: `❌ Failed to timeout <@${user}>. (Likely hierarchy or permission issue)` }),
+            });
+          }
+        } catch (e) {
+          console.error(`[TIMEOUT] Async Error: ${e.message}`);
         }
       })());
 
       return c.json({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: `⏳ Timed out <@${user}> for ${duration}m.`, flags: InteractionResponseFlags.EPHEMERAL }
+        type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { flags: InteractionResponseFlags.EPHEMERAL }
       });
     }
 
@@ -203,37 +266,193 @@ app.post('/', async (c) => {
       const channelId = interaction.channel_id;
 
       c.executionCtx.waitUntil((async () => {
-        // Fetch messages first
-        const msgRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=${amount}`, {
-          headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}` }
-        });
-        const messages = await msgRes.json();
-        const ids = messages.map(m => m.id);
-
-        if (ids.length > 0) {
-          const bulkRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/bulk-delete`, {
-            method: 'POST',
-            headers: { 
-              'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
-              'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify({ messages: ids })
+        try {
+          const msgRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=${amount}`, {
+            headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}` }
           });
+          const messages = await msgRes.json();
+          const ids = messages.map(m => m.id);
 
-          if (bulkRes.ok) {
-            await logAction('Messages Purged', 0x00ff00, [
-                { name: 'Channel', value: `<#${channelId}>`, inline: true },
-                { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
-                { name: 'Amount', value: `${ids.length}`, inline: true }
-            ]);
+          const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+          if (ids.length > 0) {
+            const bulkRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/bulk-delete`, {
+              method: 'POST',
+              headers: { 
+                'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+                'Content-Type': 'application/json' 
+              },
+              body: JSON.stringify({ messages: ids })
+            });
+
+            if (bulkRes.ok) {
+              await fetch(patchUrl, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: `🧹 Successfully cleared ${ids.length} messages.` }),
+              });
+
+              await logAction('Messages Purged', 0x00ff00, [
+                  { name: 'Channel', value: `<#${channelId}>`, inline: true },
+                  { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true },
+                  { name: 'Amount', value: `${ids.length}`, inline: true }
+              ]);
+            } else {
+              await fetch(patchUrl, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: `❌ Failed to purge messages. (Likely too old or permission issue)` }),
+              });
+            }
+          } else {
+            await fetch(patchUrl, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: `🧹 No messages found to clear.` }),
+            });
           }
+        } catch (e) {
+          console.error(`[CLEAR] Async Error: ${e.message}`);
         }
       })());
 
       return c.json({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: `🧹 Cleared ${amount} messages.`, flags: InteractionResponseFlags.EPHEMERAL }
+        type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { flags: InteractionResponseFlags.EPHEMERAL }
       });
+    }
+
+    if (name === LOCK_COMMAND.name) {
+        const reason = interaction.data.options?.find(o => o.name === 'reason')?.value || 'No reason provided';
+        const channelId = interaction.channel_id;
+        const guildId = interaction.guild_id;
+
+        c.executionCtx.waitUntil((async () => {
+            try {
+                // Get everyone role ID (guildId is the everyone role ID)
+                const res = await fetch(`https://discord.com/api/v10/channels/${channelId}/permissions/${guildId}`, {
+                    method: 'PUT',
+                    headers: { 
+                      'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+                      'Content-Type': 'application/json',
+                      'X-Audit-Log-Reason': reason
+                    },
+                    body: JSON.stringify({
+                        deny: "2048", // SEND_MESSAGES
+                        type: 0 // Role
+                    })
+                });
+
+                const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+                if (res.ok) {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: `🔒 Channel locked. Reason: ${reason}` }),
+                    });
+                    await logAction('Channel Locked', 0xff0000, [
+                        { name: 'Channel', value: `<#${channelId}>`, inline: true },
+                        { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true }
+                    ]);
+                } else {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: `❌ Failed to lock channel.` }),
+                    });
+                }
+            } catch (e) {}
+        })());
+
+        return c.json({
+            type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { flags: InteractionResponseFlags.EPHEMERAL }
+        });
+    }
+
+    if (name === UNLOCK_COMMAND.name) {
+        const channelId = interaction.channel_id;
+        const guildId = interaction.guild_id;
+
+        c.executionCtx.waitUntil((async () => {
+            try {
+                const res = await fetch(`https://discord.com/api/v10/channels/${channelId}/permissions/${guildId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bot ${c.env.DISCORD_TOKEN}` }
+                });
+
+                const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+                if (res.ok) {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: `🔓 Channel unlocked.` }),
+                    });
+                    await logAction('Channel Unlocked', 0x00ff00, [
+                        { name: 'Channel', value: `<#${channelId}>`, inline: true },
+                        { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true }
+                    ]);
+                } else {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: `❌ Failed to unlock channel.` }),
+                    });
+                }
+            } catch (e) {}
+        })());
+
+        return c.json({
+            type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { flags: InteractionResponseFlags.EPHEMERAL }
+        });
+    }
+
+    if (name === SETNICK_COMMAND.name) {
+        const user = interaction.data.options.find(o => o.name === 'user')?.value;
+        const nickname = interaction.data.options.find(o => o.name === 'nickname')?.value;
+        const guildId = interaction.guild_id;
+
+        c.executionCtx.waitUntil((async () => {
+            try {
+                const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${user}`, {
+                    method: 'PATCH',
+                    headers: { 
+                      'Authorization': `Bot ${c.env.DISCORD_TOKEN}`, 
+                      'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ nick: nickname })
+                });
+
+                const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+
+                if (res.ok) {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: `✅ Substituted nickname for <@${user}> to **${nickname}**.` }),
+                    });
+                    await logAction('Nickname Changed', 0x3498db, [
+                        { name: 'Target', value: `<@${user}>`, inline: true },
+                        { name: 'New Nick', value: nickname, inline: true },
+                        { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true }
+                    ]);
+                } else {
+                    await fetch(patchUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: `❌ Failed to change nickname. (Likely hierarchy issue)` }),
+                    });
+                }
+            } catch (e) {}
+        })());
+
+        return c.json({
+            type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+            data: { flags: InteractionResponseFlags.EPHEMERAL }
+        });
     }
 
     if (name === REPORT_COMMAND.name) {

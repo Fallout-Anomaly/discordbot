@@ -1,0 +1,1879 @@
+[
+  {
+    "source": {
+      "message": "[CORE] Command: /kick (1464899771033714824)"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:31:39.520Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "ef7794ca-b11b-4c2b-90e3-99d2dd1f7b33"
+      },
+      "requestId": "9c366a5ffbc850f7"
+    },
+    "$metadata": {
+      "id": "01KFT4FE00YP71349226H6WJJN",
+      "requestId": "9c366a5ffbc850f7",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Command: /kick (1464899771033714824)",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Command: /kick (1464899771033714824)"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Interaction Type: 2"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:31:39.520Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "ef7794ca-b11b-4c2b-90e3-99d2dd1f7b33"
+      },
+      "requestId": "9c366a5ffbc850f7"
+    },
+    "$metadata": {
+      "id": "01KFT4FE00YP71349226H6WJJM",
+      "requestId": "9c366a5ffbc850f7",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Interaction Type: 2",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Interaction Type: 2"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:31:39.520Z",
+    "$workers": {
+      "event": {
+        "request": {
+          "cf": {
+            "requestHeaderNames": {},
+            "isEUCountry": false,
+            "httpProtocol": "HTTP/1.1",
+            "requestPriority": "",
+            "colo": "ATL",
+            "asOrganization": "Google LLC",
+            "country": "US",
+            "city": "North Charleston",
+            "continent": "NA",
+            "region": "South Carolina",
+            "regionCode": "SC",
+            "timezone": "America/New_York",
+            "longitude": "-79.97481",
+            "latitude": "32.85462",
+            "postalCode": "29415",
+            "metroCode": "519",
+            "tlsVersion": "TLSv1.3",
+            "tlsCipher": "AEAD-AES256-GCM-SHA384",
+            "tlsClientRandom": "eL1Us1C0gmjaQj0AHtdQwttg04vHO/0m07S8XZPXipk=",
+            "tlsClientCiphersSha1": "WUS9+h7TjVkF9aEouGuCEMjGQGA=",
+            "tlsClientExtensionsSha1": "wNAeYUHwpxKI2TvGd8vZyn4noLQ=",
+            "tlsClientExtensionsSha1Le": "VVr1q9dN/FMUj/ph85XvFF+a5d8=",
+            "tlsExportedAuthenticator": {
+              "clientHandshake": "977c91255f15035879e2b9487c742847b4abe881f118b30d0c5233b998ca33ef11333d352817e02fe91c1e5b49418016",
+              "serverHandshake": "c11c12458da2e3d513acfa3096d06bce69c316f73b273a74adf150a02ab8e1ea5ddb59c40aa176ce76f06e7f799a96a8",
+              "clientFinished": "a99a31fc9fbed36a830ef3a80ca502e19044f17375d636d7e4c2da33e2bb8640587f9ff8d2401ebe9abf92023b067aa5",
+              "serverFinished": "321fbb6ecc00825378a39b4462e429bbff53e4d24f605344f970f2e1310e7e455469388d4c6f8efb5ef3cf58d73d2a13"
+            },
+            "tlsClientHelloLength": "252",
+            "tlsClientAuth": {
+              "certPresented": "0",
+              "certVerified": "NONE",
+              "certRevoked": "0",
+              "certIssuerDN": "",
+              "certSubjectDN": "",
+              "certIssuerDNRFC2253": "",
+              "certSubjectDNRFC2253": "",
+              "certIssuerDNLegacy": "",
+              "certSubjectDNLegacy": "",
+              "certSerial": "",
+              "certIssuerSerial": "",
+              "certSKI": "",
+              "certIssuerSKI": "",
+              "certFingerprintSHA1": "",
+              "certFingerprintSHA256": "",
+              "certNotBefore": "",
+              "certNotAfter": ""
+            },
+            "verifiedBotCategory": "",
+            "edgeRequestKeepAliveStatus": 1,
+            "clientTcpRtt": 10,
+            "asn": 396982
+          },
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "headers": {
+            "accept-encoding": "gzip, br",
+            "cf-connecting-ip": "35.227.62.178",
+            "cf-ipcountry": "US",
+            "cf-ray": "9c366a5ffbc850f7",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "connection": "Keep-Alive",
+            "content-length": "3785",
+            "content-type": "application/json",
+            "host": "discordbot.veinmodding.workers.dev",
+            "user-agent": "Discord-Interactions/1.0 (+https://discord.com)",
+            "x-forwarded-proto": "https",
+            "x-real-ip": "35.227.62.178",
+            "x-signature-ed25519": "cceea8a78c9df6f3e5267b1c61cc45ce6e9a840bf05a64da6455457219aa6ccc914dcb0dbcf9b319b316f459d0477ca635287c9e4850b2abd76afc9f77a77e05",
+            "x-signature-timestamp": "1769329899"
+          },
+          "path": "/"
+        },
+        "rayId": "9c366a5ffbc850f7",
+        "response": {
+          "status": 200
+        }
+      },
+      "diagnosticsChannelEvents": [],
+      "truncated": false,
+      "scriptName": "discordbot",
+      "outcome": "ok",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "ef7794ca-b11b-4c2b-90e3-99d2dd1f7b33"
+      },
+      "requestId": "9c366a5ffbc850f7",
+      "cpuTimeMs": 4,
+      "wallTimeMs": 115
+    },
+    "$metadata": {
+      "id": "01KFT4FE00YP71349226H6WJJK",
+      "requestId": "9c366a5ffbc850f7",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker-event",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Success! Message updated."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.824Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT439M0KN0ZFBCG4W91YBHX",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Success! Message updated.",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Success! Message updated."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5ODg0NDA1ODk3NjMyODpnTHY2bEZUVlVOcllmUDFZb1VNeW5XUkNsTEd1ZHl4SFNRZk9NdzZqTDFEMzc5WXhiTEJYZ1B1Qm1nbGo1V2JEWkdIRlFhZTFhTGd0Sm01UWFLV2xNUHlHdzQzZ0xUZlVVMWtDN2VSWEhOQnNLUTZiUExtNlpCbUYydmxqWmJoYw/messages/@original"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.606Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT439D6ZZ9ANZHDTETKCQX7",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5ODg0NDA1ODk3NjMyODpnTHY2bEZUVlVOcllmUDFZb1VNeW5XUkNsTEd1ZHl4SFNRZk9NdzZqTDFEMzc5WXhiTEJYZ1B1Qm1nbGo1V2JEWkdIRlFhZTFhTGd0Sm01UWFLV2xNUHlHdzQzZ0xUZlVVMWtDN2VSWEhOQnNLUTZiUExtNlpCbUYydmxqWmJoYw/messages/@original",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5ODg0NDA1ODk3NjMyODpnTHY2bEZUVlVOcllmUDFZb1VNeW5XUkNsTEd1ZHl4SFNRZk9NdzZqTDFEMzc5WXhiTEJYZ1B1Qm1nbGo1V2JEWkdIRlFhZTFhTGd0Sm01UWFLV2xNUHlHdzQzZ0xUZlVVMWtDN2VSWEhOQnNLUTZiUExtNlpCbUYydmxqWmJoYw/messages/@original"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] AI answered. Length: 430"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.606Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT439D6ZZ9ANZHDTETKCQX6",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] AI answered. Length: 430",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] AI answered. Length: 430"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[AI] Context length: 3828"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.020Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT438TWTEG7Q9TDEYZH3FKZ",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[AI] Context length: 3828",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[AI] Context length: 3828"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Handing off to AI..."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.020Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT438TWTEG7Q9TDEYZH3FKY",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Handing off to AI...",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Handing off to AI..."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Question: Can I remove mods?"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.020Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT438TWTEG7Q9TDEYZH3FKX",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Question: Can I remove mods?",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Question: Can I remove mods?"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.020Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT438TWTEG7Q9TDEYZH3FKW",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Command: /ask (1464882498885652595)",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Interaction Type: 2"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.020Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747"
+    },
+    "$metadata": {
+      "id": "01KFT438TWTEG7Q9TDEYZH3FKV",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Interaction Type: 2",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Interaction Type: 2"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:25:01.020Z",
+    "$workers": {
+      "event": {
+        "request": {
+          "cf": {
+            "requestHeaderNames": {},
+            "isEUCountry": false,
+            "httpProtocol": "HTTP/1.1",
+            "requestPriority": "",
+            "colo": "ATL",
+            "asOrganization": "Google LLC",
+            "country": "US",
+            "city": "North Charleston",
+            "continent": "NA",
+            "region": "South Carolina",
+            "regionCode": "SC",
+            "timezone": "America/New_York",
+            "longitude": "-79.97481",
+            "latitude": "32.85462",
+            "postalCode": "29415",
+            "metroCode": "519",
+            "tlsVersion": "TLSv1.3",
+            "tlsCipher": "AEAD-AES256-GCM-SHA384",
+            "tlsClientRandom": "YMn34/SF2jujLUom5TTj1vW0c2eH9aK7TsaJH2D1TTE=",
+            "tlsClientCiphersSha1": "WUS9+h7TjVkF9aEouGuCEMjGQGA=",
+            "tlsClientExtensionsSha1": "wNAeYUHwpxKI2TvGd8vZyn4noLQ=",
+            "tlsClientExtensionsSha1Le": "VVr1q9dN/FMUj/ph85XvFF+a5d8=",
+            "tlsExportedAuthenticator": {
+              "clientHandshake": "ad25aaba9265760b607651c79a8ae3790e15705107cf642934aabfeb90ffe67e58db7d7bc2fdb23b5bcc4ff721227b4e",
+              "serverHandshake": "8138af6cc380578085ebe9e2eef53ba42ff14e669eda08bbc477f3173c0b3db08e3b2b5ac0105beceb0c304b65315b9b",
+              "clientFinished": "b4e06e1df9aab09ed9a1331cdfede193b788fde5805d023883eade3b242d8ae22c59d099d31d15684c87b49069e5342a",
+              "serverFinished": "5d48db50a9608ae3dc20744bff9bab21fc328e5eb0c0a259bbd53428449a5c919a20c5061696e506dec62dfebcfd19eb"
+            },
+            "tlsClientHelloLength": "252",
+            "tlsClientAuth": {
+              "certPresented": "0",
+              "certVerified": "NONE",
+              "certRevoked": "0",
+              "certIssuerDN": "",
+              "certSubjectDN": "",
+              "certIssuerDNRFC2253": "",
+              "certSubjectDNRFC2253": "",
+              "certIssuerDNLegacy": "",
+              "certSubjectDNLegacy": "",
+              "certSerial": "",
+              "certIssuerSerial": "",
+              "certSKI": "",
+              "certIssuerSKI": "",
+              "certFingerprintSHA1": "",
+              "certFingerprintSHA256": "",
+              "certNotBefore": "",
+              "certNotAfter": ""
+            },
+            "verifiedBotCategory": "",
+            "edgeRequestKeepAliveStatus": 1,
+            "clientTcpRtt": 10,
+            "asn": 396982
+          },
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "headers": {
+            "accept-encoding": "gzip, br",
+            "cf-connecting-ip": "35.227.62.178",
+            "cf-ipcountry": "US",
+            "cf-ray": "9c3660a55c183747",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "connection": "Keep-Alive",
+            "content-length": "3299",
+            "content-type": "application/json",
+            "host": "discordbot.veinmodding.workers.dev",
+            "user-agent": "Discord-Interactions/1.0 (+https://discord.com)",
+            "x-forwarded-proto": "https",
+            "x-real-ip": "35.227.62.178",
+            "x-signature-ed25519": "3329fe1ae837c3765d6a9ff8eeb8dbdd566e8e175478d9774bd90ad83abd21725d1b76879133996467c470db20f750aed4baff0fdffa56d2996e19f75b9f5505",
+            "x-signature-timestamp": "1769329500"
+          },
+          "path": "/"
+        },
+        "rayId": "9c3660a55c183747",
+        "response": {
+          "status": 200
+        }
+      },
+      "diagnosticsChannelEvents": [],
+      "truncated": false,
+      "scriptName": "discordbot",
+      "outcome": "ok",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c3660a55c183747",
+      "cpuTimeMs": 4,
+      "wallTimeMs": 806
+    },
+    "$metadata": {
+      "id": "01KFT438TWTEG7Q9TDEYZH3FKT",
+      "requestId": "9c3660a55c183747",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker-event",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Success! Message updated."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:45.546Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9YAXHTTH0VQSM6MYA3Z",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Success! Message updated.",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Success! Message updated."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5ODAyMTYzNTM5MTU4MjpRRWdvNDBieUVvdHRhaTlxalBTM3JRN0dpSTdUREJjOVh0bVpTc2Y4OXI4b0dyM0FEdDRhOWFzak5XbG5QOVNLdnh4Y1NoNmpHMG4xb1B6OFBDQk5WZmFtM3BITW9VT3RnQkRIU2hBT0pob2hpS0Z5Y3NkcE9VZ2dUWEVvS0hFWA/messages/@original"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:45.282Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9P2TB57FP7ZQK44S7EP",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5ODAyMTYzNTM5MTU4MjpRRWdvNDBieUVvdHRhaTlxalBTM3JRN0dpSTdUREJjOVh0bVpTc2Y4OXI4b0dyM0FEdDRhOWFzak5XbG5QOVNLdnh4Y1NoNmpHMG4xb1B6OFBDQk5WZmFtM3BITW9VT3RnQkRIU2hBT0pob2hpS0Z5Y3NkcE9VZ2dUWEVvS0hFWA/messages/@original",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5ODAyMTYzNTM5MTU4MjpRRWdvNDBieUVvdHRhaTlxalBTM3JRN0dpSTdUREJjOVh0bVpTc2Y4OXI4b0dyM0FEdDRhOWFzak5XbG5QOVNLdnh4Y1NoNmpHMG4xb1B6OFBDQk5WZmFtM3BITW9VT3RnQkRIU2hBT0pob2hpS0Z5Y3NkcE9VZ2dUWEVvS0hFWA/messages/@original"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] AI answered. Length: 265"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:45.282Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9P2TB57FP7ZQK44S7EN",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] AI answered. Length: 265",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] AI answered. Length: 265"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[AI] Context length: 5469"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:44.963Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9C318X9R4NKSRSWQG27",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[AI] Context length: 5469",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[AI] Context length: 5469"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Handing off to AI..."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:44.963Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9C318X9R4NKSRSWQG26",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Handing off to AI...",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Handing off to AI..."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Question: Help ENB not download"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:44.963Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9C318X9R4NKSRSWQG25",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Question: Help ENB not download",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Question: Help ENB not download"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:44.963Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9C318X9R4NKSRSWQG24",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Command: /ask (1464882498885652595)",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Interaction Type: 2"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:44.963Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd"
+    },
+    "$metadata": {
+      "id": "01KFT3X9C318X9R4NKSRSWQG23",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Interaction Type: 2",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Interaction Type: 2"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:21:44.963Z",
+    "$workers": {
+      "event": {
+        "request": {
+          "cf": {
+            "requestHeaderNames": {},
+            "isEUCountry": false,
+            "httpProtocol": "HTTP/1.1",
+            "requestPriority": "",
+            "colo": "ATL",
+            "asOrganization": "Google LLC",
+            "country": "US",
+            "city": "North Charleston",
+            "continent": "NA",
+            "region": "South Carolina",
+            "regionCode": "SC",
+            "timezone": "America/New_York",
+            "longitude": "-79.97481",
+            "latitude": "32.85462",
+            "postalCode": "29415",
+            "metroCode": "519",
+            "tlsVersion": "TLSv1.3",
+            "tlsCipher": "AEAD-AES256-GCM-SHA384",
+            "tlsClientRandom": "3AnjUt46oiQHJc3iZRRicH3beqT5PdoaNVckWZKU+q0=",
+            "tlsClientCiphersSha1": "WUS9+h7TjVkF9aEouGuCEMjGQGA=",
+            "tlsClientExtensionsSha1": "SLAeNqtIvQ/Gz2f6iDgxD353pzM=",
+            "tlsClientExtensionsSha1Le": "cRBm2eSfbDXx6t6wJObcRw8jrk0=",
+            "tlsExportedAuthenticator": {
+              "clientHandshake": "c74843acb26efa689390e8561041504617cd4bd747844daac0cf49a3c6b53a36ff62d6323a62333135723f3c7f804103",
+              "serverHandshake": "3ebb8ad1082a02f9a6e9072dfdb0f09f081518d6552883382da94219ffa5acb525ecacb33071c8b4653dd453ad01f82e",
+              "clientFinished": "3d516ac0bb4cc1178b62299373c6029748294417a468067a244a9013503ce7fde1d39bf8dd71b896fb43314e8fda6435",
+              "serverFinished": "b5dd20f68350ab41ee47ce836acc4c003880abf84f6d0e431ee042a0118a11c81f6638c55a4c2859721c00fc49aef09e"
+            },
+            "tlsClientHelloLength": "503",
+            "tlsClientAuth": {
+              "certPresented": "0",
+              "certVerified": "NONE",
+              "certRevoked": "0",
+              "certIssuerDN": "",
+              "certSubjectDN": "",
+              "certIssuerDNRFC2253": "",
+              "certSubjectDNRFC2253": "",
+              "certIssuerDNLegacy": "",
+              "certSubjectDNLegacy": "",
+              "certSerial": "",
+              "certIssuerSerial": "",
+              "certSKI": "",
+              "certIssuerSKI": "",
+              "certFingerprintSHA1": "",
+              "certFingerprintSHA256": "",
+              "certNotBefore": "",
+              "certNotAfter": ""
+            },
+            "verifiedBotCategory": "",
+            "edgeRequestKeepAliveStatus": 1,
+            "clientTcpRtt": 10,
+            "asn": 396982
+          },
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "headers": {
+            "accept-encoding": "gzip, br",
+            "cf-connecting-ip": "35.237.4.214",
+            "cf-ipcountry": "US",
+            "cf-ray": "9c365bdbfe6b7bbd",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "connection": "Keep-Alive",
+            "content-length": "2992",
+            "content-type": "application/json",
+            "host": "discordbot.veinmodding.workers.dev",
+            "user-agent": "Discord-Interactions/1.0 (+https://discord.com)",
+            "x-forwarded-proto": "https",
+            "x-real-ip": "35.237.4.214",
+            "x-signature-ed25519": "5c3b895f30d1b7280cd77e5cd6a11fe440f42c042afe95976f82ae4eee025d60abce4795c3238f2309ac40fc68625416e5440bd181ebb4cbb133eb2d3038c608",
+            "x-signature-timestamp": "1769329304"
+          },
+          "path": "/"
+        },
+        "rayId": "9c365bdbfe6b7bbd",
+        "response": {
+          "status": 200
+        }
+      },
+      "diagnosticsChannelEvents": [],
+      "truncated": false,
+      "scriptName": "discordbot",
+      "outcome": "ok",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365bdbfe6b7bbd",
+      "cpuTimeMs": 5,
+      "wallTimeMs": 586
+    },
+    "$metadata": {
+      "id": "01KFT3X9C318X9R4NKSRSWQG22",
+      "requestId": "9c365bdbfe6b7bbd",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker-event",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Success! Message updated."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:53.554Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VQ5J8ETRWB5WE8WZRGGN",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Success! Message updated.",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Success! Message updated."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5NzgwMjg2OTE0NTYwMDpoWDFyR0phcWZGNWZBQTI1TnVKbGN1dnhhS0IxU1dsZ0RHR3JnSmdrTFN5ckdKRU1yOFBVVkg3SUZJWXhTTkYwTThKU1g1WGtTOHFvcjc2d0NNWkVhNEZhNFlDUFhEdTQwZ1NHNVNQaUpyRDR6clkwemx5YzFLUzJSNTF0eG4zWQ/messages/@original"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:53.307Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VPXVN28YQ8VGXGD2Y0VA",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5NzgwMjg2OTE0NTYwMDpoWDFyR0phcWZGNWZBQTI1TnVKbGN1dnhhS0IxU1dsZ0RHR3JnSmdrTFN5ckdKRU1yOFBVVkg3SUZJWXhTTkYwTThKU1g1WGtTOHFvcjc2d0NNWkVhNEZhNFlDUFhEdTQwZ1NHNVNQaUpyRDR6clkwemx5YzFLUzJSNTF0eG4zWQ/messages/@original",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5NzgwMjg2OTE0NTYwMDpoWDFyR0phcWZGNWZBQTI1TnVKbGN1dnhhS0IxU1dsZ0RHR3JnSmdrTFN5ckdKRU1yOFBVVkg3SUZJWXhTTkYwTThKU1g1WGtTOHFvcjc2d0NNWkVhNEZhNFlDUFhEdTQwZ1NHNVNQaUpyRDR6clkwemx5YzFLUzJSNTF0eG4zWQ/messages/@original"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] AI answered. Length: 437"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:53.307Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VPXVN28YQ8VGXGD2Y0V9",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] AI answered. Length: 437",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] AI answered. Length: 437"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[AI] Context length: 6056"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:52.740Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VPC4X5A6Y98T7XN9K03R",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[AI] Context length: 6056",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[AI] Context length: 6056"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Handing off to AI..."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:52.740Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VPC4X5A6Y98T7XN9K03Q",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Handing off to AI...",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Handing off to AI..."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Question: Hey how would one disable the save and auto save mechanic where you need cigarettes or the survival pack"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:52.740Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VPC4X5A6Y98T7XN9K03P",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Question: Hey how would one disable the save and auto save mechanic where you need cigarettes or the survival pack",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Question: Hey how would one disable the save and auto save mechanic where you need cigarettes or the survival pack"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:52.740Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VPC4X5A6Y98T7XN9K03N",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Command: /ask (1464882498885652595)",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Interaction Type: 2"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:52.740Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VPC4X5A6Y98T7XN9K03M",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Interaction Type: 2",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Interaction Type: 2"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:52.740Z",
+    "$workers": {
+      "event": {
+        "request": {
+          "cf": {
+            "requestHeaderNames": {},
+            "isEUCountry": false,
+            "httpProtocol": "HTTP/1.1",
+            "requestPriority": "",
+            "colo": "ATL",
+            "asOrganization": "Google LLC",
+            "country": "US",
+            "city": "North Charleston",
+            "continent": "NA",
+            "region": "South Carolina",
+            "regionCode": "SC",
+            "timezone": "America/New_York",
+            "longitude": "-79.97481",
+            "latitude": "32.85462",
+            "postalCode": "29415",
+            "metroCode": "519",
+            "tlsVersion": "TLSv1.3",
+            "tlsCipher": "AEAD-AES256-GCM-SHA384",
+            "tlsClientRandom": "bP7apcCBP5DrcRc7KZdtvbbOf/ahgyl72995PzVlt/8=",
+            "tlsClientCiphersSha1": "WUS9+h7TjVkF9aEouGuCEMjGQGA=",
+            "tlsClientExtensionsSha1": "wNAeYUHwpxKI2TvGd8vZyn4noLQ=",
+            "tlsClientExtensionsSha1Le": "VVr1q9dN/FMUj/ph85XvFF+a5d8=",
+            "tlsExportedAuthenticator": {
+              "clientHandshake": "e9501ac20d79669c275675c173eadc4d48a786f4ded4f99bac690301c3d16dbe8c67a4dbd2246b0802b3bedb951dc397",
+              "serverHandshake": "beaf076ebce2a3d1a18b14f813cfc31b32a14ed2d0ffe6fd0914f59c9969433c30c8d355e75771afb8089c2f5502141a",
+              "clientFinished": "fd1c015eb12829edfc392c31b438751980a1a084167550af3bb299633fdbbb69f2f4f99d3f02c5a239b8096f57736891",
+              "serverFinished": "8f468ffa876522dba8ee1aabc138ade92bd21d83965b90c3478727e0e46a90a1f8cafdc1f391b26bf914b0fcd38375d2"
+            },
+            "tlsClientHelloLength": "252",
+            "tlsClientAuth": {
+              "certPresented": "0",
+              "certVerified": "NONE",
+              "certRevoked": "0",
+              "certIssuerDN": "",
+              "certSubjectDN": "",
+              "certIssuerDNRFC2253": "",
+              "certSubjectDNRFC2253": "",
+              "certIssuerDNLegacy": "",
+              "certSubjectDNLegacy": "",
+              "certSerial": "",
+              "certIssuerSerial": "",
+              "certSKI": "",
+              "certIssuerSKI": "",
+              "certFingerprintSHA1": "",
+              "certFingerprintSHA256": "",
+              "certNotBefore": "",
+              "certNotAfter": ""
+            },
+            "verifiedBotCategory": "",
+            "edgeRequestKeepAliveStatus": 1,
+            "clientTcpRtt": 15,
+            "asn": 396982
+          },
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "headers": {
+            "accept-encoding": "gzip, br",
+            "cf-connecting-ip": "35.227.62.178",
+            "cf-ipcountry": "US",
+            "cf-ray": "9c365a959d5ab04b",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "connection": "Keep-Alive",
+            "content-length": "3385",
+            "content-type": "application/json",
+            "host": "discordbot.veinmodding.workers.dev",
+            "user-agent": "Discord-Interactions/1.0 (+https://discord.com)",
+            "x-forwarded-proto": "https",
+            "x-real-ip": "35.227.62.178",
+            "x-signature-ed25519": "284209c3e193fe66ffe93d05e4b1303bd9d49a8dba85c5202a29c03f622ef43276c4018cc38bbc1c7bb1bac25032b349b91bbff989de71a43a92f26a4108620a",
+            "x-signature-timestamp": "1769329252"
+          },
+          "path": "/"
+        },
+        "rayId": "9c365a959d5ab04b",
+        "response": {
+          "status": 200
+        }
+      },
+      "diagnosticsChannelEvents": [],
+      "truncated": false,
+      "scriptName": "discordbot",
+      "outcome": "ok",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a959d5ab04b",
+      "cpuTimeMs": 1,
+      "wallTimeMs": 814
+    },
+    "$metadata": {
+      "id": "01KFT3VPC4X5A6Y98T7XN9K03K",
+      "requestId": "9c365a959d5ab04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker-event",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Success! Message updated."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:42.571Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VCEBQZNK91BTTX6DKEXJ",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Success! Message updated.",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Success! Message updated."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5Nzc1NzI4OTUxMjk5MjpSaVlSallWNnNLS1NsT2xwUFJmcGVSTHc4OUM0eFEyeVhqQTlsWmVRWTJpNW1TUGVnYldMU0JFQ0NaV0I0VkZDbUV5WU5xalp3RDVzb25IRDgyZmV5cmRxTk9zNnRLSmR0YVp0VUFZR2pCRFhDeVN5TXRzUkMxdXZ4TjhyZzFZSw/messages/@original"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:42.398Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VC8Y45SXPRNRET1GB8VW",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5Nzc1NzI4OTUxMjk5MjpSaVlSallWNnNLS1NsT2xwUFJmcGVSTHc4OUM0eFEyeVhqQTlsWmVRWTJpNW1TUGVnYldMU0JFQ0NaV0I0VkZDbUV5WU5xalp3RDVzb25IRDgyZmV5cmRxTk9zNnRLSmR0YVp0VUFZR2pCRFhDeVN5TXRzUkMxdXZ4TjhyZzFZSw/messages/@original",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Patching Discord: https://discord.com/api/v10/webhooks/1226374898289741914/aW50ZXJhY3Rpb246MTQ2NDg5Nzc1NzI4OTUxMjk5MjpSaVlSallWNnNLS1NsT2xwUFJmcGVSTHc4OUM0eFEyeVhqQTlsWmVRWTJpNW1TUGVnYldMU0JFQ0NaV0I0VkZDbUV5WU5xalp3RDVzb25IRDgyZmV5cmRxTk9zNnRLSmR0YVp0VUFZR2pCRFhDeVN5TXRzUkMxdXZ4TjhyZzFZSw/messages/@original"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] AI answered. Length: 397"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:42.398Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VC8Y45SXPRNRET1GB8VV",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] AI answered. Length: 397",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] AI answered. Length: 397"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[AI] Context length: 5250"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:41.940Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VBTMAQXVHMZTWGY4X1PP",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[AI] Context length: 5250",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[AI] Context length: 5250"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Handing off to AI..."
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:41.940Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VBTMAQXVHMZTWGY4X1PN",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Handing off to AI...",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Handing off to AI..."
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[ASK] Question: How do I save"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:41.940Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VBTMAQXVHMZTWGY4X1PM",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[ASK] Question: How do I save",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[ASK] Question: How do I save"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:41.940Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VBTMAQXVHMZTWGY4X1PK",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Command: /ask (1464882498885652595)",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Command: /ask (1464882498885652595)"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "message": "[CORE] Interaction Type: 2"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:41.940Z",
+    "$workers": {
+      "truncated": false,
+      "event": {
+        "request": {
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "path": "/"
+        }
+      },
+      "outcome": "ok",
+      "scriptName": "discordbot",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b"
+    },
+    "$metadata": {
+      "id": "01KFT3VBTMAQXVHMZTWGY4X1PJ",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "message": "[CORE] Interaction Type: 2",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "[CORE] Interaction Type: 2"
+    },
+    "links": []
+  },
+  {
+    "source": {
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "dataset": "cloudflare-workers",
+    "timestamp": "2026-01-25T08:20:41.940Z",
+    "$workers": {
+      "event": {
+        "request": {
+          "cf": {
+            "requestHeaderNames": {},
+            "isEUCountry": false,
+            "httpProtocol": "HTTP/1.1",
+            "requestPriority": "",
+            "colo": "ATL",
+            "asOrganization": "Google LLC",
+            "country": "US",
+            "city": "North Charleston",
+            "continent": "NA",
+            "region": "South Carolina",
+            "regionCode": "SC",
+            "timezone": "America/New_York",
+            "longitude": "-79.97481",
+            "latitude": "32.85462",
+            "postalCode": "29415",
+            "metroCode": "519",
+            "tlsVersion": "TLSv1.3",
+            "tlsCipher": "AEAD-AES256-GCM-SHA384",
+            "tlsClientRandom": "bP7apcCBP5DrcRc7KZdtvbbOf/ahgyl72995PzVlt/8=",
+            "tlsClientCiphersSha1": "WUS9+h7TjVkF9aEouGuCEMjGQGA=",
+            "tlsClientExtensionsSha1": "wNAeYUHwpxKI2TvGd8vZyn4noLQ=",
+            "tlsClientExtensionsSha1Le": "VVr1q9dN/FMUj/ph85XvFF+a5d8=",
+            "tlsExportedAuthenticator": {
+              "clientHandshake": "e9501ac20d79669c275675c173eadc4d48a786f4ded4f99bac690301c3d16dbe8c67a4dbd2246b0802b3bedb951dc397",
+              "serverHandshake": "beaf076ebce2a3d1a18b14f813cfc31b32a14ed2d0ffe6fd0914f59c9969433c30c8d355e75771afb8089c2f5502141a",
+              "clientFinished": "fd1c015eb12829edfc392c31b438751980a1a084167550af3bb299633fdbbb69f2f4f99d3f02c5a239b8096f57736891",
+              "serverFinished": "8f468ffa876522dba8ee1aabc138ade92bd21d83965b90c3478727e0e46a90a1f8cafdc1f391b26bf914b0fcd38375d2"
+            },
+            "tlsClientHelloLength": "252",
+            "tlsClientAuth": {
+              "certPresented": "0",
+              "certVerified": "NONE",
+              "certRevoked": "0",
+              "certIssuerDN": "",
+              "certSubjectDN": "",
+              "certIssuerDNRFC2253": "",
+              "certSubjectDNRFC2253": "",
+              "certIssuerDNLegacy": "",
+              "certSubjectDNLegacy": "",
+              "certSerial": "",
+              "certIssuerSerial": "",
+              "certSKI": "",
+              "certIssuerSKI": "",
+              "certFingerprintSHA1": "",
+              "certFingerprintSHA256": "",
+              "certNotBefore": "",
+              "certNotAfter": ""
+            },
+            "verifiedBotCategory": "",
+            "edgeRequestKeepAliveStatus": 1,
+            "clientTcpRtt": 10,
+            "asn": 396982
+          },
+          "url": "https://discordbot.veinmodding.workers.dev/",
+          "method": "POST",
+          "headers": {
+            "accept-encoding": "gzip, br",
+            "cf-connecting-ip": "35.227.62.178",
+            "cf-ipcountry": "US",
+            "cf-ray": "9c365a521acdb04b",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "connection": "Keep-Alive",
+            "content-length": "2997",
+            "content-type": "application/json",
+            "host": "discordbot.veinmodding.workers.dev",
+            "user-agent": "Discord-Interactions/1.0 (+https://discord.com)",
+            "x-forwarded-proto": "https",
+            "x-real-ip": "35.227.62.178",
+            "x-signature-ed25519": "7bc77b8ebf0da9b48f74263e4f8821e13ded5761b01d39993cd3b3dd33f3d4b61e61f6a1e664c562820f8b365a17f2da918706f93eb12fd0baf7078557be3805",
+            "x-signature-timestamp": "1769329241"
+          },
+          "path": "/"
+        },
+        "rayId": "9c365a521acdb04b",
+        "response": {
+          "status": 200
+        }
+      },
+      "diagnosticsChannelEvents": [],
+      "truncated": false,
+      "scriptName": "discordbot",
+      "outcome": "ok",
+      "eventType": "fetch",
+      "executionModel": "stateless",
+      "scriptVersion": {
+        "id": "30cf8146-648c-489f-b7e2-31e9093181ef"
+      },
+      "requestId": "9c365a521acdb04b",
+      "cpuTimeMs": 5,
+      "wallTimeMs": 633
+    },
+    "$metadata": {
+      "id": "01KFT3VBTMAQXVHMZTWGY4X1PH",
+      "requestId": "9c365a521acdb04b",
+      "trigger": "POST /",
+      "service": "discordbot",
+      "level": "info",
+      "message": "POST https://discordbot.veinmodding.workers.dev/",
+      "account": "e1a6c66e29160168e4f726837e6665e3",
+      "type": "cf-worker-event",
+      "fingerprint": "c1c6a2a9528d4b5165bdd9cb0437528e",
+      "origin": "fetch",
+      "messageTemplate": "POST https://discordbot.veinmodding.workers.dev/"
+    },
+    "links": []
+  }
+]

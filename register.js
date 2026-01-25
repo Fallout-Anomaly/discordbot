@@ -6,7 +6,10 @@ import {
   KICK_COMMAND,
   BAN_COMMAND,
   TIMEOUT_COMMAND,
-  CLEAR_COMMAND
+  CLEAR_COMMAND,
+  LOCK_COMMAND,
+  UNLOCK_COMMAND,
+  SETNICK_COMMAND
 } from './src/commands.js';
 import process from 'node:process';
 import dotenv from 'dotenv';
@@ -34,7 +37,10 @@ const commands = [
   KICK_COMMAND,
   BAN_COMMAND,
   TIMEOUT_COMMAND,
-  CLEAR_COMMAND
+  CLEAR_COMMAND,
+  LOCK_COMMAND,
+  UNLOCK_COMMAND,
+  SETNICK_COMMAND
 ];
 
 async function registerGuildCommands() {
