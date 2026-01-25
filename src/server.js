@@ -100,20 +100,38 @@ app.post('/', async (c) => {
 
       case ASK_COMMAND.name: {
         const question = interaction.data.options.find(o => o.name === 'question')?.value;
+        console.log(`[ASK] Question: ${question}`);
 
         // Defer response to allow time for AI generation
         c.executionCtx.waitUntil((async () => {
           try {
+            console.log(`[ASK] Handing off to AI...`);
             const answer = await askAI(question, c.env);
+            console.log(`[ASK] AI answered. Length: ${answer.length}`);
             
-            // Edit the initial deferred message
-            await fetch(`https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`, {
+            const appId = c.env.DISCORD_APP_ID;
+            if (!appId) {
+                console.error("[ASK] FATAL: DISCORD_APP_ID secret is missing.");
+                return;
+            }
+
+            const url = `https://discord.com/api/v10/webhooks/${appId}/${interaction.token}/messages/@original`;
+            console.log(`[ASK] Patching Discord: ${url}`);
+
+            const response = await fetch(url, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ content: answer }),
             });
+
+            if (!response.ok) {
+                const txt = await response.text();
+                console.error(`[ASK] Discord API Error: ${response.status} - ${txt}`);
+            } else {
+                console.log(`[ASK] Success! Message updated.`);
+            }
           } catch (error) {
-            console.error("Worker AI Error:", error);
+            console.error("[ASK] Generic Async Error:", error);
           }
         })());
 
