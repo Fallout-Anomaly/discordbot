@@ -20,7 +20,8 @@ module.exports = new Event({
         // Ignore if content is the same (usually just an embed update)
         if (oldMessage.content === newMessage.content) return;
 
-        const logChannelId = process.env.LOGS_CHANNEL_ID || '1241954675457134593';
+        // HARDCODED to ensure correct channel
+        const logChannelId = '1241954675457134593';
         if (!logChannelId) return;
         
         const logChannel = client.channels.cache.get(logChannelId);
