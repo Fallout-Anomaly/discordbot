@@ -90,12 +90,15 @@ class CommandsHandler {
         const rest = new REST(restOptions ? restOptions : { version: '10' }).setToken(this.client.token);
 
         try {
+            // We register the commands found in our local codebase.
+            // CAUTION: Since a Cloudflare Worker is active, these Slash Commands will NOT work unless the Worker proxies them.
+            // However, we run this to ensure any STALE commands (like the broken /addrole) are removed if we deleted the file.
             if (development?.enabled) {
                 await rest.put(Routes.applicationGuildCommands(this.client.user.id, development.guildId), { body: this.client.rest_application_commands_array });
-                success(`Successfully registered ${this.client.rest_application_commands_array.length} application commands to the development guild.`);
+                success(`Successfully updated ${this.client.rest_application_commands_array.length} local application commands.`);
             } else {
                 await rest.put(Routes.applicationCommands(this.client.user.id), { body: this.client.rest_application_commands_array });
-                success(`Successfully registered ${this.client.rest_application_commands_array.length} application commands globally.`);
+                success(`Successfully updated ${this.client.rest_application_commands_array.length} global application commands.`);
             }
         } catch (err) {
             error('Failed to register application commands: ' + err.message);
