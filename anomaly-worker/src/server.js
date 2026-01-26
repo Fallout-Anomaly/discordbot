@@ -22,7 +22,7 @@ import {
   SERVERINFO_COMMAND,
   BANNER_COMMAND,
   BF_COMMAND,
-  SETUP_VERIFY_COMMAND
+  SETUP_VERIFY_CMD
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -141,7 +141,8 @@ app.post('/', async (c) => {
 
     // Logging Helper
     const logAction = async (title, color, details) => {
-        const channelId = c.env.LOGS_CHANNEL_ID || c.env.REPORT_CHANNEL_ID;
+        // Force LOGS_CHANNEL_ID with hardcoded fallback to 1241954675457134593
+        const channelId = c.env.LOGS_CHANNEL_ID || '1241954675457134593';
         if (!channelId) return;
 
         try {

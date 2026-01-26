@@ -213,3 +213,9 @@ export const BF_COMMAND = {
     }
   ]
 };
+
+export const SETUP_VERIFY_CMD = {
+  name: 'setup-verify',
+  description: 'Setup the verification message with a button',
+  default_member_permissions: "8", // Administrator
+};
