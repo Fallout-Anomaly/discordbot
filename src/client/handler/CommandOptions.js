@@ -15,9 +15,12 @@ const message_commands_cooldown = new Map();
  */
 const handleApplicationCommandOptions = async (interaction, options, command) => {
     if (options.botOwner) {
-        if (interaction.user.id !== config.users.ownerId) {
+        const isOwner = interaction.user.id === config.users.ownerId;
+        const hasStaffRole = process.env.STAFF_ROLE_ID && interaction.member?.roles?.cache.has(process.env.STAFF_ROLE_ID);
+
+        if (!isOwner && !hasStaffRole) {
             await interaction.reply({
-                content: config.messages.NOT_BOT_OWNER,
+                content: '❌ You do not have permission to run this command (Owner or Staff role required).',
                 ephemeral: true
             });
 
