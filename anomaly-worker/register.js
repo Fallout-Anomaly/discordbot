@@ -16,7 +16,7 @@ import {
   BANNER_COMMAND,
   BF_COMMAND,
   SETUP_VERIFY_CMD,
-  ADDROLE_COMMAND
+
 } from './src/commands.js';
 import process from 'node:process';
 import dotenv from 'dotenv';
@@ -54,7 +54,7 @@ const commands = [
   BANNER_COMMAND,
   BF_COMMAND,
   SETUP_VERIFY_CMD,
-  ADDROLE_COMMAND
+
 ];
 
 async function registerCommands() {

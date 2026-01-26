@@ -18,7 +18,8 @@ class DiscordBot extends Client {
             selects: new Collection(),
             modals: new Collection(),
             autocomplete: new Collection()
-        }
+        },
+        cooldowns: new Collection()
     }
     rest_application_commands_array = [];
     login_attempts = 0;

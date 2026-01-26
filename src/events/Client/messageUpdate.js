@@ -14,26 +14,30 @@ module.exports = new Event({
                 await oldMessage.fetch();
             } catch (e) {
                 // If old message isn't fetchable, we can't show the original content
+                // console.debug(`[LOGS] Could not fetch partial old message ${oldMessage.id}`);
             }
         }
 
         // Ignore if content is the same (usually just an embed update)
         if (oldMessage.content === newMessage.content) return;
 
-        // HARDCODED to ensure correct channel
-        const logChannelId = '1241954675457134593';
+        // Use Env Var
+        const logChannelId = process.env.LOGS_CHANNEL_ID;
         if (!logChannelId) return;
         
         const logChannel = client.channels.cache.get(logChannelId);
         if (!logChannel) return;
+
+        const oldContent = oldMessage.content || '*[Unknown/Partial]*';
+        const newContent = newMessage.content || '*[No Content]*';
 
         const embed = new EmbedBuilder()
             .setTitle('✏️ Message Edited')
             .setColor('#f1c40f') // Yellow
             .setAuthor({ name: newMessage.author.tag, iconURL: newMessage.author.displayAvatarURL() })
             .addFields(
-                { name: 'Start', value: oldMessage.content.substring(0, 1024) || '*[No content]*' },
-                { name: 'End', value: newMessage.content.substring(0, 1024) || '*[No content]*' },
+                { name: 'Start', value: oldContent.substring(0, 1024) },
+                { name: 'End', value: newContent.substring(0, 1024) },
                 { name: 'Channel', value: `<#${newMessage.channel.id}>` },
                 { name: 'Jump to Message', value: `[Click Here](${newMessage.url})` }
             )

@@ -1,3 +1,4 @@
+const { Collection } = require('discord.js');
 const { info, error } = require("../../utils/Console");
 const Event = require("../../structure/Event");
 const config = require("../../config");
@@ -17,6 +18,35 @@ module.exports = new Event({
             return;
         }
 
+        // Developer Check
+        if (command.developer && !config.users.developers.includes(interaction.user.id)) {
+            return interaction.reply({ content: config.messages.NOT_BOT_DEVELOPER, ephemeral: true });
+        }
+
+        // Cooldown Check
+        const { cooldowns } = client.collection;
+        if (!cooldowns.has(command.name)) {
+            cooldowns.set(command.name, new Collection());
+        }
+
+        const now = Date.now();
+        const timestamps = cooldowns.get(command.name);
+        // Default cooldown 3 seconds if not set
+        const cooldownAmount = (command.cooldown || 3) * 1000;
+
+        if (timestamps.has(interaction.user.id)) {
+            const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
+
+            if (now < expirationTime) {
+                const expiredTimestamp = Math.round(expirationTime / 1000);
+                const message = config.messages.GUILD_COOLDOWN.replace('%cooldown%', `<t:${expiredTimestamp}:R>`);
+                return interaction.reply({ content: message, ephemeral: true }).catch(() => {});
+            }
+        }
+
+        timestamps.set(interaction.user.id, now);
+        setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+
         try {
             if (command.options) {
                 const commandContinue = await handleApplicationCommandOptions(interaction, command.options, command.command);
@@ -28,11 +58,11 @@ module.exports = new Event({
             error(err);
             const content = 'There was an error while executing this command!';
             if (interaction.replied) {
-                await interaction.followUp({ content, ephemeral: true }).catch(() => {});
+                await interaction.followUp({ content, ephemeral: true }).catch(e => error(e));
             } else if (interaction.deferred) {
-                await interaction.editReply({ content }).catch(() => {});
+                await interaction.editReply({ content }).catch(e => error(e));
             } else {
-                await interaction.reply({ content, ephemeral: true }).catch(() => {});
+                await interaction.reply({ content, ephemeral: true }).catch(e => error(e));
             }
         }
     }
