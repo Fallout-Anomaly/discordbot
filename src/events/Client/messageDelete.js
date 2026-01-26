@@ -5,24 +5,25 @@ module.exports = new Event({
     event: Events.MessageDelete,
     once: false,
     run: async (client, message) => {
-        // Handle partials so we can log content for uncached messages
-        if (message.partial) {
-            try {
-                await message.fetch();
-            } catch (e) {
-                // If message isn't fetchable (e.g. was deleted even before fetch), we log as much as we can.
-            }
-        }
-
-        // Ignore bots
-        if (message.author?.bot) return;
-
-        // HARDCODED to ensure correct channel
-        const logChannelId = '1241954675457134593';
+        // Use Env Var
+        const logChannelId = process.env.LOGS_CHANNEL_ID;
         if (!logChannelId) return;
 
         const logChannel = client.channels.cache.get(logChannelId);
         if (!logChannel) return;
+
+        // Handle partials
+        if (message.partial) {
+            try {
+                await message.fetch();
+            } catch (e) {
+               // Log debug if needed, but acceptable to fail if message is gone
+               // console.debug(`[LOGS] Could not fetch partial message ${message.id}:`, e.message);
+            }
+        }
+        
+        // Ignore bots
+        if (message.author?.bot) return;
 
         let content = message.content;
         if (!content && message.attachments && message.attachments.size > 0) {
@@ -31,32 +32,39 @@ module.exports = new Event({
             content = '*[Unknown Content]*';
         }
 
-        // Wait a moment for Discord to populate audit logs
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        // Try to identify the executor (requires GuildModeration intent/permission)
         let executor = 'Unknown (User or Bot)';
-        try {
-            const fetchedLogs = await message.guild.fetchAuditLogs({
-                limit: 5,
-                type: AuditLogEvent.MessageDelete,
-            });
-            
-            // Find the most relevant log entry within a reasonable timeframe
-            const deletionLog = fetchedLogs.entries.find(entry => 
-                entry.target.id === message.author.id && 
-                Math.abs(entry.createdTimestamp - Date.now()) < 10000
-            );
+        
+        // Check permissions before fetching audit logs
+        if (message.guild.members.me.permissions.has('ViewAuditLog')) {
+             let deletionLog;
+             // Retry mechanism: Try up to 3 times to find the log
+             for (let i = 0; i < 3; i++) {
+                 try {
+                     const fetchedLogs = await message.guild.fetchAuditLogs({
+                         limit: 1,
+                         type: AuditLogEvent.MessageDelete,
+                     });
+                     const log = fetchedLogs.entries.first();
+                     // Match criteria: Target is author, created recently (within 10s)
+                     if (log && log.target.id === message.author.id && 
+                         (Date.now() - log.createdTimestamp) < 10000) {
+                         deletionLog = log;
+                         break;
+                     }
+                 } catch (e) {
+                     // Ignore transient errors
+                 }
+                 // Wait 500ms before retry
+                 await new Promise(resolve => setTimeout(resolve, 500));
+             }
 
-            if (deletionLog) {
-                const { executor: logExecutor } = deletionLog;
-                executor = `${logExecutor.tag} (${logExecutor.id})`;
-            } else {
-                executor = `${message.author.tag} (Self-Delete/Manual)`;
-            }
-        } catch (e) {
-            // Logs likely failed due to permissions
-            executor = `${message.author?.tag || 'Unknown User'} (Self-Delete or Missing Perms)`;
+             if (deletionLog) {
+                 executor = `${deletionLog.executor.tag} (${deletionLog.executor.id})`;
+             } else {
+                 executor = `${message.author.tag} (Self-Delete or Log Not Found)`;
+             }
+        } else {
+             executor = `${message.author.tag} (Self-Delete / No Log Perms)`;
         }
 
         const embed = new EmbedBuilder()

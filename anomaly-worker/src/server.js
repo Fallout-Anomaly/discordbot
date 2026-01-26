@@ -22,8 +22,7 @@ import {
   SERVERINFO_COMMAND,
   BANNER_COMMAND,
   BF_COMMAND,
-  SETUP_VERIFY_CMD,
-  ADDROLE_COMMAND
+  SETUP_VERIFY_CMD
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -884,25 +883,10 @@ app.post('/', async (c) => {
       return c.json({
         type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
       });
-
-    if (name === ADDROLE_COMMAND.name) {
-        return c.json({
-            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-            data: { 
-                content: '⚠️ **Command Moved:** Cloudflare Workers cannot handle the duration of this task.\n👉 **Please use the Message Command version:**\n\n`!addrole <role_id_or_mention>`\n\n(Run this in a channel the bot can see using the ! prefix)', 
-                flags: InteractionResponseFlags.EPHEMERAL 
-            }
-        });
     }
-
-
-
-
   }
 
   return c.text('Unknown type', 400);
 });
-
-
 
 export default app;

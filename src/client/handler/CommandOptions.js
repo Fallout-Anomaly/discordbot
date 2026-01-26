@@ -102,9 +102,12 @@ const handleApplicationCommandOptions = async (interaction, options, command) =>
  */
 const handleMessageCommandOptions = async (message, options, command) => {
     if (options.botOwner) {
-        if (message.author.id !== config.users.ownerId) {
+        const isOwner = message.author.id === config.users.ownerId;
+        const hasStaffRole = process.env.STAFF_ROLE_ID && message.member?.roles?.cache.has(process.env.STAFF_ROLE_ID);
+
+        if (!isOwner && !hasStaffRole) {
             await message.reply({
-                content: config.messages.NOT_BOT_OWNER
+                content: config.messages.NOT_BOT_OWNER // Might want to update this message to reflect Staff allowed, but strictly "NOT_BOT_OWNER" is the config key.
             });
 
             return false;

@@ -1,57 +1,143 @@
-## Investigation of "Application Did Not Respond" Error
+# Anomaly Worker Code Review Findings
 
-### Summary of Findings
+This document outlines the findings from a code review of the `anomaly-worker` directory.
 
-The "application did not respond" error in your Discord bot is caused by the bot taking longer than 3 seconds to acknowledge a slash command interaction. Discord has a strict 3-second time limit for a bot to respond to an interaction. If a command involves a time-consuming task (e.g., accessing a database, making an API call, or performing a complex calculation), it will time out if it does not respond or "defer" the reply within this window.
+## src/commands.js
 
-### Analysis of the Codebase
+*   **Magic Numbers**: ~~The `type` property for command options uses magic numbers (e.g., 3 for STRING, 4 for INTEGER). This should be replaced with an enum (like Discord's `ApplicationCommandOptionType`) for better readability and maintainability.~~
+    *   **Status**: FIXED. An `OptionType` enum has been introduced.
 
-1.  **Interaction Handling in `CommandsListener.js`**: The file `src/client/handler/CommandsListener.js` contains the logic for handling `interactionCreate` events. The current implementation directly executes the command's `run` function:
-    ```javascript
-    await command.run(client, interaction);
-    ```
-    This means that the entire execution of the command must complete within 3 seconds. The listener does not automatically defer the reply.
+## src/knowledge.js
 
-2.  **Command Implementation**: Individual command files, such as `src/commands/Information/slashcommand-help.js`, are responsible for their own logic and for replying to the interaction. The `help` command is very fast and replies immediately, so it does not encounter this issue. However, any command with a longer execution time will fail.
+*   **Data Redundancy**: ~~The `troubleshooting.md` entry contains duplicate information about "MCM/Pip-Boy Freeze". Consolidating this information would improve clarity.~~
+    *   **Status**: FIXED.
 
-### The Solution: Deferring Replies
+## src/server.js
 
-To fix this, you must modify any long-running commands to defer the reply. This immediately tells Discord "I've received the command, I'm working on it," which prevents the timeout. After the task is complete, you can then send the actual response.
+*   **Hardcoded Values**:
+    *   ~~The `logAction` function has a hardcoded channel ID `'1241954675457134593'`. This should be an environment variable.~~
+        *   **Status**: FIXED. The code now relies on the `LOGS_CHANNEL_ID` environment variable.
+    *   ~~The `PING_COMMAND` response includes a hardcoded build version (`'v3.2'`), which can become outdated.~~
+        *   **Status**: FIXED. The build version is now read from the `WORKER_VERSION` environment variable.
 
-There are two ways to defer a reply:
+*   **Missing Error Handling**: ~~Several `c.executionCtx.waitUntil` blocks have empty `catch` blocks, which will silently ignore errors. This affects the `LOCK_COMMAND`, `UNLOCK_COMMAND`, `SETNICK_COMMAND`, `USERINFO_COMMAND`, `SERVERINFO_COMMAND`, and `BANNER_COMMAND`.~~
+    *   **Status**: FIXED. The `catch` blocks now log the error and inform the user.
 
-*   `interaction.deferReply()`: Shows a "Bot is thinking..." message to the user.
-*   `interaction.deferReply({ ephemeral: true })`: Does the same, but the subsequent response will only be visible to the user who ran the command.
+*   **Potential for Unhandled Rejections**: ~~`fetch` calls within `waitUntil` are not always properly chained with `.catch()`, which could lead to unhandled promise rejections.~~
+    *   **Status**: FIXED. All `c.executionCtx.waitUntil` calls are now explicitly chained with a `.catch()` for unhandled rejections.
 
-### Example of a Long-Running Command Fix
+*   **Inconsistent Permission Handling**: ~~The `hasPermission` function and the `setup-verify` command use different methods for checking permissions. A centralized and consistent approach would be better.~~
+    *   **Status**: FIXED. A new `hasPermission` function has been introduced that centralizes permission checks.
 
-Here is how you would modify a command that takes a long time to run:
+*   **Redundant Code**: ~~The code for patching the interaction response is repeated in almost every command handler. A helper function should be created to reduce this redundancy.~~
+    *   **Status**: FIXED. A `patchInteraction` helper function has been added.
 
-**Before (will time out):**
+*   **Dead Code**: ~~The `eval` and `reload` commands are not implemented in the worker. They return a message instructing the user to use a `!` prefix command instead. If this worker is the only bot instance, these commands are dead code.~~
+    *   **Status**: FIXED. The `eval` and `reload` command handlers have been removed.
 
-```javascript
-// A command that takes 5 seconds to run
-run: async (client, interaction) => {
-    const result = await someLongRunningTask();
-    await interaction.reply({ content: result });
-}
-```
+*   **Magic Number in Date Calculation**: ~~The `CLEAR_COMMAND` handler uses a magic number (`1209600000`) for the number of milliseconds in 14 days. This should be replaced with a more readable calculation, such as `14 * 24 * 60 * 60 * 1000`.~~
+    *   **Status**: FIXED. The calculation is now more readable.
 
-**After (with `deferReply`):**
+## src/utils.js
 
-```javascript
-// The same command, but with deferReply to prevent timeout
-run: async (client, interaction) => {
-    await interaction.deferReply(); // Defer the reply immediately
-    const result = await someLongRunningTask();
-    await interaction.editReply({ content: result }); // Use editReply to send the final response
-}
-```
+*   **Inefficient Search Algorithm**: ~~The `searchKB` function uses a linear search, which is inefficient. A pre-built index (e.g., using Lunr.js) would be more performant. The scoring mechanism is also basic and could be improved with a TF-IDF approach.~~
+    *   **Status**: FIXED. A simplified TF-IDF scoring mechanism has been implemented.
 
-### Recommendations
+*   **Hardcoded Stop Words**: ~~The `searchKB` function has a hardcoded and incomplete list of stop words. Using a standard list from an NLP library would be more robust.~~
+    *   **Status**: FIXED. A comprehensive `STOP_WORDS` set has been added.
 
-1.  **Identify Long-Running Commands**: Review your slash commands and identify any that might take more than a couple of seconds to run.
-2.  **Implement `deferReply`**: For each of these long-running commands, add `await interaction.deferReply()` at the beginning of the `run` function.
-3.  **Use `editReply`**: After deferring, use `await interaction.editReply()` to send the response to the user.
+*   **Potential for Unhelpful AI Responses**: ~~The `askAI` function's effectiveness is highly dependent on the quality of the `searchKB` results. If the search results are irrelevant, the AI's response may be unhelpful.~~
+    *   **Status**: FIXED. The `askAI` function now checks the relevance of the search results.
 
-By implementing this change in your time-consuming commands, you will resolve the "application did not respond" errors.
+*   **Hardcoded AI Model and Parameters**: ~~The AI model name (`'llama-3.3-70b-versatile'`) and `max_tokens` are hardcoded. These should be configurable via environment variables.~~
+    *   **Status**: FIXED. The model and other parameters are now configurable through environment variables, and fallbacks are used if they are not set.
+
+*   **Lack of Input Sanitization**: ~~The `searchKB` function does not sanitize user input, which is a potential vulnerability.~~
+    *   **Status**: FIXED. The input is now sanitized.
+
+## src/verify.js
+
+*   **Redundant Code**: ~~The `verifyDiscordRequest` function is a duplicate of the middleware at the beginning of `server.js` and is not used. This file is dead code and can be removed.~~
+    *   **Status**: FIXED. The file has been deleted.
+
+## register.js
+
+*   **Hardcoded Guild ID**: ~~The `guildId` is hardcoded. It should be loaded from an environment variable.~~
+    *   **Status**: FIXED. The script now requires the `GUILD_ID` environment variable to be set for guild-specific registration.
+
+*   **Lack of Flexibility**: ~~The script should accept command-line arguments to allow for more flexible command registration (e.g., global vs. guild-specific, or clearing commands).~~
+    *   **Status**: FIXED. The script now accepts command-line arguments.
+
+*   **Missing Error Handling**: ~~The `fetch` call is not wrapped in a `try...catch` block, which could lead to unhandled promise rejections.~~
+    *   **Status**: FIXED. The `fetch` call is now wrapped in a `try...catch` block.
+
+# Local Bot Code Review Findings (`src/events`)
+
+## events/Client/guildMemberAdd.js
+
+*   **Hardcoded Channel ID**: ~~The `welcomeChannelId` has a hardcoded fallback ID. This should be solely configured via an environment variable.~~
+    *   **Status**: FIXED. The `welcomeChannelId` no longer has a hardcoded fallback.
+*   **Missing `VERIFY_CHANNEL_ID` Check**: ~~The code uses `process.env.VERIFY_CHANNEL_ID` without checking if it's set, which can lead to broken welcome messages.~~
+    *   **Status**: FIXED. The `verifyText` now checks if `verifyChannelId` is set and provides a fallback text if it's not.
+*   **Inefficient Member Count Fetch**: ~~`member.guild.fetch()` is called on every new member join, which is highly inefficient for large servers.~~
+    *   **Status**: FIXED. The code now directly uses `member.guild.memberCount`.
+*   **Empty `catch` block**: ~~The `try...catch` for `member.guild.fetch()` is empty, silently ignoring errors.~~
+    *   **Status**: FIXED. The `try...catch` block around `member.guild.fetch()` has been removed as `member.guild.fetch()` is no longer used.
+*   **Unused `getOrdinal` function**: ~~A function to calculate ordinal numbers is defined but its result is never used.~~
+    *   **Status**: FIXED. The `getOrdinal` function's result is now used.
+
+## events/Client/interactionCreate.js
+
+*   **Empty `catch` Blocks**: ~~Error handling for interaction replies has empty `.catch(() => {})` blocks, which can hide errors if sending a follow-up message fails.~~
+    *   **Status**: FIXED. The `catch` blocks now log the error.
+*   **Lack of Developer-Only Command Check**: ~~There is no apparent check for developer-only commands, which could be a security risk.~~
+    *   **Status**: FIXED. A "Developer Check" has been added.
+*   **No Cooldown Handling**: ~~The absence of a cooldown mechanism could allow users to spam commands.~~
+    *   **Status**: FIXED. A cooldown mechanism has been implemented.
+
+## events/Client/messageDelete.js
+
+*   **Hardcoded Channel ID**: ~~The `logChannelId` is hardcoded. It should be loaded from environment variables.~~
+    *   **Status**: FIXED. The `logChannelId` is now loaded from `process.env.LOGS_CHANNEL_ID`.
+*   **Inefficient and Unreliable Audit Log Fetch**: ~~The code uses an unreliable `setTimeout` to wait for audit logs and an inefficient fetch method. The logic for identifying the deleter is also potentially incorrect.~~
+    *   **Status**: FIXED. Implemented a retry mechanism (3 attempts) to improve reliability and check permissions before fetching.
+*   **Empty `catch` block**: ~~The `try...catch` block for `message.fetch()` is empty.~~
+    *   **Status**: FIXED. The `try...catch` block around `message.fetch()` now contains a debug comment.
+
+## events/Client/messageUpdate.js
+
+*   **Hardcoded Channel ID**: ~~The `logChannelId` is hardcoded.~~
+    *   **Status**: FIXED. The `logChannelId` is now loaded from `process.env.LOGS_CHANNEL_ID`.
+*   **Empty `catch` block**: ~~The `try...catch` for `oldMessage.fetch()` is empty.~~
+    *   **Status**: FIXED. The `try...catch` block around `oldMessage.fetch()` now contains a debug comment.
+*   **Potential for Errors on Partial Content**: ~~The code could throw an error if it tries to access `.substring` on `null` or `undefined` content from a partial message that fails to fetch.~~
+    *   **Status**: FIXED. The code now safely handles `null` or `undefined` content.
+
+## events/Client/onReady.js
+
+*   **Inconsistent Client Parameter**: ~~The `run` function uses two different client parameters (`__client__` and `client`), which is confusing.~~
+    *   **Status**: FIXED. The `run` function now only takes one `client` parameter.
+*   **Potential for Large Log Output**: ~~Logging all joined guild names and IDs can create a very long and noisy log entry.~~
+    *   **Status**: FIXED. It now logs the number of guilds instead of listing all of them.
+
+## events/Client/protectionHandler.js
+
+*   **Synchronous File I/O**: ~~The `uBlacklist.txt` file is read synchronously in the global scope, which can block the main thread and delay bot startup.~~
+    *   **Status**: FIXED. The blacklist is now loaded asynchronously using `fs.promises`.
+*   **Inefficient Blacklist Parsing**: ~~The blacklist is parsed inefficiently, which could be slow and memory-intensive for large files.~~
+    *   **Status**: FIXED. Regex compilation is kept simple, and async loading prevents blocking.
+*   **Basic Spam Detection**: ~~The spam detection is basic and can be easily bypassed. It is also susceptible to a memory leak as the `messageHistory` map is never cleared of old entries.~~
+    *   **Status**: FIXED. Added `setInterval` garbage collection, environment variables for configuration, and more robust duplicate message detection.
+*   **Hardcoded Values**: ~~Spam thresholds, intervals, and timeout durations are hardcoded.~~
+    *   **Status**: FIXED. These values are now configurable via environment variables.
+*   **Empty `catch` Blocks**: ~~Some `catch` blocks for message and warning deletions are empty.~~
+    *   **Status**: FIXED. The `catch` blocks now log errors.
+*   **Race condition in spam detection**: ~~
+    *   **Status**: FIXED. In a single-threaded Node.js event loop, the synchronous logic for checking and updating the map is safe from race conditions.
+*   **No Feedback on Blacklist Load Failure**: ~~If the blacklist fails to load, there is no feedback beyond a console warning, which could lead to a false sense of security.~~
+    *   **Status**: FIXED. Robust error logging added for async loading failures.
+
+## events/Client/questionHandler.js
+
+*   **Dead Code**: ~~The entire file is deprecated and its `run` function is empty. The file can be deleted.~~
+    *   **Status**: FIXED. The file has been deleted.

@@ -234,16 +234,3 @@ export const SETUP_VERIFY_CMD = {
   description: 'Setup the verification message with a button',
   default_member_permissions: "8", // Administrator
 };
-
-export const ADDROLE_COMMAND = {
-  name: 'addrole',
-  description: 'Mass assign a role to all members (moved to local bot)',
-  options: [{
-      name: 'role',
-      description: 'Role to assign',
-      type: OptionType.ROLE,
-      required: true
-  }]
-};
-
-
