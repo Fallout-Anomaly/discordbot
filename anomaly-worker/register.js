@@ -14,7 +14,8 @@ import {
   AVATAR_COMMAND,
   SERVERINFO_COMMAND,
   BANNER_COMMAND,
-  BF_COMMAND
+  BF_COMMAND,
+  SETUP_VERIFY_CMD
 } from './src/commands.js';
 import process from 'node:process';
 import dotenv from 'dotenv';
@@ -50,7 +51,8 @@ const commands = [
   AVATAR_COMMAND,
   SERVERINFO_COMMAND,
   BANNER_COMMAND,
-  BF_COMMAND
+  BF_COMMAND,
+  SETUP_VERIFY_CMD
 ];
 
 async function registerGuildCommands() {
