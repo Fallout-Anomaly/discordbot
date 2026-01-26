@@ -22,8 +22,7 @@ import {
   SERVERINFO_COMMAND,
   BANNER_COMMAND,
   BF_COMMAND,
-  SETUP_VERIFY_CMD,
-  ADDROLE_COMMAND
+  SETUP_VERIFY_CMD
 } from './commands.js';
 import { askAI } from './utils.js';
 
