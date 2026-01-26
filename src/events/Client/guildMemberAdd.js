@@ -5,7 +5,7 @@ module.exports = new Event({
     event: Events.GuildMemberAdd,
     once: false,
     run: async (client, member) => {
-        const welcomeChannelId = process.env.WELCOME_CHANNEL_ID;
+        const welcomeChannelId = process.env.WELCOME_CHANNEL_ID || '1140788645478006814';
         const verifyChannelId = process.env.VERIFY_CHANNEL_ID;
         if (!welcomeChannelId) return;
 
