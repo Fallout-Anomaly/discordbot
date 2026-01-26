@@ -17,7 +17,7 @@ module.exports = new Event({
         // Ignore bots
         if (message.author?.bot) return;
 
-        const logChannelId = process.env.LOGS_CHANNEL_ID;
+        const logChannelId = process.env.LOGS_CHANNEL_ID || '1241954675457134593';
         if (!logChannelId) return;
 
         const logChannel = client.channels.cache.get(logChannelId);
