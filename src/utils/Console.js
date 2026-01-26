@@ -1,56 +1,41 @@
 require('colors');
 const fs = require('fs');
+const path = require('path');
+
+const LOG_FILE = process.env.LOG_FILE_PATH || path.join(process.cwd(), 'terminal.log');
 
 /**
- * @param {string[]} message 
+ * Generic log function to handle both console output and file appending
+ * @param {string} type - Check specific log type (Info, OK, Error, Warning) 
+ * @param {string[]} messages 
+ * @param {string} colorMethod - colors method name
  */
-const info = (...message) => {
+const logOutput = (type, colorMethod, messages) => {
     const time = new Date().toLocaleTimeString();
-    let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
+    const msgString = messages.join(' ');
+    
+    // Console output
+    let logLabel = `[${type}]`;
+    if (colorMethod && logLabel[colorMethod]) {
+        logLabel = logLabel[colorMethod];
+    }
+    
+    // Choose console method
+    const consoleMethod = (type === 'Error') ? console.error : (type === 'Warning') ? console.warn : console.log;
+    consoleMethod(`[${time}]`.gray, logLabel, msgString);
 
-    console.info(`[${time}]`.gray, '[Info]'.blue, message.join(' '));
-    fileContent += [`[${time}]`.gray, '[Info]'.blue, message.join(' ')].join(' ') + '\n';
+    // File output (Async, non-blocking)
+    // Strip ansi codes for file
+    const fileLine = `[${time}] [${type}] ${msgString}\n`;
+    
+    fs.appendFile(LOG_FILE, fileLine, (err) => {
+        if (err) console.error("Failed to write to log file:", err.message);
+    });
+};
 
-    fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
-}
+const info = (...message) => logOutput('Info', 'blue', message);
+const success = (...message) => logOutput('OK', 'green', message);
+const error = (...message) => logOutput('Error', 'red', message);
+const warn = (...message) => logOutput('Warning', 'yellow', message);
 
-/**
- * @param {string[]} message 
- */
-const success = (...message) => {
-    const time = new Date().toLocaleTimeString();
-    let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
-
-    console.info(`[${time}]`.gray, '[OK]'.green, message.join(' '));
-    fileContent += [`[${time}]`.gray, '[OK]'.green, message.join(' ')].join(' ') + '\n';
-
-    fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
-}
-
-/**
- * @param {string[]} message 
- */
-const error = (...message) => {
-    const time = new Date().toLocaleTimeString();
-    let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
-
-    console.error(`[${time}]`.gray, '[Error]'.red, message.join(' '));
-    fileContent += [`[${time}]`.gray, '[Error]'.red, message.join(' ')].join(' ') + '\n';
-
-    fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
-}
-
-/**
- * @param {string[]} message 
- */
-const warn = (...message) => {
-    const time = new Date().toLocaleTimeString();
-    let fileContent = fs.readFileSync('./terminal.log', 'utf-8');
-
-    console.warn(`[${time}]`.gray, '[Warning]'.yellow, message.join(' '));
-    fileContent += [`[${time}]`.gray, '[Warning]'.yellow, message.join(' ')].join(' ') + '\n';
-
-    fs.writeFileSync('./terminal.log', fileContent, 'utf-8');
-}
-
-module.exports = { info, success, error, warn }
+module.exports = { info, success, error, warn };
