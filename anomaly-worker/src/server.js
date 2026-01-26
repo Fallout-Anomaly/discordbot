@@ -22,7 +22,8 @@ import {
   SERVERINFO_COMMAND,
   BANNER_COMMAND,
   BF_COMMAND,
-  SETUP_VERIFY_CMD
+  SETUP_VERIFY_CMD,
+  ADDROLE_COMMAND
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -85,7 +86,7 @@ app.post('/', async (c) => {
               } catch (e) {
                   console.error(`[VERIFY] Error: ${e.message}`);
               }
-          })());
+          })().catch(e => console.error(e)));
 
           return c.json({
               type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -126,7 +127,7 @@ app.post('/', async (c) => {
     if (name === PING_COMMAND.name) {
       return c.json({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: '🏓 Pong! (Build v3.2)' },
+        data: { content: `🏓 Pong! (Build ${c.env.WORKER_VERSION || 'v1.0-unknown'})` },
       });
     }
 
@@ -139,11 +140,27 @@ app.post('/', async (c) => {
       });
     }
 
+    // Helper: Patch Interaction
+    const patchInteraction = async (bodyContent) => {
+        const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
+        const response = await fetch(patchUrl, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyContent),
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to patch interaction: ${response.status} ${await response.text()}`);
+        }
+        return response;
+    };
+
     // Logging Helper
     const logAction = async (title, color, details) => {
-        // Force LOGS_CHANNEL_ID with hardcoded fallback to 1241954675457134593
-        const channelId = c.env.LOGS_CHANNEL_ID || '1241954675457134593';
-        if (!channelId) return;
+        const channelId = c.env.LOGS_CHANNEL_ID;
+        if (!channelId) {
+            console.warn('[LOG] LOGS_CHANNEL_ID not set, skipping log.');
+            return;
+        }
 
         try {
             await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
@@ -168,10 +185,14 @@ app.post('/', async (c) => {
 
     // Permission Helper
     const hasPermission = () => {
+        // Check for Administrator permission (Bit 3) using BigInt
+        const permissions = BigInt(interaction.member.permissions || 0);
+        if ((permissions & 8n) === 8n) return true;
+
         // Check if user has the STAFF_ROLE_ID
-        if (!c.env.STAFF_ROLE_ID) return false; // Fail safe if role not configured
-        if (!interaction.member || !interaction.member.roles) return false; // DM or weird state check
-        return interaction.member.roles.includes(c.env.STAFF_ROLE_ID);
+        if (c.env.STAFF_ROLE_ID && interaction.member.roles.includes(c.env.STAFF_ROLE_ID)) return true;
+
+        return false;
     };
 
     if (name === KICK_COMMAND.name) {
@@ -195,13 +216,9 @@ app.post('/', async (c) => {
           const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
           
           if (res.ok) {
-            await fetch(patchUrl, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+            await patchInteraction({ 
                 content: `✅ Successfully kicked <@${user}>.`,
                 flags: InteractionResponseFlags.EPHEMERAL
-              }),
             });
 
             // We do NOT send ephemeral flag here because the deferred response was ephemeral,
@@ -215,19 +232,15 @@ app.post('/', async (c) => {
           } else {
             const err = await res.text();
             console.error(`[KICK] Failed: ${err}`);
-            await fetch(patchUrl, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+            await patchInteraction({ 
                 content: `❌ Failed to kick <@${user}>. (Likely hierarchy or permission issue)`,
                 flags: InteractionResponseFlags.EPHEMERAL
-              }),
             });
           }
         } catch (e) {
           console.error(`[KICK] Async Error: ${e.message}`);
         }
-      })());
+      })().catch(e => console.error(e)));
 
       return c.json({
         type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
@@ -260,13 +273,9 @@ app.post('/', async (c) => {
           const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
           if (res.ok) {
-            await fetch(patchUrl, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+            await patchInteraction({ 
                 content: `🔨 Successfully banned <@${user}>.`,
                 flags: InteractionResponseFlags.EPHEMERAL
-              }),
             });
 
             await logAction('User Banned', 0xff0000, [
@@ -277,19 +286,15 @@ app.post('/', async (c) => {
           } else {
             const err = await res.text();
             console.error(`[BAN] Failed: ${err}`);
-            await fetch(patchUrl, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+            await patchInteraction({ 
                 content: `❌ Failed to ban <@${user}>. (Likely hierarchy or permission issue)`,
                 flags: InteractionResponseFlags.EPHEMERAL
-              }),
             });
           }
         } catch (e) {
           console.error(`[BAN] Async Error: ${e.message}`);
         }
-      })());
+      })().catch(e => console.error(e)));
 
       return c.json({
         type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
@@ -324,13 +329,9 @@ app.post('/', async (c) => {
           const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
           if (res.ok) {
-            await fetch(patchUrl, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+            await patchInteraction({ 
                 content: `⏳ Timed out <@${user}> for ${duration}m.`,
                 flags: InteractionResponseFlags.EPHEMERAL
-              }),
             });
 
             await logAction('User Timed Out', 0xffff00, [
@@ -342,19 +343,15 @@ app.post('/', async (c) => {
           } else {
             const err = await res.text();
             console.error(`[TIMEOUT] Failed: ${err}`);
-             await fetch(patchUrl, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+             await patchInteraction({ 
                 content: `❌ Failed to timeout <@${user}>. (Likely hierarchy or permission issue)`,
                 flags: InteractionResponseFlags.EPHEMERAL
-              }),
             });
           }
         } catch (e) {
           console.error(`[TIMEOUT] Async Error: ${e.message}`);
         }
-      })());
+      })().catch(e => console.error(e)));
 
       return c.json({
         type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
@@ -383,7 +380,7 @@ app.post('/', async (c) => {
           const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
             // Filter out messages older than 14 days (Discord API Limitation for Bulk Delete)
-            const twoWeeksAgo = Date.now() - 1209600000;
+            const twoWeeksAgo = Date.now() - (14 * 24 * 60 * 60 * 1000); // 14 Days in ms
             const validIds = messages.filter(m => {
                 const timestamp = Number((BigInt(m.id) >> 22n) + 1420070400000n);
                 return timestamp > twoWeeksAgo;
@@ -400,13 +397,9 @@ app.post('/', async (c) => {
               });
 
               if (bulkRes.ok) {
-                await fetch(patchUrl, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
+                await patchInteraction({ 
                     content: `🧹 Successfully cleared ${validIds.length} messages. (${ids.length - validIds.length} were too old to delete)`,
                     flags: InteractionResponseFlags.EPHEMERAL
-                  }),
                 });
 
                 await logAction('Messages Purged', 0x00ff00, [
@@ -415,26 +408,18 @@ app.post('/', async (c) => {
                     { name: 'Amount', value: `${validIds.length}`, inline: true }
                 ]);
               } else {
-              await fetch(patchUrl, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+              await patchInteraction({ 
                   content: `❌ Failed to purge messages. (Likely too old or permission issue)`,
                   flags: InteractionResponseFlags.EPHEMERAL
-                }),
               });
             }
           } else {
-            await fetch(patchUrl, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content: `🧹 No messages found to clear.` }),
-            });
+            await patchInteraction({ content: `🧹 No messages found to clear.` });
           }
         } catch (e) {
           console.error(`[CLEAR] Async Error: ${e.message}`);
         }
-      })());
+      })().catch(e => console.error(e)));
 
       return c.json({
         type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
@@ -472,30 +457,28 @@ app.post('/', async (c) => {
                 const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
                 if (res.ok) {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            content: `🔒 Channel locked. Reason: ${reason}`,
-                            flags: InteractionResponseFlags.EPHEMERAL
-                        }),
+                    await patchInteraction({ 
+                        content: `🔒 Channel locked. Reason: ${reason}`,
+                        flags: InteractionResponseFlags.EPHEMERAL
                     });
                     await logAction('Channel Locked', 0xff0000, [
                         { name: 'Channel', value: `<#${channelId}>`, inline: true },
                         { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true }
                     ]);
                 } else {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            content: `❌ Failed to lock channel.`,
-                            flags: InteractionResponseFlags.EPHEMERAL
-                        }),
+                    await patchInteraction({ 
+                        content: `❌ Failed to lock channel.`,
+                        flags: InteractionResponseFlags.EPHEMERAL
                     });
                 }
-            } catch (e) {}
-        })());
+            } catch (e) {
+                console.error(`[LOCK] Async Error: ${e.message}`);
+                await patchInteraction({ 
+                    content: `❌ An internal error occurred while locking channel.`,
+                    flags: InteractionResponseFlags.EPHEMERAL
+                });
+            }
+        })().catch(e => console.error(e)));
 
         return c.json({
             type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
@@ -523,30 +506,28 @@ app.post('/', async (c) => {
                 const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
                 if (res.ok) {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            content: `🔓 Channel unlocked.`,
-                            flags: InteractionResponseFlags.EPHEMERAL
-                        }),
+                    await patchInteraction({ 
+                        content: `🔓 Channel unlocked.`,
+                        flags: InteractionResponseFlags.EPHEMERAL
                     });
                     await logAction('Channel Unlocked', 0x00ff00, [
                         { name: 'Channel', value: `<#${channelId}>`, inline: true },
                         { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true }
                     ]);
                 } else {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            content: `❌ Failed to unlock channel.`,
-                            flags: InteractionResponseFlags.EPHEMERAL
-                        }),
+                    await patchInteraction({ 
+                        content: `❌ Failed to unlock channel.`,
+                        flags: InteractionResponseFlags.EPHEMERAL
                     });
                 }
-            } catch (e) {}
-        })());
+            } catch (e) {
+                console.error(`[UNLOCK] Async Error: ${e.message}`);
+                await patchInteraction({ 
+                    content: `❌ An internal error occurred while unlocking channel.`,
+                    flags: InteractionResponseFlags.EPHEMERAL
+                });
+            }
+        })().catch(e => console.error(e)));
 
         return c.json({
             type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
@@ -579,13 +560,9 @@ app.post('/', async (c) => {
                 const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
                 if (res.ok) {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            content: `✅ Substituted nickname for <@${user}> to **${nickname}**.`,
-                            flags: InteractionResponseFlags.EPHEMERAL
-                        }),
+                    await patchInteraction({ 
+                        content: `✅ Substituted nickname for <@${user}> to **${nickname}**.`,
+                        flags: InteractionResponseFlags.EPHEMERAL
                     });
                     await logAction('Nickname Changed', 0x3498db, [
                         { name: 'Target', value: `<@${user}>`, inline: true },
@@ -593,17 +570,19 @@ app.post('/', async (c) => {
                         { name: 'Moderator', value: `<@${interaction.member.user.id}>`, inline: true }
                     ]);
                 } else {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            content: `❌ Failed to change nickname. (Likely hierarchy issue)`,
-                            flags: InteractionResponseFlags.EPHEMERAL
-                        }),
+                    await patchInteraction({ 
+                        content: `❌ Failed to change nickname. (Likely hierarchy issue)`,
+                        flags: InteractionResponseFlags.EPHEMERAL
                     });
                 }
-            } catch (e) {}
-        })());
+            } catch (e) {
+                console.error(`[SETNICK] Async Error: ${e.message}`);
+                await patchInteraction({ 
+                    content: `❌ An internal error occurred while changing nickname.`,
+                    flags: InteractionResponseFlags.EPHEMERAL
+                });
+            }
+        })().catch(e => console.error(e)));
 
         return c.json({
             type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
@@ -630,28 +609,28 @@ app.post('/', async (c) => {
 
                 const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
-                await fetch(patchUrl, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        embeds: [{
-                            title: `User Information: ${user.username}`,
-                            thumbnail: { url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` },
-                            color: 0x3498db,
-                            fields: [
-                                { name: 'Tag', value: `${user.username}#${user.discriminator}`, inline: true },
-                                { name: 'ID', value: user.id, inline: true },
-                                { name: 'Created', value: `<t:${creationDate}:R>`, inline: true },
-                                { name: 'Joined', value: `<t:${joinDate}:R>`, inline: true },
-                                { name: 'Roles', value: member.roles.map(r => `<@&${r}>`).join(' ') || 'None' }
-                            ]
-                        }]
-                    }),
+                await patchInteraction({
+                    embeds: [{
+                        title: `User Information: ${user.username}`,
+                        thumbnail: { url: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` },
+                        color: 0x3498db,
+                        fields: [
+                            { name: 'Tag', value: `${user.username}#${user.discriminator}`, inline: true },
+                            { name: 'ID', value: user.id, inline: true },
+                            { name: 'Created', value: `<t:${creationDate}:R>`, inline: true },
+                            { name: 'Joined', value: `<t:${joinDate}:R>`, inline: true },
+                            { name: 'Roles', value: member.roles.map(r => `<@&${r}>`).join(' ') || 'None' }
+                        ]
+                    }]
                 });
             } catch (e) {
-                console.error(e);
+                console.error(`[USERINFO] Async Error: ${e.message}`);
+                await patchInteraction({ 
+                    content: `❌ Failed to fetch user information.`,
+                    flags: InteractionResponseFlags.EPHEMERAL
+                });
             }
-        })());
+        })().catch(e => console.error(e)));
 
         return c.json({ type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE });
     }
@@ -685,25 +664,27 @@ app.post('/', async (c) => {
 
                 const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
-                await fetch(patchUrl, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        embeds: [{
-                            title: `Server Information: ${guild.name}`,
-                            thumbnail: { url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` },
-                            color: 0x3498db,
-                            fields: [
-                                { name: 'Owner ID', value: guild.owner_id, inline: true },
-                                { name: 'Members', value: `${guild.approximate_member_count}`, inline: true },
-                                { name: 'Created', value: `<t:${creationDate}:R>`, inline: true },
-                                { name: 'Boosts', value: `${guild.premium_subscription_count || 0} (Level ${guild.premium_tier})`, inline: true }
-                            ]
-                        }]
-                    }),
+                await patchInteraction({
+                    embeds: [{
+                        title: `Server Information: ${guild.name}`,
+                        thumbnail: { url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` },
+                        color: 0x3498db,
+                        fields: [
+                            { name: 'Owner ID', value: guild.owner_id, inline: true },
+                            { name: 'Members', value: `${guild.approximate_member_count}`, inline: true },
+                            { name: 'Created', value: `<t:${creationDate}:R>`, inline: true },
+                            { name: 'Boosts', value: `${guild.premium_subscription_count || 0} (Level ${guild.premium_tier})`, inline: true }
+                        ]
+                    }]
                 });
-            } catch (e) {}
-        })());
+            } catch (e) {
+                console.error(`[SERVERINFO] Async Error: ${e.message}`);
+                await patchInteraction({ 
+                    content: `❌ Failed to fetch server information.`,
+                    flags: InteractionResponseFlags.EPHEMERAL
+                });
+            }
+        })().catch(e => console.error(e)));
 
         return c.json({ type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE });
     }
@@ -721,26 +702,24 @@ app.post('/', async (c) => {
                 const patchUrl = `https://discord.com/api/v10/webhooks/${c.env.DISCORD_APP_ID}/${interaction.token}/messages/@original`;
 
                 if (user.banner) {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            embeds: [{
-                                title: `${user.username}'s Banner`,
-                                image: { url: `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${user.banner?.startsWith('a_') ? 'gif' : 'png'}?size=1024` },
-                                color: 0x3498db
-                            }]
-                        }),
+                    await patchInteraction({
+                        embeds: [{
+                            title: `${user.username}'s Banner`,
+                            image: { url: `https://cdn.discordapp.com/banners/${user.id}/${user.banner}.${user.banner?.startsWith('a_') ? 'gif' : 'png'}?size=1024` },
+                            color: 0x3498db
+                        }]
                     });
                 } else {
-                    await fetch(patchUrl, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: `❌ This user does not have a banner.` }),
-                    });
+                    await patchInteraction({ content: `❌ This user does not have a banner.` });
                 }
-            } catch (e) {}
-        })());
+            } catch (e) {
+                console.error(`[BANNER] Async Error: ${e.message}`);
+                await patchInteraction({ 
+                     content: `❌ Failed to fetch banner.`,
+                     flags: InteractionResponseFlags.EPHEMERAL
+                });
+            }
+        })().catch(e => console.error(e)));
 
         return c.json({ type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE });
     }
@@ -776,7 +755,7 @@ app.post('/', async (c) => {
             } catch (e) {
                 console.error(`[BF] Error: ${e.message}`);
             }
-        })());
+        })().catch(e => console.error(e)));
 
         return c.json({
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -857,7 +836,7 @@ app.post('/', async (c) => {
           } catch (e) {
               console.error(`[REPORT] Error: ${e.message}`);
           }
-      })());
+      })().catch(e => console.error(e)));
 
       return c.json({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -900,12 +879,16 @@ app.post('/', async (c) => {
         } catch (error) {
           console.error("[ASK] Generic Async Error:", error);
         }
-      })());
+      })().catch(e => console.error(e)));
 
       return c.json({
         type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
       });
     }
+
+
+
+
   }
 
   return c.text('Unknown type', 400);

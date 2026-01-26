@@ -2,6 +2,20 @@
  * Static definition of commands for registration and handling.
  */
 
+export const OptionType = {
+  SUB_COMMAND: 1,
+  SUB_COMMAND_GROUP: 2,
+  STRING: 3,
+  INTEGER: 4,
+  BOOLEAN: 5,
+  USER: 6,
+  CHANNEL: 7,
+  ROLE: 8,
+  MENTIONABLE: 9,
+  NUMBER: 10,
+  ATTACHMENT: 11,
+};
+
 export const PING_COMMAND = {
   name: 'ping',
   description: 'Check if the worker is alive.',
@@ -19,13 +33,13 @@ export const REPORT_COMMAND = {
     {
       name: 'user',
       description: 'The user to report',
-      type: 6, // USER
+      type: OptionType.USER,
       required: true,
     },
     {
       name: 'reason',
       description: 'Reason for the report',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: true,
     }
   ]
@@ -38,7 +52,7 @@ export const ASK_COMMAND = {
     {
       name: 'question',
       description: 'Your question (e.g. "How do I install?")',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: true,
     }
   ]
@@ -51,13 +65,13 @@ export const KICK_COMMAND = {
     {
       name: 'user',
       description: 'The user to kick',
-      type: 6, // USER
+      type: OptionType.USER,
       required: true,
     },
     {
       name: 'reason',
       description: 'Reason for the kick',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: false,
     }
   ]
@@ -70,13 +84,13 @@ export const BAN_COMMAND = {
     {
       name: 'user',
       description: 'The user to ban',
-      type: 6, // USER
+      type: OptionType.USER,
       required: true,
     },
     {
       name: 'reason',
       description: 'Reason for the ban',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: false,
     }
   ]
@@ -89,19 +103,19 @@ export const TIMEOUT_COMMAND = {
     {
       name: 'user',
       description: 'The user to timeout',
-      type: 6, // USER
+      type: OptionType.USER,
       required: true,
     },
     {
       name: 'duration',
       description: 'Duration in minutes',
-      type: 4, // INTEGER
+      type: OptionType.INTEGER,
       required: true,
     },
     {
       name: 'reason',
       description: 'Reason for the timeout',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: false,
     }
   ]
@@ -114,7 +128,7 @@ export const CLEAR_COMMAND = {
     {
       name: 'amount',
       description: 'Number of messages to delete (1-100)',
-      type: 4, // INTEGER
+      type: OptionType.INTEGER,
       required: true,
     }
   ]
@@ -127,8 +141,9 @@ export const LOCK_COMMAND = {
     {
       name: 'reason',
       description: 'Reason for locking',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: false,
+      
     }
   ]
 };
@@ -145,13 +160,13 @@ export const SETNICK_COMMAND = {
     {
       name: 'user',
       description: 'The user to change',
-      type: 6, // USER
+      type: OptionType.USER,
       required: true,
     },
     {
       name: 'nickname',
       description: 'The new nickname',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: true,
     }
   ]
@@ -164,7 +179,7 @@ export const USERINFO_COMMAND = {
     {
       name: 'user',
       description: 'Select a user',
-      type: 6, // USER
+      type: OptionType.USER,
       required: false,
     }
   ]
@@ -177,7 +192,7 @@ export const AVATAR_COMMAND = {
     {
       name: 'user',
       description: 'Select a user',
-      type: 6, // USER
+      type: OptionType.USER,
       required: false,
     }
   ]
@@ -195,7 +210,7 @@ export const BANNER_COMMAND = {
     {
       name: 'user',
       description: 'Select a user',
-      type: 6, // USER
+      type: OptionType.USER,
       required: false,
     }
   ]
@@ -208,7 +223,7 @@ export const BF_COMMAND = {
     {
       name: 'feedback',
       description: 'Your bot-related feedback or feature idea',
-      type: 3, // STRING
+      type: OptionType.STRING,
       required: true,
     }
   ]
@@ -219,3 +234,5 @@ export const SETUP_VERIFY_CMD = {
   description: 'Setup the verification message with a button',
   default_member_permissions: "8", // Administrator
 };
+
+

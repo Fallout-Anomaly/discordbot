@@ -1,4 +1,4 @@
-import { 
+import {
   PING_COMMAND, 
   HELP_COMMAND, 
   REPORT_COMMAND, 
@@ -24,12 +24,12 @@ dotenv.config();
 
 /**
  * This script registers all commands with Discord.
- * It uses the DISCORD_TOKEN and DISCORD_APP_ID from your .env file or environment.
+ * Usage: node register.js [guild|global]
  */
 
 const token = process.env.DISCORD_TOKEN;
 const applicationId = process.env.DISCORD_APP_ID;
-const guildId = '1113971680419782666'; // Target server
+const guildId = process.env.GUILD_ID; // Require GUILD_ID in env
 
 if (!token || !applicationId) {
   throw new Error('The DISCORD_TOKEN and DISCORD_APP_ID environment variables are required.');
@@ -55,28 +55,45 @@ const commands = [
   SETUP_VERIFY_CMD
 ];
 
-async function registerGuildCommands() {
-  const url = `https://discord.com/api/v10/applications/${applicationId}/guilds/${guildId}/commands`;
+async function registerCommands() {
+  const mode = process.argv[2] || 'guild'; // Default to guild-only
   
-  console.log(`Registering ${commands.length} commands to guild ${guildId}...`);
+  if (mode !== 'global' && !guildId) {
+      console.error('❌ Error: GUILD_ID environment variable is required for guild registration.');
+      process.exit(1);
+  }
 
-  const response = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bot ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(commands),
-  });
-
-  if (response.ok) {
-    console.log('Successfully registered guild commands.');
-    const data = await response.json();
-    console.log(JSON.stringify(data, null, 2));
+  let url = '';
+  
+  if (mode === 'global') {
+      url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
+      console.log(`🌍 Registering ${commands.length} commands GLOBALLY...`);
   } else {
-    const error = await response.text();
-    console.error('Error registering commands:', error);
+      console.log(`🏰 Registering ${commands.length} commands to GUILD ${guildId}...`);
+      url = `https://discord.com/api/v10/applications/${applicationId}/guilds/${guildId}/commands`;
+  }
+
+  try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bot ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(commands),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`✅ Successfully registered ${data.length} commands.`);
+        // console.log(JSON.stringify(data, null, 2));
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Error registering commands:', response.status, errorText);
+      }
+  } catch (error) {
+     console.error('❌ Fatal Fetch Error:', error);
   }
 }
 
-registerGuildCommands();
+registerCommands();
