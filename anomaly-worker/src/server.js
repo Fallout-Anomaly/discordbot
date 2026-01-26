@@ -21,7 +21,8 @@ import {
   AVATAR_COMMAND,
   SERVERINFO_COMMAND,
   BANNER_COMMAND,
-  BF_COMMAND
+  BF_COMMAND,
+  SETUP_VERIFY_COMMAND
 } from './commands.js';
 import { askAI } from './utils.js';
 
@@ -57,6 +58,43 @@ app.post('/', async (c) => {
 
   if (interaction.type === InteractionType.PING) {
     return c.json({ type: InteractionResponseType.PONG });
+  }
+
+  if (interaction.type === InteractionType.MESSAGE_COMPONENT) {
+      if (interaction.data.custom_id === 'verify_member') {
+          const roleId = c.env.MEMBER_ROLE_ID;
+          if (!roleId) {
+               return c.json({
+                  type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                  data: { content: '❌ Role configuration error. Contact admin.', flags: InteractionResponseFlags.EPHEMERAL }
+              });
+          }
+          
+          const guildId = interaction.guild_id;
+          const userId = interaction.member.user.id;
+
+          c.executionCtx.waitUntil((async () => {
+              try {
+                  await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
+                      method: 'PUT',
+                      headers: { 
+                          'Authorization': `Bot ${c.env.DISCORD_TOKEN}`,
+                          'Content-Type': 'application/json'
+                      }
+                  });
+              } catch (e) {
+                  console.error(`[VERIFY] Error: ${e.message}`);
+              }
+          })());
+
+          return c.json({
+              type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+              data: { 
+                  content: `✅ Verified! You have been granted the <@&${roleId}> role.`, 
+                  flags: InteractionResponseFlags.EPHEMERAL 
+              }
+          });
+      }
   }
 
   // Verification of environment variables
@@ -748,6 +786,56 @@ app.post('/', async (c) => {
         });
     }
 
+    if (name === 'setup-verify') {
+        try {
+            // Only allow administrators
+            const permissions = interaction.member?.permissions;
+            if (!permissions) {
+                 return c.json({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: '❌ Could not determine permissions.', flags: InteractionResponseFlags.EPHEMERAL },
+                });
+            }
+
+            const hasAdmin = (BigInt(permissions) & BigInt(8)) === BigInt(8);
+            if (!hasAdmin) {
+                 return c.json({
+                    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                    data: { content: '❌ You need Admin permissions to use this.', flags: InteractionResponseFlags.EPHEMERAL },
+                });
+            }
+
+            return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: {
+                    embeds: [{
+                        title: '🛡️ Survivor Verification',
+                        description: 'To gain access to the rest of the server, please confirm that you have read and understood our rules and guidelines.\n\nBy clicking the button below, you agree to follow the community standards.',
+                        color: 0x3498db,
+                        footer: { text: 'Anomaly Verification System' }
+                    }],
+                    components: [{
+                        type: 1, // Action Row
+                        components: [{
+                            type: 2, // Button
+                            style: 3, // Success (Green)
+                            label: 'Confirm & Verify',
+                            emoji: { name: '✅' },
+                            custom_id: 'verify_member'
+                        }]
+                    }]
+                }
+            });
+        } catch (e) {
+             console.error(`[SETUP] Error: ${e.message}`);
+             return c.json({
+                type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                data: { content: '❌ An error occurred.', flags: InteractionResponseFlags.EPHEMERAL },
+            });
+        }
+    }
+
+
     if (name === REPORT_COMMAND.name) {
       const user = interaction.data.options.find(o => o.name === 'user')?.value;
       const reason = interaction.data.options.find(o => o.name === 'reason')?.value;
@@ -821,5 +909,7 @@ app.post('/', async (c) => {
 
   return c.text('Unknown type', 400);
 });
+
+
 
 export default app;
