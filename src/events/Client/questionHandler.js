@@ -35,13 +35,18 @@ module.exports = new Event({
         try {
             const question = message.content;
 
-            // 1.5 Fetch Conversation History
-            const historyMessages = await message.channel.messages.fetch({ limit: 5 });
-            const history = historyMessages.reverse().map(m => {
-                const role = m.author.id === client.user.id ? 'assistant' : 'user';
-                // Clean content from mentions if needed, mostly just raw content is fine
-                return { role, content: m.content || '[Attachment/Embed]' };
-            });
+            const historyMessages = await message.channel.messages.fetch({ limit: 6 });
+            const history = historyMessages
+                .filter(m => m.id !== message.id) 
+                .reverse()
+                .map(m => {
+                    const role = m.author.id === client.user.id ? 'assistant' : 'user';
+                    let content = m.content;
+                    if (!content && m.embeds && m.embeds.length > 0) {
+                        content = m.embeds[0].description;
+                    }
+                    return { role, content: content || '[Attachment/Embed]' };
+                });
 
             // 1. Search Knowledge Base (using only current question for search to keep it focused)
             const contextItems = client.knowledge.search(question);
