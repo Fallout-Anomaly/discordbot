@@ -21,7 +21,7 @@ module.exports = new ApplicationCommand({
                 required: true
             }
         ],
-        defaultMemberPermissions: PermissionFlagsBits.ManageMessages // Restrict to mods/admins
+        defaultMemberPermissions: PermissionFlagsBits.ManageMessages.toString() // Restrict to mods/admins
     },
     run: async (client, interaction) => {
         // Double check permissions
