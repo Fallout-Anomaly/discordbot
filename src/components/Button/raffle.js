@@ -6,7 +6,7 @@ module.exports = new Component({
     customId: /^raffle_(enter|view)_/,
     type: 'button',
     options: {
-        public: false
+        public: true
     },
     async run(client, interaction) {
         const [, action, raffleId] = interaction.customId.match(/^raffle_(enter|view)_(.+)$/);
