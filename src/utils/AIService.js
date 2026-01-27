@@ -112,7 +112,8 @@ Output MUST be valid JSON only. format:
   "description": "Short flavor text describing the situation (max 2 sentences).",
   "objective": "What needs to be done (e.g. Kill X, Find Y).",
   "difficulty": "Easy" or "Medium" or "Hard",
-  "flavor": "A witty closing remark."
+  "flavor": "A witty closing remark.",
+  "reward_item": "stimpak" or "10mm_rounds" or "purified_water" (optional ID from Fallout 4 items)
 }`
                     },
                     {

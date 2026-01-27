@@ -5,7 +5,7 @@ const AIService = require('../../utils/AIService');
 
 module.exports = new ApplicationCommand({
     command: {
-        name: 'quest',
+        name: 'quests',
         description: 'Manage your wasteland quests.',
         options: [
             {
@@ -86,15 +86,17 @@ module.exports = new ApplicationCommand({
                     
                     // Randomize slightly
                     caps = Math.floor(caps * (0.8 + Math.random() * 0.4));
+                    const rewardItem = questData.reward_item || null;
 
                     const startTime = Date.now();
 
-                    db.run(`INSERT INTO active_quests (user_id, title, description, objective, difficulty, reward_caps, reward_xp, start_time, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-                        [userId, questData.title, questData.description, questData.objective, questData.difficulty, caps, xp, startTime, duration], 
+                    db.run(`INSERT INTO active_quests (user_id, title, description, objective, difficulty, reward_caps, reward_xp, start_time, duration, reward_item) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+                        [userId, questData.title, questData.description, questData.objective, questData.difficulty, caps, xp, startTime, duration, rewardItem], 
                         (err) => {
                             if (err) {
+                                // If column missing, try without reward_item (backward compatibility or migration needed)
                                 console.error(err);
-                                return interaction.editReply('❌ Failed to save quest to database.');
+                                return interaction.editReply('❌ Failed to save quest to database. (DB Schema mismatch?)');
                             }
 
                             const embed = new EmbedBuilder()
@@ -104,7 +106,7 @@ module.exports = new ApplicationCommand({
                                     { name: 'Objective', value: questData.objective },
                                     { name: 'Difficulty', value: questData.difficulty, inline: true },
                                     { name: 'Duration', value: `${duration} Minutes`, inline: true },
-                                    { name: 'Rewards', value: `${caps} Caps, ${xp} XP`, inline: true }
+                                    { name: 'Rewards', value: `${caps} Caps, ${xp} XP` + (rewardItem ? `, 1x ${rewardItem}` : ''), inline: true }
                                 )
                                 .setColor('#3498db')
                                 .setFooter({ text: questData.flavor || 'Good luck, wastelander.' });
@@ -130,12 +132,24 @@ module.exports = new ApplicationCommand({
                 // Grant rewards
                 db.serialize(() => {
                     db.run('UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?', [quest.reward_caps, quest.reward_xp, userId]);
+                    if (quest.reward_item) {
+                        db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1', [userId, quest.reward_item], (err) => {
+                            // Ignore specific SQL errors if table constraints vary, but this is standard sqlite 3.24+ syntax usually
+                             if (err) {
+                                  // Fallback for older sqlite without upsert
+                                  db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item], (e, row) => {
+                                      if (row) db.run('UPDATE inventory SET amount = amount + 1 WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item]);
+                                      else db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1)', [userId, quest.reward_item]);
+                                  });
+                             }
+                        });
+                    }
                     db.run('DELETE FROM active_quests WHERE user_id = ?', [userId]);
                 });
 
                 const embed = new EmbedBuilder()
                     .setTitle('🎉 Quest Complete!')
-                    .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP`)
+                    .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
                     .setColor('#f1c40f');
 
                 interaction.reply({ embeds: [embed] });

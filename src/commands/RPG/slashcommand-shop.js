@@ -57,6 +57,7 @@ module.exports = new ApplicationCommand({
         if (subcommand === 'view') {
             const typeFilter = interaction.options.getString('type');
             
+            // Build query based on filter
             let query = 'SELECT * FROM items';
             let params = [];
             
@@ -65,7 +66,6 @@ module.exports = new ApplicationCommand({
                 params.push(typeFilter);
             }
             
-            // Limit to avoid embed overflow if list is massive
             query += ' ORDER BY type ASC, price ASC';
 
             db.all(query, params, (err, rows) => {
@@ -77,9 +77,12 @@ module.exports = new ApplicationCommand({
                      return interaction.reply({ content: '🚫 No items found matching that filter.', ephemeral: true });
                 }
 
-                // Chunking for pagination could be added later, for now we assume <25 fields or fit in description
+                const title = typeFilter 
+                    ? `🛒 Wasteland Store - ${typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1)}`
+                    : '🛒 Wasteland General Store';
+
                 const embed = new EmbedBuilder()
-                    .setTitle('🛒 Wasteland General Store')
+                    .setTitle(title)
                     .setColor('#2ecc71')
                     .setThumbnail('https://i.imgur.com/7123123.png') 
                     .setDescription('Welcome, traveler! Here is what we have in stock.');
@@ -103,7 +106,7 @@ module.exports = new ApplicationCommand({
                 });
                 
                 if (rows.length > 25) {
-                    embed.setFooter({ text: `...and ${rows.length - 25} more items. Filter by type to see more!` });
+                    embed.setFooter({ text: `Showing top 25 of ${rows.length} items. Filter by type to see more!` });
                 } else {
                     embed.setFooter({ text: 'Use /shop buy <item> to purchase.' });
                 }
