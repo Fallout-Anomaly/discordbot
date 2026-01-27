@@ -147,11 +147,13 @@ module.exports = new ApplicationCommand({
                     let theme = 'Other';
 
                     try {
-                        const categorization = await AIService.generateAnswer(
+                        const result = await AIService.generateAnswer(
                             `Categorize this feedback into ONE category: Bug Report, Feature Request, Balance Issue, Performance Issue, Gameplay, or Other.\n\nFeedback: "${message.content}"`,
                             [],
                             []
                         );
+
+                        const categorization = result.answer || ''; // Extract answer property
 
                         if (categorization.includes('Bug')) category = 'Bug Report';
                         else if (categorization.includes('Feature')) category = 'Feature Request';

@@ -29,9 +29,7 @@ module.exports = new ApplicationCommand({
             { name: 'remove', description: 'Remove a donor', type: ApplicationCommandOptionType.Subcommand,
                 options: [{ name: 'user', description: 'User to remove', type: ApplicationCommandOptionType.User, required: true }]
             },
-            { name: 'list', description: 'List all donors', type: ApplicationCommandOptionType.Subcommand },
-            { name: 'raffle-pick', description: 'Pick this month\'s raffle winner', type: ApplicationCommandOptionType.Subcommand },
-            { name: 'raffle-clear', description: 'Clear expired raffle data (3+ months old)', type: ApplicationCommandOptionType.Subcommand }
+            { name: 'list', description: 'List all donors', type: ApplicationCommandOptionType.Subcommand }
         ]
     },
     options: { botOwner: true },
@@ -74,16 +72,6 @@ module.exports = new ApplicationCommand({
             }
             const embed = new EmbedBuilder().setTitle('💎 Donor List').setDescription(desc).setColor('#f39c12').setFooter({ text: `Total donors: ${donors.length}` }).setTimestamp();
             return interaction.reply({ embeds: [embed] });
-        }
-        if (subcommand === 'raffle-pick') {
-            const winner = await DonorSystem.pickRaffleWinner();
-            if (!winner) return interaction.reply({ content: 'No raffle entries for this month.', ephemeral: true });
-            const embed = new EmbedBuilder().setTitle('🎰 Raffle Winner!').setDescription(`🎉 <@${winner}> has won this month\'s raffle!`).setColor('#f1c40f').setTimestamp();
-            return interaction.reply({ embeds: [embed] });
-        }
-        if (subcommand === 'raffle-clear') {
-            const cleared = await DonorSystem.clearExpiredRaffles();
-            return interaction.reply({ embeds: [new EmbedBuilder().setTitle('✅ Raffle Cleaned').setDescription(`Cleared ${cleared} expired raffle entries.`).setColor('#2ecc71')] });
         }
     }
 }).toJSON();

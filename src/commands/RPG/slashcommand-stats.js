@@ -87,11 +87,12 @@ module.exports = new ApplicationCommand({
 
                 const rowComponent = new ActionRowBuilder().addComponents(select);
 
-                const { message } = await interaction.reply({ 
+                await interaction.reply({ 
                     embeds: [embed], 
-                    components: [rowComponent], 
-                    withResponse: true 
+                    components: [rowComponent]
                 });
+
+                const message = await interaction.fetchReply();
 
                 // Create collector
                 const collector = message.createMessageComponentCollector({ 
