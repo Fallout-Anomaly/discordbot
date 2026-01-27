@@ -16,6 +16,7 @@ module.exports = new ApplicationCommand({
                 choices: [
                     { name: 'new', value: 'new' },
                     { name: 'list', value: 'list' },
+                    { name: 'update', value: 'update' },
                     { name: 'enter', value: 'enter' },
                     { name: 'pick-winner', value: 'pick-winner' },
                     { name: 'delete', value: 'delete' }
@@ -513,6 +514,121 @@ module.exports = new ApplicationCommand({
                 embed.addFields(
                     { name: '💎 Donator Bonus Applied', value: `${winnerTierInfo.badge} This player had ${(winnerTierInfo.multiplier * 100).toFixed(0)}% better odds!`, inline: false }
                 );
+            }
+
+            return interaction.editReply({ embeds: [embed] });
+        }
+
+        if (action === 'update') {
+            if (!raffleId) {
+                return interaction.editReply({ content: '❌ Please provide a raffle ID to update.' });
+            }
+
+            const newTitle = interaction.options.getString('title');
+            const newPrizeType = interaction.options.getString('prize-type');
+            const newPrizeValue = interaction.options.getString('prize-value');
+            const newEntryCost = interaction.options.getInteger('entry-cost');
+            const newDuration = interaction.options.getString('duration');
+
+            // Get current raffle
+            const currentRaffle = await new Promise((resolve) => {
+                db.get('SELECT * FROM custom_raffles WHERE id = ?', [raffleId], (err, row) => {
+                    resolve(row);
+                });
+            });
+
+            if (!currentRaffle) {
+                return interaction.editReply({ content: `❌ Raffle \`${raffleId}\` not found.` });
+            }
+
+            // Check if user is the creator
+            if (currentRaffle.created_by !== interaction.user.id) {
+                return interaction.editReply({ content: '❌ You can only update raffles you created.' });
+            }
+
+            // Build update query
+            let updateFields = [];
+            let updateValues = [];
+
+            if (newTitle) {
+                updateFields.push('title = ?');
+                updateValues.push(newTitle);
+            }
+            if (newPrizeType) {
+                updateFields.push('prize_type = ?');
+                updateValues.push(newPrizeType);
+            }
+            if (newPrizeValue) {
+                updateFields.push('prize_value = ?');
+                updateValues.push(newPrizeValue);
+            }
+            if (newEntryCost !== null) {
+                updateFields.push('entry_cost = ?');
+                updateValues.push(newEntryCost);
+            }
+            if (newDuration) {
+                const durationMap = {
+                    '1h': 1 * 60 * 60 * 1000,
+                    '6h': 6 * 60 * 60 * 1000,
+                    '12h': 12 * 60 * 60 * 1000,
+                    '24h': 24 * 60 * 60 * 1000,
+                    '3d': 3 * 24 * 60 * 60 * 1000,
+                    '7d': 7 * 24 * 60 * 60 * 1000
+                };
+                const newEndTime = Date.now() + (durationMap[newDuration] || durationMap['24h']);
+                updateFields.push('end_time = ?');
+                updateValues.push(newEndTime);
+            }
+
+            if (updateFields.length === 0) {
+                return interaction.editReply({ content: '❌ Please provide at least one field to update.' });
+            }
+
+            updateValues.push(raffleId);
+
+            // Execute update
+            await new Promise((resolve) => {
+                db.run(
+                    `UPDATE custom_raffles SET ${updateFields.join(', ')} WHERE id = ?`,
+                    updateValues,
+                    () => resolve()
+                );
+            });
+
+            const updatedRaffle = await new Promise((resolve) => {
+                db.get('SELECT * FROM custom_raffles WHERE id = ?', [raffleId], (err, row) => {
+                    resolve(row);
+                });
+            });
+
+            const embed = new EmbedBuilder()
+                .setTitle('✅ Raffle Updated')
+                .addFields(
+                    { name: '🔗 Raffle ID', value: `\`${raffleId}\``, inline: false },
+                    { name: '🎰 Title', value: updatedRaffle.title, inline: true }
+                )
+                .setColor('#2ecc71')
+                .setFooter({ text: 'Raffle updated successfully!' });
+
+            if (newPrizeType || newPrizeValue) {
+                let prizeDisplay = '';
+                if (updatedRaffle.prize_type === 'caps') {
+                    prizeDisplay = `💰 ${updatedRaffle.prize_value} caps`;
+                } else if (updatedRaffle.prize_type === 'item') {
+                    prizeDisplay = `🎁 Shop Item (ID: ${updatedRaffle.prize_value})`;
+                } else {
+                    prizeDisplay = `🎁 ${updatedRaffle.prize_value}`;
+                }
+                embed.addFields({ name: '🎁 Prize', value: prizeDisplay, inline: true });
+            }
+
+            if (newEntryCost !== null) {
+                embed.addFields({ name: '💵 Entry Cost', value: `${updatedRaffle.entry_cost} caps`, inline: true });
+            }
+
+            if (newDuration) {
+                const timeRemaining = updatedRaffle.end_time - Date.now();
+                embed.addFields({ name: '⏰ New Deadline', value: `<t:${Math.floor(updatedRaffle.end_time / 1000)}:R>`, inline: true });
             }
 
             return interaction.editReply({ embeds: [embed] });
