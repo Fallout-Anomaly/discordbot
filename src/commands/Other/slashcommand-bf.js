@@ -16,10 +16,10 @@ module.exports = new ApplicationCommand({
     },
     run: async (client, interaction) => {
         const feedback = interaction.options.getString('feedback');
-        const feedbackChannelId = process.env.BOT_FEEDBACK_CHANNEL_ID;
+        const feedbackChannelId = process.env.REPORT_CHANNEL_ID;
 
         if (!feedbackChannelId) {
-            return interaction.reply({ content: "❌ Feedback channel is not configured locally.", ephemeral: true });
+            return interaction.reply({ content: "❌ Feedback channel is not configured.", ephemeral: true });
         }
 
         const channel = client.channels.cache.get(feedbackChannelId);
