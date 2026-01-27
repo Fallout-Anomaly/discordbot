@@ -1,4 +1,5 @@
 const db = require('../../utils/EconomyDB');
+const DonorSystem = require('../../utils/DonorSystem');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const config = require('../../config');
 
@@ -17,6 +18,11 @@ module.exports = new ApplicationCommand({
 
         const donatorRole = config.users.donator_role;
         const boosterRole = config.users.booster_role;
+
+        // Check donor status and apply XP multiplier
+        const isDonor = await DonorSystem.isDonor(userId);
+        const xpMultiplier = await DonorSystem.getXpMultiplier(userId);
+        const donorBadge = await DonorSystem.getDonorBadge(userId);
 
         if (interaction.member.roles.cache.has(donatorRole)) {
             // Donator Tier (Highest)
@@ -39,6 +45,10 @@ module.exports = new ApplicationCommand({
             ];
         }
 
+        // Apply donor XP multiplier to caps
+        let finalCaps = Math.floor(rewardCaps * xpMultiplier);
+        let donorNote = isDonor ? ` ${donorBadge}` : '';
+
         const now = Date.now();
         const cooldown = 24 * 60 * 60 * 1000; // 24 hours
         const cooldownCheck = now - cooldown;
@@ -51,7 +61,7 @@ module.exports = new ApplicationCommand({
                 balance = balance + ?,
                 daily_last_claim = ?
              WHERE daily_last_claim IS NULL OR daily_last_claim < ?`,
-            [userId, rewardCaps, now, rewardCaps, now, cooldownCheck],
+            [userId, finalCaps, now, finalCaps, now, cooldownCheck],
             function (err) {
                 if (err) {
                     console.error('[DAILY] Database error:', err.message);
@@ -92,8 +102,9 @@ module.exports = new ApplicationCommand({
                         );
                     });
 
+                    const multiplierNote = xpMultiplier > 1 ? ` (${xpMultiplier}x supporter bonus)` : '';
                     const itemMsg = itemLog.length > 0 ? `\n📦 **Supply Drop:** ${itemLog.join(', ')}` : '';
-                    interaction.reply({ content: `🎁 You found a stash! Received **${rewardCaps} Caps**${bonusText}!${itemMsg}` });
+                    interaction.reply({ content: `🎁 You found a stash! Received **${finalCaps} Caps**${multiplierNote}${bonusText}${donorNote}!${itemMsg}` });
                 });
             }
         );
