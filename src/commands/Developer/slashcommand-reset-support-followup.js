@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType, ChannelType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const db = require("../../utils/EconomyDB");
+const config = require('../../config');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -9,22 +10,60 @@ module.exports = new ApplicationCommand({
         options: [
             {
                 name: 'thread',
-                description: 'The support thread to reset',
-                type: ApplicationCommandOptionType.Channel,
-                channel_types: [ChannelType.PublicThread, ChannelType.PrivateThread],
-                required: true
+                description: 'The support thread to reset (start typing to search)',
+                type: ApplicationCommandOptionType.String,
+                required: true,
+                autocomplete: true
             }
         ]
     },
     options: {
         botOwner: true
     },
+    autocomplete: async (client, interaction) => {
+        const focusedValue = interaction.options.getFocused().toLowerCase();
+        const forumChannels = config.channels.forum_support || [];
+        
+        let allThreads = [];
+        
+        // Fetch threads from all support forums
+        for (const forumId of forumChannels) {
+            const forum = await client.channels.fetch(forumId).catch(() => null);
+            if (!forum || !forum.isThreadOnly()) continue;
+            
+            try {
+                const activeThreads = await forum.threads.fetchActive();
+                const archivedThreads = await forum.threads.fetchArchived({ limit: 25 });
+                
+                allThreads = allThreads.concat(
+                    [...activeThreads.threads.values()],
+                    [...archivedThreads.threads.values()]
+                );
+            } catch (err) {
+                console.error('[RESET FOLLOWUP] Error fetching threads:', err);
+            }
+        }
+        
+        // Filter by search term
+        const filtered = allThreads
+            .filter(thread => thread.name.toLowerCase().includes(focusedValue))
+            .slice(0, 25)
+            .map(thread => ({
+                name: `${thread.name} (${thread.archived ? 'Archived' : 'Active'})`,
+                value: thread.id
+            }));
+        
+        await interaction.respond(filtered);
+    },
     run: async (client, interaction) => {
-        const thread = interaction.options.getChannel('thread');
-
-        if (!thread.isThread()) {
+        const threadId = interaction.options.getString('thread');
+        
+        // Fetch the thread
+        const thread = await client.channels.fetch(threadId).catch(() => null);
+        
+        if (!thread || !thread.isThread()) {
             return interaction.reply({ 
-                content: '❌ That is not a thread. Please select a support thread.', 
+                content: '❌ Could not find that thread. Please try again.', 
                 ephemeral: true 
             });
         }

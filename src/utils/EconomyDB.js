@@ -123,6 +123,32 @@ db.serialize(() => {
         duration INTEGER,
         reward_item TEXT
     )`);
+
+    // Donor/Supporter System
+    db.run(`CREATE TABLE IF NOT EXISTS donors (
+        user_id TEXT PRIMARY KEY,
+        tier TEXT DEFAULT 'bronze',
+        joined_date INTEGER,
+        raffle_entries INTEGER DEFAULT 0,
+        custom_badge TEXT DEFAULT '',
+        referred_by TEXT
+    )`);
+
+    // Referral Tracking
+    db.run(`CREATE TABLE IF NOT EXISTS referrals (
+        referrer_id TEXT,
+        referred_id TEXT,
+        join_date INTEGER,
+        PRIMARY KEY (referrer_id, referred_id)
+    )`);
+
+    // Raffle Pool (monthly)
+    db.run(`CREATE TABLE IF NOT EXISTS raffle_pool (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        entries INTEGER,
+        month_year TEXT
+    )`);
 });
 
 module.exports = db;
