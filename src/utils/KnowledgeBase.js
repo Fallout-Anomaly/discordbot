@@ -173,6 +173,15 @@ class KnowledgeBase {
         results.sort((a, b) => b.score - a.score);
         return results.slice(0, 3);
     }
+    async reload() {
+        console.log("Reloading knowledge base...");
+        this.loaded = false;
+        this.index = [];
+        this.documentFrequency = new Map();
+        this.totalDocuments = 0;
+        await this.load();
+        return this.totalDocuments;
+    }
 }
 
 module.exports = KnowledgeBase;
