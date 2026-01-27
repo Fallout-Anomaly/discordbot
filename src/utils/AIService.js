@@ -17,7 +17,7 @@ class AIService {
     async refineQuestion(userQuestion) {
         if (!this.openai) return userQuestion;
 
-        const model = process.env.AI_MODEL_REFINE || 'llama-3.1-8b-instant'; // Use lighter model for refinement
+        const model = 'llama-3.1-8b-instant'; // Forced to 8B
 
         try {
             const response = await this.openai.chat.completions.create({
@@ -53,7 +53,7 @@ class AIService {
             return `**No AI Key Found**\nI've found these relevant documentation items but cannot generate a full answer without a Groq API Key.\n\n${contextItems.map(i => `**${i.fullName}** (${i.type})`).join('\n')}`;
         }
 
-        const model = process.env.AI_MODEL_ANSWER || 'llama-3.1-8b-instant'; // Stronger model for generation
+        const model = 'llama-3.1-8b-instant'; // Forced to 8B to avoid 70B rate limits
         const maxTokens = parseInt(process.env.AI_MAX_TOKENS) || 500;
 
         // Construct messages array
@@ -108,8 +108,7 @@ class AIService {
              };
         }
 
-        const model = process.env.AI_MODEL_REFINE || 'llama-3.1-8b-instant'; 
-
+        const model = 'llama-3.1-8b-instant'; // Forced to 8B
         try {
             const response = await this.openai.chat.completions.create({
                 model: model,
