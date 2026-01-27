@@ -1,3 +1,4 @@
+const triggers = require('../../../data/autoTriggers.json');
 const { Events, EmbedBuilder } = require('discord.js');
 const Event = require('../../structure/Event');
 const AIService = require('../../utils/AIService');
@@ -6,36 +7,61 @@ module.exports = new Event({
     event: Events.MessageCreate,
     once: false,
     run: async (client, message) => {
-        // Ignore bots and messages outside the designated ask channel
+        // ... (previous ignored checks) ...
         if (message.author.bot || !message.guild) return;
         
         const askChannelId = process.env.ASK_CHANNEL_ID;
         if (!askChannelId || message.channel.id !== askChannelId) return;
 
-        // IGNORE LOGIC:
-        // 1. Ignore if it is a Reply to someone else (User-to-User conversation)
+        // ... (reply/mention checks) ...
         if (message.reference) {
             const repliedMessage = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
-            // If replied message exists and Author is NOT the bot, ignore it.
-            if (repliedMessage && repliedMessage.author.id !== client.user.id) {
-                return; 
-            }
+            if (repliedMessage && repliedMessage.author.id !== client.user.id) return; 
         }
 
-        // 2. Ignore if it mentions another user (User-to-User conversation)
-        // We check if it mentions users, but we must exclude the bot itself from this count.
         const mentionedUsers = message.mentions.users.filter(u => u.id !== client.user.id);
-        if (mentionedUsers.size > 0) {
-            return;
-        }
+        if (mentionedUsers.size > 0) return;
 
-        // Visual feedback that the bot is "thinking"
         await message.channel.sendTyping();
 
         try {
-            const question = message.content;
+            const question = message.content.toLowerCase();
+
+            // 0. Auto-Trigger Check (The "Smart" Layer)
+            // Loops through predefined triggers to find keyword matches
+            let triggeredResponse = null;
+            for (const trigger of triggers) {
+                // Must match ALL keywords in the list? Or ANY? 
+                // Let's do a simple weighted match or "all" for strictness.
+                // For "screen small corner", we want "screen" AND ("small" OR "corner" OR "upper").
+                // Let's stick to "matches at least 2 keywords" for better accuracy?
+                // Or just keep simple contains logic for now.
+                
+                // Let's try: if message matches critical keywords count >= 2 (if list > 1) or 1 (if list 1)
+                const matches = trigger.keywords.filter(kw => question.includes(kw.toLowerCase())).length;
+                if (matches >= 2 || (trigger.keywords.length === 1 && matches === 1)) {
+                    triggeredResponse = trigger.response;
+                    break;
+                }
+            }
+
+            if (triggeredResponse) {
+                // Send fast Triggered Response
+                 const embed = new EmbedBuilder()
+                    .setTitle('⚡ Anomaly Auto-Support')
+                    .setDescription(triggeredResponse)
+                    .setColor('#e74c3c') // Different color for auto-trigger
+                    .setFooter({ text: 'This represents a known common issue. If this doesn\'t help, ask a staff member.' })
+                    .setTimestamp();
+                
+                 await message.reply({ embeds: [embed] });
+                 // Add checkmark to original message
+                 await message.react('⚡');
+                 return; // SKIP AI
+            }
 
             const historyMessages = await message.channel.messages.fetch({ limit: 6 });
+            // ... (rest of AI flow) ...
             const history = historyMessages
                 .filter(m => m.id !== message.id) 
                 .reverse()
