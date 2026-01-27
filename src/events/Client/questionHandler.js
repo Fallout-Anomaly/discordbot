@@ -116,7 +116,7 @@ module.exports = new Event({
                 .setTitle('☢️ Anomaly AI Assistant')
                 .setDescription(answer.substring(0, 4096))
                 .setColor(needsEscalation ? '#e67e22' : '#3498db')
-                .setFooter({ text: `React 👍 or 👎 to provide feedback • Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'}` })
+                .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'} • React 👍/👎 for feedback • Install: https://fallout-anomaly.github.io/websitedev/` })
                 .setTimestamp();
 
             // Add escalation notice if needed
