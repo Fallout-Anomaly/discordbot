@@ -57,9 +57,9 @@ module.exports = new Event({
 
             const embed = new EmbedBuilder()
                 .setTitle('☢️ Anomaly AI Assistant')
-                .setDescription(answer.substring(0, 4090))
+                .setDescription(answer.substring(0, 4096))
                 .setColor('#3498db')
-                .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ')}` })
+                .setFooter({ text: `React 👍 or 👎 to provide feedback • Sources: ${contextItems.map(i => i.fullName).join(', ')}` })
                 .setTimestamp();
 
             // Handle system messages (cannot reply to them)
