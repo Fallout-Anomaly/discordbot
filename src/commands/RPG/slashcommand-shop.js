@@ -48,6 +48,27 @@ module.exports = new ApplicationCommand({
                         minValue: 1
                     }
                 ]
+            },
+            {
+                name: 'sell',
+                description: 'Sell an item from your inventory (50% value).',
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'item',
+                        description: 'The item to sell.',
+                        type: ApplicationCommandOptionType.String,
+                        required: true,
+                        autocomplete: true
+                    },
+                    {
+                        name: 'amount',
+                        description: 'How many to sell (default 1).',
+                        type: ApplicationCommandOptionType.Integer,
+                        required: false,
+                        minValue: 1
+                    }
+                ]
             }
         ]
     },
@@ -121,7 +142,7 @@ module.exports = new ApplicationCommand({
             const userId = interaction.user.id;
             
             // Fetch exact item from DB
-            db.get('SELECT * FROM items WHERE id = ? OR name = ?', [query, query], (err, item) => {
+            db.get('SELECT * FROM items WHERE id = ?', [query], (err, item) => {
                 if (err || !item) {
                      return interaction.reply({ content: '❌ Item not found. Please select from the list.', ephemeral: true });
                 }
@@ -161,22 +182,65 @@ module.exports = new ApplicationCommand({
                 });
             });
         }
+
+        if (subcommand === 'sell') {
+            const itemId = interaction.options.getString('item');
+            const amount = interaction.options.getInteger('amount') || 1;
+            const userId = interaction.user.id;
+
+            db.get(`SELECT inv.amount, i.name, i.price, i.emoji FROM inventory inv JOIN items i ON inv.item_id = i.id WHERE inv.user_id = ? AND inv.item_id = ?`, [userId, itemId], (err, item) => {
+                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                if (!item || item.amount < amount) {
+                    return interaction.reply({ content: `❌ You don't have enough **${itemId}** to sell! (Have: ${item ? item.amount : 0})`, ephemeral: true });
+                }
+
+                // Sell logic: 50% of base price
+                const sellPrice = Math.floor((item.price * 0.5) * amount);
+
+                db.serialize(() => {
+                    if (item.amount === amount) {
+                         db.run('DELETE FROM inventory WHERE user_id = ? AND item_id = ?', [userId, itemId]);
+                    } else {
+                         db.run('UPDATE inventory SET amount = amount - ? WHERE user_id = ? AND item_id = ?', [amount, userId, itemId]);
+                    }
+                    
+                    db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [sellPrice, userId]);
+                });
+
+                interaction.reply({ content: `🤝 Sold **${amount}x ${item.emoji} ${item.name}** for **${sellPrice} Caps**.` });
+            });
+        }
     },
     // Autocomplete handling
     autocomplete: async (client, interaction) => {
         const focusedValue = interaction.options.getFocused().toLowerCase();
-        
-        // Query DB for name/ID matches
-        // Using LIKE for flexible search
-        db.all('SELECT id, name, emoji, price FROM items WHERE name LIKE ? OR id LIKE ? LIMIT 25', [`%${focusedValue}%`, `%${focusedValue}%`], (err, rows) => {
-            if (err || !rows) return interaction.respond([]);
-            
-            const results = rows.map(item => ({
-                name: `${item.emoji} ${item.name} (${item.price}c)`,
-                value: item.id
-            }));
-            
-            interaction.respond(results).catch(() => {});
-        });
+        const subcommand = interaction.options.getSubcommand();
+        const userId = interaction.user.id;
+
+        if (subcommand === 'buy') {
+            // Query DB for name/ID matches
+            db.all('SELECT id, name, emoji, price FROM items WHERE name LIKE ? OR id LIKE ? LIMIT 25', [`%${focusedValue}%`, `%${focusedValue}%`], (err, rows) => {
+                if (err || !rows) return interaction.respond([]);
+                
+                const results = rows.map(item => ({
+                    name: `${item.emoji} ${item.name} (${item.price}c)`,
+                    value: item.id
+                }));
+                
+                interaction.respond(results).catch(() => {});
+            });
+        } else if (subcommand === 'sell') {
+            // Show only user's inventory
+             db.all(`SELECT i.name, i.id, i.price, inv.amount FROM inventory inv JOIN items i ON inv.item_id = i.id WHERE inv.user_id = ? AND i.name LIKE ? LIMIT 25`, 
+             [userId, `%${focusedValue}%`], (err, rows) => {
+                 if (err || !rows) return interaction.respond([]);
+                 
+                 const results = rows.map(item => ({
+                     name: `${item.name} (x${item.amount}) - Sell: ${Math.floor(item.price*0.5)}c`,
+                     value: item.id
+                 }));
+                 interaction.respond(results).catch(() => {});
+             });
+        }
     }
 }).toJSON();
