@@ -61,10 +61,21 @@ module.exports = new Component({
                 }
             }
 
+            // Format countdown
+            const now = Date.now();
+            const timeRemaining = raffle.end_time - now;
+            let countdownText = 'No time limit';
+            if (raffle.end_time && raffle.end_time > now) {
+                countdownText = `<t:${Math.floor(raffle.end_time / 1000)}:R>`;
+            } else if (raffle.end_time && raffle.end_time <= now) {
+                countdownText = '⚠️ Raffle ended - awaiting winner selection';
+            }
+
             const embed = new EmbedBuilder()
                 .setTitle(`📊 ${raffle.title} - Entry Status`)
                 .setDescription(entriesDisplay)
                 .addFields(
+                    { name: '⏰ Time Left', value: countdownText, inline: true },
                     { name: '📈 Total Entries', value: totalEntries.toString(), inline: true },
                     { name: '👥 Unique Players', value: entries.length.toString(), inline: true },
                     { name: '📍 Max Entries', value: raffle.max_entries > 0 ? `${totalEntries}/${raffle.max_entries}` : `${totalEntries}/∞`, inline: true }
@@ -76,6 +87,12 @@ module.exports = new Component({
         }
 
         if (action === 'enter') {
+            // Check if raffle has ended
+            const now = Date.now();
+            if (raffle.end_time && raffle.end_time <= now) {
+                return interaction.editReply({ content: '❌ This raffle has ended. No more entries allowed.' });
+            }
+
             // Check max entries
             if (raffle.max_entries > 0) {
                 const entryCount = await new Promise((resolve) => {

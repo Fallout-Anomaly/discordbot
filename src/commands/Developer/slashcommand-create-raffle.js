@@ -1,7 +1,6 @@
-const { ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
-const config = require('../../config');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -50,6 +49,23 @@ module.exports = new ApplicationCommand({
                 description: 'Cost to enter in caps (0 = free)',
                 type: ApplicationCommandOptionType.Integer,
                 required: false,
+                minValue: 0
+            },
+            {
+                name: 'duration',
+                description: 'How long the raffle lasts',
+                type: ApplicationCommandOptionType.String,
+                required: false,
+                choices: [
+                    { name: '1 hour', value: '1h' },
+                    { name: '6 hours', value: '6h' },
+                    { name: '12 hours', value: '12h' },
+                    { name: '24 hours', value: '24h' },
+                    { name: '3 days', value: '3d' },
+                    { name: '7 days', value: '7d' }
+                ]
+            },
+                required: false,
                 min_value: 0
             },
             {
@@ -89,6 +105,7 @@ module.exports = new ApplicationCommand({
                 max_entries INTEGER DEFAULT 0,
                 created_by TEXT,
                 created_at INTEGER,
+                end_time INTEGER DEFAULT 0,
                 status TEXT DEFAULT 'open'
             )`, () => resolve());
         });
@@ -120,18 +137,31 @@ module.exports = new ApplicationCommand({
             const prizeValue = interaction.options.getString('prize-value') || 'Surprise!';
             const entryCost = interaction.options.getInteger('entry-cost') || 0;
             const maxEntries = interaction.options.getInteger('max-entries') || 0;
+            const duration = interaction.options.getString('duration') || '24h';
 
             if (!title) {
                 return interaction.editReply({ content: '❌ Please provide a raffle title.' });
             }
 
+            // Parse duration
+            const durationMap = {
+                '1h': 1 * 60 * 60 * 1000,
+                '6h': 6 * 60 * 60 * 1000,
+                '12h': 12 * 60 * 60 * 1000,
+                '24h': 24 * 60 * 60 * 1000,
+                '3d': 3 * 24 * 60 * 60 * 1000,
+                '7d': 7 * 24 * 60 * 60 * 1000
+            };
+            const now = Date.now();
+            const endTime = now + (durationMap[duration] || durationMap['24h']);
+
             const newRaffleId = Date.now().toString();
 
             await new Promise((resolve) => {
                 db.run(
-                    `INSERT INTO custom_raffles (id, title, prize_type, prize_value, entry_cost, max_entries, created_by, created_at) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [newRaffleId, title, prizeType, prizeValue, entryCost, maxEntries, interaction.user.id, Date.now()],
+                    `INSERT INTO custom_raffles (id, title, prize_type, prize_value, entry_cost, max_entries, created_by, created_at, end_time) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [newRaffleId, title, prizeType, prizeValue, entryCost, maxEntries, interaction.user.id, now, endTime],
                     () => resolve()
                 );
             });
@@ -157,13 +187,24 @@ module.exports = new ApplicationCommand({
                 ? `**Price:** ${entryCost} caps per entry\n**Donator Prices:** Bronze ${Math.ceil(entryCost * 0.8)}, Silver ${Math.ceil(entryCost * 0.7)}, Gold ${Math.ceil(entryCost * 0.6)}, Platinum ${Math.ceil(entryCost * 0.5)}`
                 : '**Price:** Free entry!';
 
+            // Format countdown
+            const timeRemaining = endTime - now;
+            const hours = Math.floor(timeRemaining / (60 * 60 * 1000));
+            const days = Math.floor(hours / 24);
+            let countdownText = '';
+            if (days > 0) {
+                countdownText = `⏰ **Ends:** <t:${Math.floor(endTime / 1000)}:R> (<t:${Math.floor(endTime / 1000)}:F>)`;
+            } else {
+                countdownText = `⏰ **Ends:** <t:${Math.floor(endTime / 1000)}:R> (<t:${Math.floor(endTime / 1000)}:T>)`;
+            }
+
             const embed = new EmbedBuilder()
                 .setTitle(`🎰 ${title}`)
                 .setDescription(prizeDisplay)
                 .addFields(
                     { name: '💵 Entry Cost', value: priceInfo, inline: false },
                     { name: donatorInfo.split('\n')[0], value: donatorInfo.split('\n').slice(1).join('\n'), inline: false },
-                    { name: '📊 Raffle Info', value: `Max Entries: ${maxEntries > 0 ? maxEntries : '∞'}\nID: \`${newRaffleId}\``, inline: false }
+                    { name: '📊 Raffle Info', value: `${countdownText}\nMax Entries: ${maxEntries > 0 ? maxEntries : '∞'}\nID: \`${newRaffleId}\``, inline: false }
                 )
                 .setColor('#f1c40f')
                 .setFooter({ text: 'More entries = Better odds to win! Donators get discounts AND better chances!' });
