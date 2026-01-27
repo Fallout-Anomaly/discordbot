@@ -10,4 +10,4 @@ module.exports = new AutocompleteComponent({
 
         await interaction.respond(filteredFruits.map(fruit => ({ name: fruit, value: fruit })));
     }
-}).toJSON();
+});

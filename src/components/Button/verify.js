@@ -50,4 +50,4 @@ module.exports = new Component({
             interaction.editReply({ content: '❌ An error occurred during verification. Please contact staff.' });
         }
     }
-}).toJSON();
+});

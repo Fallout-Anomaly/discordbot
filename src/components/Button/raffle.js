@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const Component = require('../../structure/Component');
 const db = require('../../utils/EconomyDB');
 
@@ -182,4 +182,4 @@ module.exports = new Component({
             return interaction.editReply({ embeds: [embed] });
         }
     }
-}).toJSON();
+});
