@@ -5,10 +5,27 @@ const ApplicationCommand = require("../../structure/ApplicationCommand");
 module.exports = new ApplicationCommand({
     command: {
         name: 'leaderboard',
-        description: 'See who rules the wasteland economy.',
+        description: 'See who rules the wasteland.',
+        options: [
+            {
+                name: 'type',
+                description: 'What leaderboard to show',
+                type: 3, // String
+                required: false,
+                choices: [
+                    { name: '💰 Richest (Caps)', value: 'balance' },
+                    { name: '🗣️ Most Active (XP)', value: 'xp' }
+                ]
+            }
+        ]
     },
     run: async (client, interaction) => {
-        db.all('SELECT id, balance FROM users ORDER BY balance DESC LIMIT 10', [], async (err, rows) => {
+        const type = interaction.options.getString('type') || 'balance';
+        const column = type === 'balance' ? 'balance' : 'xp';
+        const title = type === 'balance' ? '🏆 Wasteland Richest' : '🏆 Most Talkative Survivors';
+        const unit = type === 'balance' ? 'Caps' : 'XP';
+
+        db.all(`SELECT id, ${column} FROM users ORDER BY ${column} DESC LIMIT 10`, [], async (err, rows) => {
             if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
 
             if (!rows || rows.length === 0) {
@@ -17,11 +34,12 @@ module.exports = new ApplicationCommand({
 
             const description = rows.map((row, index) => {
                 const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
-                return `${medal} <@${row.id}> — **${row.balance.toLocaleString()}** Caps`;
+                const val = row[column] || 0;
+                return `${medal} <@${row.id}> — **${val.toLocaleString()}** ${unit}`;
             }).join('\n');
 
             const embed = new EmbedBuilder()
-                .setTitle('🏆 Wasteland Richest')
+                .setTitle(title)
                 .setDescription(description)
                 .setColor('#f1c40f')
                 .setTimestamp();
