@@ -146,19 +146,20 @@ module.exports = new ApplicationCommand({
                 );
 
             // Add insurance refund field if applicable
+            // Add insurance refund field if applicable
             if (insuranceRefund > 0) {
-                embed.addField('🛡️ Insurance Refund', `**${insuranceRefund} Caps** returned`, true);
+                embed.addFields({ name: '🛡️ Insurance Refund', value: `**${insuranceRefund} Caps** returned`, inline: true });
             }
 
             // Add stash raid if it happened
             if (stashWasRaided) {
-                embed.addField('💼 Stash Raided!', `**${stashRaidAmount} Caps** from hidden stash stolen`, true);
+                embed.addFields({ name: '💼 Stash Raided!', value: `**${stashRaidAmount} Caps** from hidden stash stolen`, inline: true });
             }
 
             // Add bodyguard mention if they were active
             if (hasBodyguards) {
                 const protectionRemaining = Math.ceil((targetData.protection_expires - now) / 3600000);
-                embed.addField('💂 Bodyguards', `Present but couldn't stop this robbery (${protectionRemaining}h left)`, true);
+                embed.addFields({ name: '💂 Bodyguards', value: `Present but couldn't stop this robbery (${protectionRemaining}h left)`, inline: true });
             }
 
             embed.addFields(
@@ -195,7 +196,7 @@ module.exports = new ApplicationCommand({
 
             // Show why it failed
             if (hasBodyguards) {
-                embed.addField('💂 Bodyguards', `**Stopped the robbery!** Provided -30% success bonus`, true);
+                embed.addFields({ name: '💂 Bodyguards', value: `**Stopped the robbery!** Provided -30% success bonus`, inline: true });
             }
 
             embed.addFields(
