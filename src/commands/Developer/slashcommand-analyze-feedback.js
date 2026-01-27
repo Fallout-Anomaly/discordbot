@@ -25,10 +25,10 @@ module.exports = new ApplicationCommand({
             },
             {
                 name: 'channel',
-                description: 'Feedback channel to scan (optional)',
+                description: 'Feedback channel to scan (optional) - supports text or forum channels',
                 type: ApplicationCommandOptionType.Channel,
                 required: false,
-                channelTypes: [ChannelType.GuildText]
+                channelTypes: [ChannelType.GuildText, ChannelType.GuildForum]
             },
             {
                 name: 'limit',
@@ -67,14 +67,38 @@ module.exports = new ApplicationCommand({
             return interaction.editReply({ content: '❌ Feedback channel not found. Please select a valid text channel.' });
         }
         
-        // Check if channel is a text-based channel (supports messages)
-        if (!feedbackChannel.isTextBased?.()) {
-            return interaction.editReply({ content: `❌ Invalid channel type. The feedback channel must be a text channel, but <#${feedbackChannel.id}> is a ${feedbackChannel.type} channel.` });
+        // Check if channel is a text-based channel OR forum channel
+        const isTextChannel = feedbackChannel.isTextBased?.();
+        const isForumChannel = feedbackChannel.type === ChannelType.GuildForum;
+        
+        if (!isTextChannel && !isForumChannel) {
+            return interaction.editReply({ content: `❌ Invalid channel type. The feedback channel must be a text or forum channel, but <#${feedbackChannel.id}> is type ${feedbackChannel.type}.` });
         }
 
         if (action === 'scan') {
             try {
-                const messages = await feedbackChannel.messages.fetch({ limit });
+                let messages = new Map();
+                
+                // Handle forum channels differently - fetch from threads
+                if (isForumChannel) {
+                    const threads = await feedbackChannel.threads.fetchActive();
+                    for (const [, thread] of threads) {
+                        try {
+                            const threadMessages = await thread.messages.fetch({ limit });
+                            for (const [, msg] of threadMessages) {
+                                messages.set(msg.id, msg);
+                                if (messages.size >= limit) break;
+                            }
+                            if (messages.size >= limit) break;
+                        } catch {
+                            // Continue if thread fetch fails
+                        }
+                    }
+                } else {
+                    // Handle text channels - fetch directly
+                    messages = await feedbackChannel.messages.fetch({ limit });
+                }
+                
                 let scanned = 0;
                 let stored = 0;
 
