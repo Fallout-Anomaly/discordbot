@@ -82,6 +82,19 @@ db.serialize(() => {
         amount INTEGER,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
+
+    // Active Quests Table
+    db.run(`CREATE TABLE IF NOT EXISTS active_quests (
+        user_id TEXT PRIMARY KEY,
+        title TEXT,
+        description TEXT,
+        objective TEXT,
+        difficulty TEXT,
+        reward_caps INTEGER,
+        reward_xp INTEGER,
+        start_time INTEGER,
+        duration INTEGER
+    )`);
 });
 
 module.exports = db;
