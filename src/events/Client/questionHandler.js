@@ -37,7 +37,12 @@ module.exports = new Event({
                 .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ')}` })
                 .setTimestamp();
 
-            await message.reply({ embeds: [embed] });
+            // Handle system messages (cannot reply to them)
+            if (message.system) {
+                 await message.channel.send({ embeds: [embed] });
+            } else {
+                 await message.reply({ embeds: [embed] });
+            }
 
         } catch (err) {
             console.error('[QUESTION HANDLER] Error:', err);

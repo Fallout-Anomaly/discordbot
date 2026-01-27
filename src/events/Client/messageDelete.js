@@ -59,24 +59,34 @@ module.exports = new Event({
              }
 
              if (deletionLog) {
-                 executor = `${deletionLog.executor.tag} (${deletionLog.executor.id})`;
+                 const executorTag = deletionLog.executor ? deletionLog.executor.tag : 'Unknown Executor';
+                 const executorId = deletionLog.executor ? deletionLog.executor.id : '???';
+                 executor = `${executorTag} (${executorId})`;
              } else {
-                 executor = `${message.author.tag} (Self-Delete or Log Not Found)`;
+                 if (message.author) {
+                    executor = `${message.author.tag} (Self-Delete or Log Not Found)`;
+                 } else {
+                    executor = 'Unknown Author (Log Not Found)';
+                 }
              }
         } else {
-             executor = `${message.author.tag} (Self-Delete / No Log Perms)`;
+             if (message.author) {
+                 executor = `${message.author.tag} (Self-Delete / No Log Perms)`;
+             } else {
+                 executor = 'Unknown Author (No Log Perms)';
+             }
         }
 
         const embed = new EmbedBuilder()
             .setTitle('🗑️ Message Deleted')
             .setColor('#e74c3c') // Red
-            .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL() })
+            .setAuthor({ name: message.author ? message.author.tag : 'Unknown User', iconURL: message.author ? message.author.displayAvatarURL() : undefined })
             .addFields(
                 { name: 'Content', value: content.substring(0, 1024) },
                 { name: 'Channel', value: `<#${message.channel.id}>` },
                 { name: 'Deleted By', value: executor }
             )
-            .setFooter({ text: `Author ID: ${message.author.id}` })
+            .setFooter({ text: `Author ID: ${message.author ? message.author.id : 'Unknown'}` })
             .setTimestamp();
 
         // Check if there were attachments
