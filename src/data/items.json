@@ -1,0 +1,28 @@
+[
+    { "id": "stimpak", "name": "Stimpak", "price": 100, "emoji": "💉", "description": "Restores 20 Health.", "type": "consumable", "effect_full": "health+20" },
+    { "id": "radaway", "name": "RadAway", "price": 150, "emoji": "💊", "description": "Removes 100 Rads.", "type": "consumable", "effect_full": "rads-100" },
+    { "id": "purified_water", "name": "Purified Water", "price": 50, "emoji": "💧", "description": "Restores 10 Health.", "type": "consumable", "effect_full": "health+10" },
+    { "id": "nuka_cola", "name": "Nuka-Cola", "price": 75, "emoji": "🥤", "description": "Restores 15 Health, +5 Rads.", "type": "consumable", "effect_full": "health+15,rads+5" },
+    { "id": "jet", "name": "Jet", "price": 200, "emoji": "💨", "description": "Temporarily boosts AP (Roleplay only).", "type": "consumable", "effect_full": "none" },
+    { "id": "10mm_rounds", "name": "10mm Rounds", "price": 5, "emoji": "🔫", "description": "Standard ammo for 10mm Pistol.", "type": "ammo", "effect_full": "none" },
+    { "id": "fusion_core", "name": "Fusion Core", "price": 500, "emoji": "🔋", "description": "Fuel for Power Armor.", "type": "ammo", "effect_full": "none" },
+    { "id": "lunchbox", "name": "Vault-Tec Lunchbox", "price": 1000, "emoji": "💼", "description": "Contains random loot.", "type": "lootbox", "effect_full": "random_loot" },
+    
+    { "id": "10mm_pistol", "name": "10mm Pistol", "price": 250, "emoji": "🔫", "description": "Reliable wasteland sidearm.", "type": "weapon", "damage": 10, "rarity": "common" },
+    { "id": "pipe_rifle", "name": "Pipe Rifle", "price": 150, "emoji": "🔧", "description": "Handmade rifle, better than nothing.", "type": "weapon", "damage": 8, "rarity": "common" },
+    { "id": "bat", "name": "Baseball Bat", "price": 75, "emoji": "🏏", "description": "Home run!", "type": "weapon", "damage": 6, "rarity": "common" },
+    { "id": "hunting_rifle", "name": "Hunting Rifle", "price": 450, "emoji": "🎯", "description": "Long-range bolt action rifle.", "type": "weapon", "damage": 25, "rarity": "uncommon" },
+    { "id": "combat_shotgun", "name": "Combat Shotgun", "price": 600, "emoji": "💥", "description": "Devastating at close range.", "type": "weapon", "damage": 35, "rarity": "uncommon" },
+    { "id": "laser_rifle", "name": "Laser Rifle", "price": 800, "emoji": "🔦", "description": "High-tech energy weapon.", "type": "weapon", "damage": 30, "rarity": "rare" },
+    { "id": "fat_man", "name": "Fat Man", "price": 5000, "emoji": "☢️", "description": "Launches Mini-Nukes. Overkill.", "type": "weapon", "damage": 200, "rarity": "legendary" },
+
+    { "id": "vault_suit", "name": "Vault Jumpsuit", "price": 100, "emoji": "👕", "description": "Standard issue Vault-Tec wear.", "type": "armor", "defense": 2, "rarity": "common" },
+    { "id": "leather_armor", "name": "Leather Armor", "price": 300, "emoji": "🦺", "description": "Provides decent protection.", "type": "armor", "defense": 5, "rarity": "common" },
+    { "id": "raider_armor", "name": "Raider Armor", "price": 250, "emoji": "⛓️", "description": "Spiky and intimidating.", "type": "armor", "defense": 4, "rarity": "common" },
+    { "id": "combat_armor", "name": "Combat Armor", "price": 800, "emoji": "🛡️", "description": "Military grade protection.", "type": "armor", "defense": 15, "rarity": "uncommon" },
+    { "id": "power_armor_t45", "name": "T-45 Power Armor", "price": 2500, "emoji": "🤖", "description": "Heavy duty protection. Needs Fusion Core.", "type": "armor", "defense": 40, "rarity": "rare" },
+
+    { "id": "desk_fan", "name": "Desk Fan", "price": 15, "emoji": "🔩", "description": "Who carries this around?", "type": "junk", "rarity": "common" },
+    { "id": "wonderglue", "name": "Wonderglue", "price": 25, "emoji": "🧴", "description": "Essential for crafting.", "type": "junk", "rarity": "common" },
+    { "id": "duct_tape", "name": "Duct Tape", "price": 20, "emoji": "🩹", "description": "Fixes everything.", "type": "junk", "rarity": "common" }
+]
