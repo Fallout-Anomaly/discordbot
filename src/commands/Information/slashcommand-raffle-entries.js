@@ -1,7 +1,7 @@
-const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const DonorSystem = require('../../utils/DonorSystem');
 const config = require('../../config');
+const db = require('../../utils/EconomyDB');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -36,16 +36,39 @@ module.exports = new ApplicationCommand({
         const tierInfo = DonorSystem.TIERS[donor.tier];
         const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
+        // Fetch entries for active custom raffles
+        const customEntries = await new Promise((resolve) => {
+            db.all(
+                `SELECT r.title, COUNT(re.user_id) as count 
+                 FROM raffle_entries re 
+                 JOIN custom_raffles r ON re.raffle_id = r.id 
+                 WHERE re.user_id = ? AND r.status = 'open' 
+                 GROUP BY r.id`,
+                [userId],
+                (err, rows) => resolve(rows || [])
+            );
+        });
+
         const embed = new EmbedBuilder()
-            .setTitle('🎰 Raffle Entries')
-            .setDescription(`**${tierInfo.name}** raffle status`)
+            .setTitle('🎰 Raffle Dashboard')
+            .setDescription(`**${tierInfo.name}** Status`)
             .addFields(
-                { name: 'Current Entries', value: `**${entries}** entries for ${currentMonth}`, inline: true },
-                { name: 'Maximum/Month', value: `**${tierInfo.raffle_entries_per_month}** entries`, inline: true },
-                { name: 'Win Chance', value: entries > 0 ? `~${(entries / 100 * 100).toFixed(1)}%*` : 'No entries yet' }
-            )
-            .setColor(tierInfo.color)
-            .setFooter({ text: '*Approximate based on typical participant count' })
+                { 
+                    name: '📅 Monthly Supporter Pool', 
+                    value: `**${entries}** entries for ${currentMonth}\n(Limit: ${tierInfo.raffle_entries_per_month}/mo)`, 
+                    inline: false 
+                }
+            );
+
+        if (customEntries.length > 0) {
+            const entryList = customEntries.map(e => `• **${e.title}**: ${e.count} entries`).join('\n');
+            embed.addFields({ name: '🎟️ Active Custom Raffles', value: entryList, inline: false });
+        } else {
+            embed.addFields({ name: '🎟️ Active Custom Raffles', value: 'No entries in active community raffles.', inline: false });
+        }
+
+        embed.setColor(tierInfo.color)
+            .setFooter({ text: 'Monthly entries are automatic. Custom raffles require tickets.' })
             .setTimestamp();
 
         return interaction.reply({ embeds: [embed] });
