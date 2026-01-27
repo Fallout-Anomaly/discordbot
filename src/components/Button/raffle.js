@@ -23,7 +23,7 @@ module.exports = new Component({
             'none': { badge: '', multiplier: 1.0, discount: 0.0 }
         };
 
-        const raffle = await new Promise((resolve) => {
+        let raffle = await new Promise((resolve) => {
             db.get(`SELECT * FROM custom_raffles WHERE id = ?`, [raffleId], (err, row) => {
                 resolve(row);
             });
@@ -144,7 +144,7 @@ module.exports = new Component({
             });
 
             // Get current entry count for this user
-            const userEntryCount = await new Promise((resolve) => {
+            let userEntryCount = await new Promise((resolve) => {
                 db.get(
                     `SELECT COUNT(*) as count FROM raffle_entries WHERE raffle_id = ? AND user_id = ?`,
                     [raffleId, interaction.user.id],
