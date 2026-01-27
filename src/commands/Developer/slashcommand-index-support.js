@@ -3,7 +3,7 @@ const ApplicationCommand = require("../../structure/ApplicationCommand");
 const AIService = require("../../utils/AIService");
 const AutoResponder = require("../../utils/AutoResponder");
 const config = require("../../config");
-const { info, error } = require("../../utils/Console");
+const { error } = require("../../utils/Console");
 
 module.exports = new ApplicationCommand({
     command: {
@@ -19,11 +19,11 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
+    options: {
+        botOwner: true
+    },
     run: async (client, interaction) => {
-        // Permissions check: Bot Owner or ManageMessages
-        if (interaction.user.id !== config.users.ownerId && !interaction.member.permissions.has('ManageMessages')) {
-            return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
-        }
+        // Permission check handled by botOwner flag above
 
 
         const limit = interaction.options.getInteger('limit') || 30;
@@ -34,11 +34,13 @@ module.exports = new ApplicationCommand({
             return interaction.editReply({ content: '❌ No forum support channels configured in config.js.' });
         }
 
+        await interaction.editReply({ content: '🔍 Scanning forum threads...' });
+
         let totalProcessed = 0;
         let totalReplied = 0;
 
         for (const forumId of forumChannels) {
-            const forum = client.channels.cache.get(forumId);
+            const forum = await client.channels.fetch(forumId).catch(() => null);
             if (!forum || !forum.isThreadOnly()) continue;
 
             const fetchedThreads = await forum.threads.fetchActive();
