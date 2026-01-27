@@ -26,10 +26,30 @@ module.exports = new ApplicationCommand({
                     return processScavengeResult(client, interaction);
                 }
             } else {
-                // Start new scavenge
-                const duration = 15 * 60 * 1000; // 15 minutes
-                db.run('INSERT OR REPLACE INTO scavenge (user_id, start_time, duration) VALUES (?, ?, ?)', [userId, now, duration]);
-                interaction.reply({ content: '🎒 You head out into the wasteland... Check back in **15 minutes** to see what you found.' });
+                // START NEW SCAVENGE
+                // Check daily limit
+                db.get('SELECT daily_scavenge_count, last_scavenge_reset FROM users WHERE id = ?', [userId], (err, user) => {
+                    let count = user ? (user.daily_scavenge_count || 0) : 0;
+                    const lastReset = user ? (user.last_scavenge_reset || 0) : 0;
+                    
+                    // Reset if 24h passed
+                    if (now - lastReset > 24 * 60 * 60 * 1000) {
+                        count = 0;
+                        db.run('UPDATE users SET daily_scavenge_count = 0, last_scavenge_reset = ? WHERE id = ?', [now, userId]);
+                    }
+
+                    if (count >= 10) {
+                        return interaction.reply({ content: '🛑 **Daily Limit Reached**\nYou are too exhausted to scavenge more today. (Limit: 10/day)', ephemeral: true });
+                    }
+
+                    const duration = 15 * 60 * 1000; // 15 minutes
+                    db.run('INSERT OR REPLACE INTO scavenge (user_id, start_time, duration) VALUES (?, ?, ?)', [userId, now, duration]);
+                    
+                    // Increment count
+                    db.run('UPDATE users SET daily_scavenge_count = daily_scavenge_count + 1 WHERE id = ?', [userId]);
+
+                    interaction.reply({ content: `🎒 You head out into the wasteland... (Attempt ${count + 1}/10)\nCheck back in **15 minutes** to see what you found.` });
+                });
             }
         });
     }

@@ -38,7 +38,9 @@ db.serialize(() => {
     // Migration for existing tables
     const columnsToAdd = [
         "ALTER TABLE users ADD COLUMN daily_quest_count INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN last_quest_reset INTEGER DEFAULT 0"
+        "ALTER TABLE users ADD COLUMN last_quest_reset INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN daily_scavenge_count INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN last_scavenge_reset INTEGER DEFAULT 0"
     ];
 
     columnsToAdd.forEach(sql => {
