@@ -42,7 +42,19 @@ module.exports = new Event({
                     await interaction.deferUpdate().catch(() => {});
                 }
 
-                const component = client.collection.components.buttons.get(interaction.customId);
+                // Try exact match first
+                let component = client.collection.components.buttons.get(interaction.customId);
+                
+                // If no exact match, try regex patterns
+                if (!component) {
+                    for (const [pattern, comp] of client.collection.components.buttons) {
+                        if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
+                            component = comp;
+                            break;
+                        }
+                    }
+                }
+
                 if (!component) {
                     info(`[BUTTON] Handler not found for button: ${interaction.customId}`);
                     return;
@@ -59,23 +71,33 @@ module.exports = new Event({
             }
 
             if (interaction.isAnySelectMenu()) {
-                // MUST acknowledge IMMEDIATELY using deferUpdate for component interactions
-                if (!interaction.deferred && !interaction.replied) {
-                    await interaction.deferUpdate().catch(() => {});
-                }
-
-                const component = client.collection.components.selects.get(interaction.customId);
+                // Try exact match first
+                let component = client.collection.components.selects.get(interaction.customId);
+                
+                // If no exact match, try regex patterns
                 if (!component) {
-                    info(`[SELECT MENU] Handler not found for select menu: ${interaction.customId}`);
-                    return;
+                    for (const [pattern, comp] of client.collection.components.selects) {
+                        if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
+                            component = comp;
+                            break;
+                        }
+                    }
                 }
 
-                if (!(await checkUserPermissions(component))) return;
+                // Only defer if we have a handler - otherwise let collectors handle it
+                if (component) {
+                    // MUST acknowledge IMMEDIATELY using deferUpdate for component interactions
+                    if (!interaction.deferred && !interaction.replied) {
+                        await interaction.deferUpdate().catch(() => {});
+                    }
 
-                try {
-                    await component.run(client, interaction);
-                } catch (err) {
-                    error('[SELECT MENU]', err);
+                    if (!(await checkUserPermissions(component))) return;
+
+                    try {
+                        await component.run(client, interaction);
+                    } catch (err) {
+                        error('[SELECT MENU]', err);
+                    }
                 }
                 return;
             }
@@ -86,7 +108,19 @@ module.exports = new Event({
                     await interaction.deferReply({ ephemeral: true }).catch(() => {});
                 }
 
-                const component = client.collection.components.modals.get(interaction.customId);
+                // Try exact match first
+                let component = client.collection.components.modals.get(interaction.customId);
+                
+                // If no exact match, try regex patterns
+                if (!component) {
+                    for (const [pattern, comp] of client.collection.components.modals) {
+                        if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
+                            component = comp;
+                            break;
+                        }
+                    }
+                }
+
                 if (!component) {
                     info(`[MODAL] Handler not found for modal: ${interaction.customId}`);
                     return;
