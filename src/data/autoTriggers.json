@@ -1,0 +1,30 @@
+[
+    {
+        "keywords": ["screen", "tiny", "corner", "upper left", "small box"],
+        "response": "**Fix for Small/Corner Screen Issue**:\n1. Open your MO2 folder.\n2. Run `BethINI.exe` as Administrator.\n3. Verify your resolution is correct.\n4. Check `Fallout4Prefs.ini` in MO2: ensure `bFullscreen=1` OR `bBorderless=1`, but not both.\n5. (Nvidia) Go to Control Panel -> Adjust Desktop Size -> Scaling -> Full Screen."
+    },
+    {
+        "keywords": ["freeze", "vault", "stuck", "pipboy", "mcm"],
+        "response": "**Initial Freeze is Normal**:\nWhen you first pick up the Pip-Boy or open MCM, dozens of scripts fire at once. The game may freeze for 1-3 minutes. **Please wait** and let it finish."
+    },
+    {
+        "keywords": ["falling", "floor", "falling through", "void"],
+        "response": "**Falling Through Floor Fix**:\nThis is usually caused by the 'Uneducated Shooter' mod being active too early. Disable it in MO2, complete the Vault sequence, and re-enable it after you exit the Vault."
+    },
+    {
+        "keywords": ["download", "failed", "enb", "error"],
+        "response": "**Wabbajack Download Error**:\n1. If it's an ENB error, download it manually from enbdev.com and put the ZIP in your `downloads` folder.\n2. If it's a 'Fallout 76' error, it's a false positive.\n3. Restart Wabbajack and try again."
+    },
+    {
+        "keywords": ["crash", "startup", "ctd", "launcher"],
+        "response": "**Startup Crash Fixes**:\n1. **Overlays**: Disable Discord/Steam/Medal overlays.\n2. **Antivirus**: Exclude the Modlist folder.\n3. **Page File**: Ensure you have a 20GB+ Page File set on your SSD."
+    },
+    {
+        "keywords": ["naked", "raiders", "body", "invisible"],
+        "response": "**Naked Raiders Issue**:\nThis is a known issue with the Merc Veteran armor integration. It is purely visual. Ensure you have the latest patches enabled in MO2."
+    },
+    {
+        "keywords": ["controller", "gamepad", "input"],
+        "response": "**Controller Support**:\n1. Use the official Steam Input config tailored for Anomaly.\n2. Ensure 'Gamepad' is enabled in settings.\n3. Do not use external mappers like DS4Windows if Steam Input is active."
+    }
+]
