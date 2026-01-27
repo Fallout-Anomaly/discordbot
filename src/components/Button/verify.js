@@ -28,9 +28,22 @@ module.exports = new Component({
             }
 
             await interaction.member.roles.add(role);
+
+            // Fetch custom message or use default
+            let successMsg = client.database.get(`verify_msg_${interaction.guild.id}`);
+            
+            if (!successMsg) {
+                 successMsg = `✅ Success! You have been granted the <@&${roleId}> role. Welcome to the full survivor experience!`;
+            }
+
+            // Replace placeholders
+            successMsg = successMsg
+                .replace(/{user}/g, `<@${interaction.user.id}>`)
+                .replace(/{role}/g, `<@&${roleId}>`)
+                .replace(/\\n/g, '\n'); // Handle escaped newlines if entered via command
             
             await interaction.reply({ 
-                content: `✅ Success! You have been granted the <@&${roleId}> role. Welcome to the full survivor experience!`, 
+                content: successMsg, 
                 ephemeral: true 
             });
         } catch (error) {
