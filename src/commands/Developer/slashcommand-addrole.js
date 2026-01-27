@@ -77,9 +77,18 @@ module.exports = new ApplicationCommand({
                 
                 processed++;
                 
-                // Update status every 50 members
+                // Update status every 50 members with error handling
                 if (processed % 50 === 0) {
-                    await interaction.editReply(`🔄 Processing: ${processed}/${total}.\nSuccess: ${successCount}\nErrors: ${errorCount}`);
+                    try {
+                        await interaction.editReply(`🔄 Processing: ${processed}/${total}.\nSuccess: ${successCount}\nErrors: ${errorCount}`);
+                    } catch (statusErr) {
+                        // Interaction token expired (15 min timeout), send to channel instead
+                        if (statusErr.code === 10062 || statusErr.code === 40060) {
+                            await interaction.channel.send({
+                                content: `🔄 **Mass Role Assignment In Progress**\n\nProcessing: ${processed}/${total}\nSuccess: ${successCount}\nErrors: ${errorCount}`
+                            }).catch(() => {});
+                        }
+                    }
                     
                     // Throttle: Add a small delay to respect rate limits (e.g., 1000ms every 50 members)
                     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -97,7 +106,18 @@ module.exports = new ApplicationCommand({
                 )
                 .setTimestamp();
 
-            await interaction.editReply({ content: null, embeds: [embed] });
+            try {
+                await interaction.editReply({ content: null, embeds: [embed] });
+            } catch (finalErr) {
+                // Interaction expired, send as channel message
+                if (finalErr.code === 10062 || finalErr.code === 40060) {
+                    await interaction.channel.send({
+                        content: `✅ **Mass Role Assignment Complete**\n\n✅ Successfully added <@&${role.id}> to **${successCount}/${total}** members.\n❌ Failed: ${errorCount}`
+                    }).catch(() => {});
+                } else {
+                    throw finalErr;
+                }
+            }
 
         } catch (e) {
             console.error(e);
