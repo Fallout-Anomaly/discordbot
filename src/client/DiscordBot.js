@@ -86,6 +86,10 @@ class DiscordBot extends Client {
             
             // Load Knowledge Base
             await this.knowledge.load();
+
+            // Sync Items to DB
+            const ItemLoader = require('../utils/ItemLoader');
+            await ItemLoader.syncItems();
             
             this.commands_handler.load();
             this.components_handler.load();

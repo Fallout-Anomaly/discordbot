@@ -2,17 +2,6 @@ const db = require('../../utils/EconomyDB');
 const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 
-const SHOP_ITEMS = [
-    { id: 'stimpak', name: 'Stimpak', price: 100, emoji: '💉', description: 'Restores 20 Health.', type: 'consumable' },
-    { id: 'radaway', name: 'RadAway', price: 150, emoji: '💊', description: 'Removes 100 Rads.', type: 'consumable' },
-    { id: 'purified_water', name: 'Purified Water', price: 50, emoji: '💧', description: 'Restores 10 Health.', type: 'consumable' },
-    { id: 'nuka_cola', name: 'Nuka-Cola', price: 75, emoji: '🥤', description: 'Restores 15 Health, +5 Rads.', type: 'consumable' },
-    { id: 'jet', name: 'Jet', price: 200, emoji: '💨', description: 'Temporarily boosts AP (Roleplay only).', type: 'consumable' },
-    { id: '10mm_rounds', name: '10mm Rounds (x50)', price: 250, emoji: '🔫', description: 'Ammo for your pistol.', type: 'ammo' },
-    { id: 'fusion_core', name: 'Fusion Core', price: 500, emoji: '🔋', description: 'Power for Power Armor.', type: 'ammo' },
-    { id: 'lunchbox', name: 'Vault-Tec Lunchbox', price: 1000, emoji: '💼', description: 'Contains random loot.', type: 'lootbox' }
-];
-
 module.exports = new ApplicationCommand({
     command: {
         name: 'shop',
@@ -21,7 +10,23 @@ module.exports = new ApplicationCommand({
             {
                 name: 'view',
                 description: 'View items available for sale.',
-                type: ApplicationCommandOptionType.Subcommand
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'type',
+                        description: 'Filter by item type.',
+                        type: ApplicationCommandOptionType.String,
+                        required: false,
+                        choices: [
+                            { name: 'Consumables', value: 'consumable' },
+                            { name: 'Weapons', value: 'weapon' },
+                            { name: 'Armor', value: 'armor' },
+                            { name: 'Ammo', value: 'ammo' },
+                            { name: 'Junk', value: 'junk' },
+                            { name: 'Lootboxes', value: 'lootbox' }
+                        ]
+                    }
+                ]
             },
             {
                 name: 'buy',
@@ -50,76 +55,125 @@ module.exports = new ApplicationCommand({
         const subcommand = interaction.options.getSubcommand();
 
         if (subcommand === 'view') {
-            const embed = new EmbedBuilder()
-                .setTitle('🛒 Wasteland General Store')
-                .setColor('#2ecc71')
-                .setThumbnail('https://i.imgur.com/7123123.png') // Generic cap icon or similar
-                .setFooter({ text: 'Use /shop buy <item> to purchase.' });
+            const typeFilter = interaction.options.getString('type');
+            
+            let query = 'SELECT * FROM items';
+            let params = [];
+            
+            if (typeFilter) {
+                query += ' WHERE type = ?';
+                params.push(typeFilter);
+            }
+            
+            // Limit to avoid embed overflow if list is massive
+            query += ' ORDER BY type ASC, price ASC';
 
-            SHOP_ITEMS.forEach(item => {
-                embed.addFields({
-                    name: `${item.emoji} ${item.name} — ${item.price} Caps`,
-                    value: `*${item.description}*`,
-                    inline: false
+            db.all(query, params, (err, rows) => {
+                if (err) {
+                    return interaction.reply({ content: '❌ Database error fetching items.', ephemeral: true });
+                }
+                
+                if (rows.length === 0) {
+                     return interaction.reply({ content: '🚫 No items found matching that filter.', ephemeral: true });
+                }
+
+                // Chunking for pagination could be added later, for now we assume <25 fields or fit in description
+                const embed = new EmbedBuilder()
+                    .setTitle('🛒 Wasteland General Store')
+                    .setColor('#2ecc71')
+                    .setThumbnail('https://i.imgur.com/7123123.png') 
+                    .setDescription('Welcome, traveler! Here is what we have in stock.');
+
+                let currentFieldCount = 0;
+                
+                rows.forEach(item => {
+                    if (currentFieldCount < 25) {
+                        let detail = `*${item.description}*`;
+                        if (item.type === 'weapon') detail += `\n⚔️ DMG: ${item.damage}`;
+                        if (item.type === 'armor') detail += `\n🛡️ DEF: ${item.defense}`;
+                        if (item.effect_full && item.effect_full !== 'none') detail += `\n✨ Effect: ${item.effect_full}`;
+
+                        embed.addFields({
+                            name: `${item.emoji} ${item.name} — ${item.price} Caps`,
+                            value: detail,
+                            inline: true
+                        });
+                        currentFieldCount++;
+                    }
                 });
-            });
+                
+                if (rows.length > 25) {
+                    embed.setFooter({ text: `...and ${rows.length - 25} more items. Filter by type to see more!` });
+                } else {
+                    embed.setFooter({ text: 'Use /shop buy <item> to purchase.' });
+                }
 
-            return interaction.reply({ embeds: [embed] });
+                return interaction.reply({ embeds: [embed] });
+            });
         }
 
         if (subcommand === 'buy') {
             const query = interaction.options.getString('item');
             const amount = interaction.options.getInteger('amount') || 1;
             const userId = interaction.user.id;
-
-            const item = SHOP_ITEMS.find(i => i.id === query || i.name === query);
-
-            if (!item) {
-                return interaction.reply({ content: '❌ Item not found. Check the /shop view list.', ephemeral: true });
-            }
-
-            const totalCost = item.price * amount;
-
-            db.get('SELECT balance, stat_charisma FROM users WHERE id = ?', [userId], (err, row) => {
-                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
-                
-                const balance = row ? row.balance : 0;
-                const charisma = row ? (row.stat_charisma || 1) : 1;
-                
-                // Charisma Discount (1% per level, max 10%)
-                const discount = Math.min(charisma * 0.01, 0.10);
-                const finalCost = Math.floor(totalCost * (1 - discount));
-
-                if (balance < finalCost) {
-                    return interaction.reply({ content: `❌ You need **${finalCost} Caps** to buy this (Short by ${finalCost - balance}).`, ephemeral: true });
+            
+            // Fetch exact item from DB
+            db.get('SELECT * FROM items WHERE id = ? OR name = ?', [query, query], (err, item) => {
+                if (err || !item) {
+                     return interaction.reply({ content: '❌ Item not found. Please select from the list.', ephemeral: true });
                 }
 
-                // Deduct balance and add item (Transaction)
-                db.serialize(() => {
-                    db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [finalCost, userId]);
-                    
-                    // Check if item exists in inventory
-                    db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, item.id], (err, invRow) => {
-                        if (invRow) {
-                            db.run('UPDATE inventory SET amount = amount + ? WHERE user_id = ? AND item_id = ?', [amount, userId, item.id]);
-                        } else {
-                            db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, ?)', [userId, item.id, amount]);
-                        }
-                    });
-                });
+                const totalCost = item.price * amount;
 
-                const discountMsg = discount > 0 ? ` (Discount applied: -${Math.floor(discount*100)}%)` : '';
-                interaction.reply({ content: `🛍️ Purchase successful! You bought **${amount}x ${item.emoji} ${item.name}** for **${finalCost} Caps**${discountMsg}.` });
+                db.get('SELECT balance, stat_charisma FROM users WHERE id = ?', [userId], (err, userRow) => {
+                    if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                    
+                    const balance = userRow ? userRow.balance : 0;
+                    const charisma = userRow ? (userRow.stat_charisma || 1) : 1;
+                    
+                    // Charisma Discount
+                    const discount = Math.min(charisma * 0.01, 0.10);
+                    const finalCost = Math.floor(totalCost * (1 - discount));
+
+                    if (balance < finalCost) {
+                        return interaction.reply({ content: `❌ You need **${finalCost} Caps** to buy this (Short by ${finalCost - balance}).`, ephemeral: true });
+                    }
+
+                    // Transaction
+                    db.serialize(() => {
+                        db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [finalCost, userId]);
+                        
+                        // Check inventory
+                        db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, item.id], (err, invRow) => {
+                            if (invRow) {
+                                db.run('UPDATE inventory SET amount = amount + ? WHERE user_id = ? AND item_id = ?', [amount, userId, item.id]);
+                            } else {
+                                db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, ?)', [userId, item.id, amount]);
+                            }
+                        });
+                    });
+
+                    const discountMsg = discount > 0 ? ` (Discount applied: -${Math.floor(discount*100)}%)` : '';
+                    interaction.reply({ content: `🛍️ Purchase successful! You bought **${amount}x ${item.emoji} ${item.name}** for **${finalCost} Caps**${discountMsg}.` });
+                });
             });
         }
     },
-    // Autocomplete handling for the 'item' option
+    // Autocomplete handling
     autocomplete: async (client, interaction) => {
         const focusedValue = interaction.options.getFocused().toLowerCase();
-        const filtered = SHOP_ITEMS.filter(item => item.name.toLowerCase().includes(focusedValue) || item.id.includes(focusedValue));
         
-        await interaction.respond(
-            filtered.map(item => ({ name: `${item.emoji} ${item.name} (${item.price}c)`, value: item.id })).slice(0, 25)
-        );
+        // Query DB for name/ID matches
+        // Using LIKE for flexible search
+        db.all('SELECT id, name, emoji, price FROM items WHERE name LIKE ? OR id LIKE ? LIMIT 25', [`%${focusedValue}%`, `%${focusedValue}%`], (err, rows) => {
+            if (err || !rows) return interaction.respond([]);
+            
+            const results = rows.map(item => ({
+                name: `${item.emoji} ${item.name} (${item.price}c)`,
+                value: item.id
+            }));
+            
+            interaction.respond(results).catch(() => {});
+        });
     }
 }).toJSON();

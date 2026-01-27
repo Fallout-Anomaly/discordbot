@@ -61,6 +61,20 @@ db.serialize(() => {
         start_time INTEGER,
         duration INTEGER
     )`);
+
+    // Items Table (Static Data Cache)
+    db.run(`CREATE TABLE IF NOT EXISTS items (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        price INTEGER,
+        emoji TEXT,
+        description TEXT,
+        type TEXT,
+        rarity TEXT DEFAULT 'common',
+        damage INTEGER DEFAULT 0,
+        defense INTEGER DEFAULT 0,
+        effect_full TEXT DEFAULT 'none'
+    )`);
     
     db.run(`CREATE TABLE IF NOT EXISTS inventory (
         user_id TEXT,

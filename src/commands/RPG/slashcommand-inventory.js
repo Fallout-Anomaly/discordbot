@@ -10,8 +10,17 @@ module.exports = new ApplicationCommand({
     },
     run: async (client, interaction) => {
         const userId = interaction.user.id;
+        
+        // Join with items table to get proper names and emojis
+        const query = `
+            SELECT i.name, i.emoji, i.type, i.rarity, inv.amount, inv.item_id 
+            FROM inventory inv
+            LEFT JOIN items i ON inv.item_id = i.id
+            WHERE inv.user_id = ? AND inv.amount > 0
+            ORDER BY i.type, i.name
+        `;
 
-        db.all('SELECT item_id, amount FROM inventory WHERE user_id = ? AND amount > 0', [userId], (err, rows) => {
+        db.all(query, [userId], (err, rows) => {
             if (err) {
                 console.error(err);
                 return interaction.reply({ content: '❌ Database error.', ephemeral: true });
@@ -24,28 +33,23 @@ module.exports = new ApplicationCommand({
                 });
             }
 
-            // Map standard items to emojis (can share this list from a config file later if needed)
-            const ITEM_EMOJIS = {
-                'stimpak': '💉',
-                'radaway': '💊',
-                'purified_water': '💧',
-                'nuka_cola': '🥤',
-                'jet': '💨',
-                '10mm_rounds': '🔫',
-                'fusion_core': '🔋',
-                'lunchbox': '💼'
-            };
-
-            const inventoryList = rows.map(row => {
-                const emoji = ITEM_EMOJIS[row.item_id] || '📦';
-                const name = row.item_id.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                return `${emoji} **${name}**: x${row.amount}`;
-            }).join('\n');
+            let invString = '';
+            
+            // Group by type? Or just list them.
+            // Let's just list them nicely for now.
+            rows.forEach(row => {
+                 // Fallback if item deleted from DB but still in inventory? (Should shouldn't happen usually)
+                 const name = row.name || row.item_id;
+                 const emoji = row.emoji || '📦';
+                 const rarityIcon = row.rarity === 'legendary' ? '⭐' : '';
+                 
+                 invString += `${emoji} **${name}** ${rarityIcon} — x${row.amount}\n`;
+            });
 
             const embed = new EmbedBuilder()
                 .setTitle(`🎒 Inventory - ${interaction.user.username}`)
                 .setColor('#f1c40f')
-                .setDescription(inventoryList)
+                .setDescription(invString.substring(0, 4000) || "Empty.")
                 .setTimestamp();
 
             interaction.reply({ embeds: [embed] });
