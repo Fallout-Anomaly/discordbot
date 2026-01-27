@@ -7,6 +7,8 @@ const ComponentsHandler = require("./handler/ComponentsHandler");
 const ComponentsListener = require("./handler/ComponentsListener");
 const EventsHandler = require("./handler/EventsHandler");
 const { QuickYAML } = require('quick-yaml.db');
+const KnowledgeBase = require("../utils/KnowledgeBase");
+const path = require('path');
 
 class DiscordBot extends Client {
     collection = {
@@ -34,6 +36,7 @@ class DiscordBot extends Client {
     components_handler = new ComponentsHandler(this);
     events_handler = new EventsHandler(this);
     database = new QuickYAML(config.database.path);
+    knowledge = new KnowledgeBase(path.join(process.cwd(), config.database.knowledge));
 
     constructor() {
         super({
@@ -80,6 +83,10 @@ class DiscordBot extends Client {
 
         try {
             await this.login(process.env.CLIENT_TOKEN);
+            
+            // Load Knowledge Base
+            await this.knowledge.load();
+            
             this.commands_handler.load();
             this.components_handler.load();
             this.events_handler.load();
