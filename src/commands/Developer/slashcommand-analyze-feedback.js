@@ -82,10 +82,12 @@ module.exports = new ApplicationCommand({
                 // Handle forum channels differently - fetch from threads
                 if (isForumChannel) {
                     try {
-                        const threadsCollection = await feedbackChannel.threads.fetchActive();
+                        // fetchActive() returns { threads: Collection, members: Collection }
+                        const fetched = await feedbackChannel.threads.fetchActive();
+                        const threads = fetched.threads; // Extract the actual threads Collection
                         
                         // Convert collection to array of threads and iterate
-                        const threadArray = Array.from(threadsCollection.values());
+                        const threadArray = Array.from(threads.values());
                         
                         if (threadArray.length === 0) {
                             return interaction.editReply({ content: '❌ No active threads found in the forum channel. The forum may be empty.' });
