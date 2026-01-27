@@ -1,9 +1,6 @@
 const { REST, Routes } = require('discord.js');
 const { info, error, success } = require('../../utils/Console');
 const { readdirSync } = require('fs');
-const DiscordBot = require('../DiscordBot');
-const ApplicationCommand = require('../../structure/ApplicationCommand');
-const MessageCommand = require('../../structure/MessageCommand');
 
 class CommandsHandler {
     client;
@@ -106,6 +103,8 @@ class CommandsHandler {
             }
         } catch (err) {
             error('Failed to register application commands: ' + err.message);
+            // Clear the array on failure to prevent stale data persisting
+            this.client.rest_application_commands_array = [];
         }
     }
 }

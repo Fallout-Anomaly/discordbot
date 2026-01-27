@@ -32,7 +32,7 @@ module.exports = new ApplicationCommand({
         const topic = interaction.options.getString('topic');
         const content = interaction.options.getString('content');
 
-        const knowledgePath = path.join(__dirname, '../../../knowledge/LearnedContext.txt');
+        const knowledgePath = path.join(process.cwd(), 'knowledge/LearnedContext.txt');
         
         // Format the new entry
         const entry = `\n\n--- [Learned] ${topic} ---\n${content}`;

@@ -1,6 +1,6 @@
 const { Client, Collection, Partials, GatewayIntentBits } = require("discord.js");
 const CommandsHandler = require("./handler/CommandsHandler");
-const { warn, error, info, success } = require("../utils/Console");
+const { warn, error, success } = require("../utils/Console");
 const config = require("../config");
 const CommandsListener = require("./handler/CommandsListener");
 const ComponentsHandler = require("./handler/ComponentsHandler");
@@ -45,7 +45,6 @@ class DiscordBot extends Client {
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.MessageContent,
                 GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.DirectMessages,
                 GatewayIntentBits.DirectMessages,
                 GatewayIntentBits.GuildModeration,
                 GatewayIntentBits.GuildMessageReactions

@@ -1,6 +1,4 @@
-const { Message } = require("discord.js");
-const MessageCommand = require("../../structure/MessageCommand");
-const ApplicationCommand = require("../../structure/ApplicationCommand");
+
 const config = require("../../config");
 
 const application_commands_cooldown = new Map();
@@ -13,14 +11,15 @@ const message_commands_cooldown = new Map();
  * @param {ApplicationCommand['data']['command']} command 
  * @returns {boolean}
  */
-const handleApplicationCommandOptions = async (interaction, options, command) => {
+const handleApplicationCommandOptions = async (interaction, options, _command) => {
     if (options.botOwner) {
+        // Bot Owner commands should ONLY be accessible to the owner, not staff
+        // This is critical for security as these commands can shutdown the bot, eval code, etc.
         const isOwner = interaction.user.id === config.users.ownerId;
-        const hasStaffRole = process.env.STAFF_ROLE_ID && interaction.member?.roles?.cache.has(process.env.STAFF_ROLE_ID);
 
-        if (!isOwner && !hasStaffRole) {
+        if (!isOwner) {
             await interaction.reply({
-                content: '❌ You do not have permission to run this command (Owner or Staff role required).',
+                content: '❌ You do not have permission to run this command (Bot Owner only).',
                 ephemeral: true
             });
 
@@ -102,12 +101,13 @@ const handleApplicationCommandOptions = async (interaction, options, command) =>
  */
 const handleMessageCommandOptions = async (message, options, command) => {
     if (options.botOwner) {
+        // Bot Owner commands should ONLY be accessible to the owner, not staff
+        // This is critical for security as these commands can shutdown the bot, eval code, etc.
         const isOwner = message.author.id === config.users.ownerId;
-        const hasStaffRole = process.env.STAFF_ROLE_ID && message.member?.roles?.cache.has(process.env.STAFF_ROLE_ID);
 
-        if (!isOwner && !hasStaffRole) {
+        if (!isOwner) {
             await message.reply({
-                content: config.messages.NOT_BOT_OWNER // Might want to update this message to reflect Staff allowed, but strictly "NOT_BOT_OWNER" is the config key.
+                content: config.messages.NOT_BOT_OWNER
             });
 
             return false;
@@ -145,17 +145,19 @@ const handleMessageCommandOptions = async (message, options, command) => {
     }
 
     if (options.cooldown) {
+        // Map alias to main command name to prevent cooldown bypass
+        const mainCommandName = command.name;
         const cooldownFunction = () => {
             let data = message_commands_cooldown.get(message.author.id);
 
-            data.push(command.name);
+            data.push(mainCommandName);
 
             message_commands_cooldown.set(message.author.id, data);
 
             setTimeout(() => {
                 let data = message_commands_cooldown.get(message.author.id);
 
-                data = data.filter((cmd) => cmd !== command.name);
+                data = data.filter((cmd) => cmd !== mainCommandName);
 
                 if (data.length <= 0) {
                     message_commands_cooldown.delete(message.author.id);
@@ -168,7 +170,7 @@ const handleMessageCommandOptions = async (message, options, command) => {
         if (message_commands_cooldown.has(message.author.id)) {
             let data = message_commands_cooldown.get(message.author.id);
 
-            if (data.some((v) => v === command.name)) {
+            if (data.some((v) => v === mainCommandName)) {
                 await message.reply({
                     content: config.messages.GUILD_COOLDOWN.replace(/%cooldown%/g, options.cooldown / 1000)
                 });
@@ -178,7 +180,7 @@ const handleMessageCommandOptions = async (message, options, command) => {
                 cooldownFunction();
             }
         } else {
-            message_commands_cooldown.set(message.author.id, [command.name]);
+            message_commands_cooldown.set(message.author.id, [mainCommandName]);
             cooldownFunction();
         }
     }

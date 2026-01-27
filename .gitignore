@@ -7,3 +7,6 @@ src/config.js
 database.yml
 terminal.log
 log.txt
+DoNotUpload
+eslint_report*.txt
+code_analysis_report.txt

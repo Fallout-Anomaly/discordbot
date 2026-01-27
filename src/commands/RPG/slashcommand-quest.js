@@ -72,7 +72,7 @@ module.exports = new ApplicationCommand({
                 // Get user info and check daily limits
                 db.get('SELECT xp, daily_quest_count, last_quest_reset FROM users WHERE id = ?', [userId], async (err, user) => {
                     const now = Date.now();
-                    const ONE_DAY = 24 * 60 * 60 * 1000;
+            
                     
                     let dailyCount = user ? (user.daily_quest_count || 0) : 0;
                     let lastReset = user ? (user.last_quest_reset || 0) : 0;
@@ -124,7 +124,7 @@ module.exports = new ApplicationCommand({
                             // Update Daily Count
                             db.run(`UPDATE users SET daily_quest_count = ?, last_quest_reset = ? WHERE id = ?`, 
                                 [dailyCount + 1, Date.now(), userId], 
-                                (err) => {
+                                () => {
                                     // If user row didn't exist (unlikely if they have xp), this might fail to update count
                                     // But usually users are created on join/message.
                                 }
@@ -156,35 +156,45 @@ module.exports = new ApplicationCommand({
                     return interaction.reply({ content: '❌ You have no active quest.', ephemeral: true });
                 }
 
+                const now = Date.now();
                 const endTime = quest.start_time + (quest.duration * 60 * 1000);
-                if (Date.now() < endTime) {
-                    return interaction.reply({ content: `⏳ Your quest is not done yet! Return <t:${Math.floor(endTime/1000)}:R>.`, ephemeral: true });
-                }
 
-                // Grant rewards
-                db.serialize(() => {
-                    db.run('UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?', [quest.reward_caps, quest.reward_xp, userId]);
-                    if (quest.reward_item) {
-                        db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1', [userId, quest.reward_item], (err) => {
-                            // Ignore specific SQL errors if table constraints vary, but this is standard sqlite 3.24+ syntax usually
-                             if (err) {
-                                  // Fallback for older sqlite without upsert
-                                  db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item], (e, row) => {
-                                      if (row) db.run('UPDATE inventory SET amount = amount + 1 WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item]);
-                                      else db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1)', [userId, quest.reward_item]);
-                                  });
-                             }
+                // Attempt atomic completion by deleting only if timer has elapsed and this exact quest row matches
+                db.run(
+                    'DELETE FROM active_quests WHERE user_id = ? AND start_time = ? AND ? >= (start_time + (duration * 60 * 1000))',
+                    [userId, quest.start_time, now],
+                    function (delErr) {
+                        if (delErr) {
+                            return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                        }
+                        if (this.changes === 0) {
+                            return interaction.reply({ content: `⏳ Your quest is not done yet or already claimed. Return <t:${Math.floor(endTime/1000)}:R>.`, ephemeral: true });
+                        }
+
+                        // Deletion succeeded, grant rewards exactly once
+                        db.serialize(() => {
+                            db.run('UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?', [quest.reward_caps, quest.reward_xp, userId]);
+                            if (quest.reward_item) {
+                                db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1', [userId, quest.reward_item], (upErr) => {
+                                    if (upErr) {
+                                        // Fallback for older sqlite without upsert
+                                        db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item], (e, row) => {
+                                            if (row) db.run('UPDATE inventory SET amount = amount + 1 WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item]);
+                                            else db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1)', [userId, quest.reward_item]);
+                                        });
+                                    }
+                                });
+                            }
                         });
+
+                        const embed = new EmbedBuilder()
+                            .setTitle('🎉 Quest Complete!')
+                            .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
+                            .setColor('#f1c40f');
+
+                        interaction.reply({ embeds: [embed] });
                     }
-                    db.run('DELETE FROM active_quests WHERE user_id = ?', [userId]);
-                });
-
-                const embed = new EmbedBuilder()
-                    .setTitle('🎉 Quest Complete!')
-                    .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
-                    .setColor('#f1c40f');
-
-                interaction.reply({ embeds: [embed] });
+                );
             });
         }
     }

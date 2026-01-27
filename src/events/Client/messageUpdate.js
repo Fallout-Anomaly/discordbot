@@ -9,12 +9,11 @@ module.exports = new Event({
         if (newMessage.author?.bot) return;
 
         // Handle partials so we can log content for uncached messages
-        if (oldMessage.partial) {
+        if (oldMessage && oldMessage.partial) {
             try {
                 await oldMessage.fetch();
-            } catch (e) {
-                // If old message isn't fetchable, we can't show the original content
-                // console.debug(`[LOGS] Could not fetch partial old message ${oldMessage.id}`);
+            } catch {
+                // Ignore
             }
         }
 

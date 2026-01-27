@@ -4,8 +4,7 @@ const db = require('../../utils/EconomyDB');
 
 // Simple XP System
 // 10-20 XP per message
-// 1 min cooldown
-const xpCooldowns = new Set();
+// 1 min cooldown (persisted in database for restart resilience)
 
 module.exports = new Event({
     event: Events.MessageCreate,
@@ -13,23 +12,44 @@ module.exports = new Event({
     run: async (client, message) => {
         if (message.author.bot || !message.guild) return;
 
-        // Rate limit: 1 XP gain per minute per user
-        if (xpCooldowns.has(message.author.id)) return;
+        const userId = message.author.id;
+        const now = Date.now();
 
-        const xpGain = Math.floor(Math.random() * 11) + 10; // 10-20 XP
+        // Check if user has active cooldown in database
+        db.get('SELECT cooldown_expiry FROM xp_cooldowns WHERE user_id = ?', [userId], async (err, row) => {
+            if (err) {
+                console.error('XP Cooldown Check Error:', err);
+                return;
+            }
 
-        db.serialize(() => {
-            // Ensure user exists, then add XP
-            db.run('INSERT OR IGNORE INTO users (id, balance, xp) VALUES (?, 0, 0)', [message.author.id]);
-            db.run('UPDATE users SET xp = xp + ? WHERE id = ?', [xpGain, message.author.id], (err) => {
+            // If cooldown exists and hasn't expired, skip XP gain
+            if (row && row.cooldown_expiry > now) {
+                return;
+            }
+
+            const xpGain = Math.floor(Math.random() * 11) + 10; // 10-20 XP
+            const cooldownExpiry = now + 60000; // 1 minute from now
+
+            // Use UPSERT for atomic operation: insert new user or update XP in a single atomic call
+            // This prevents race conditions where two rapid messages could cause double-inserts or lock errors
+            const xpQuery = `
+                INSERT INTO users (id, balance, xp) 
+                VALUES (?, 0, ?) 
+                ON CONFLICT(id) DO UPDATE SET xp = xp + ?
+            `;
+            db.run(xpQuery, [userId, xpGain, xpGain], (err) => {
                 if (err) console.error('XP Update Error:', err);
             });
-        });
 
-        // Add to cooldown
-        xpCooldowns.add(message.author.id);
-        setTimeout(() => {
-            xpCooldowns.delete(message.author.id);
-        }, 60000); // 1 minute
+            // Update cooldown in database
+            const cooldownQuery = `
+                INSERT INTO xp_cooldowns (user_id, cooldown_expiry)
+                VALUES (?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET cooldown_expiry = ?
+            `;
+            db.run(cooldownQuery, [userId, cooldownExpiry, cooldownExpiry], (err) => {
+                if (err) console.error('XP Cooldown Update Error:', err);
+            });
+        });
     }
 }).toJSON();

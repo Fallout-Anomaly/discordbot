@@ -35,7 +35,7 @@ module.exports = new ApplicationCommand({
         const itemId = interaction.options.getString('item');
         const userId = interaction.user.id;
 
-        // Verify item ownership and type
+        // Verify item ownership and type (then consume atomically)
         db.get(`SELECT inv.amount, i.name, i.effect_full, i.type, i.emoji FROM inventory inv JOIN items i ON inv.item_id = i.id WHERE inv.user_id = ? AND inv.item_id = ?`, [userId, itemId], (err, item) => {
             if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
             
@@ -47,60 +47,66 @@ module.exports = new ApplicationCommand({
                 return interaction.reply({ content: `❌ You cannot "use" a ${item.type}. Equip it or sell it instead!`, ephemeral: true });
             }
 
-            // Apply Effects
-            let replyMessage = '';
-            
-            // Simple parsing of "health+20,rads-100"
-            if (item.type === 'consumable') {
-                const effects = item.effect_full.split(',');
-                let healthChange = 0;
-                let radChange = 0;
-                
-                effects.forEach(eff => {
-                    const match = eff.match(/([a-zA-Z_]+)([+\-]\d+)/);
-                    if (match) {
-                        const type = match[1];
-                        const val = parseInt(match[2]);
-                        
-                        if (type === 'health') healthChange += val;
-                        if (type === 'rads') radChange += val;
-                        // Add more like xp, etc if needed
+            // Attempt to consume 1 item atomically
+            db.run(
+                'UPDATE inventory SET amount = amount - 1 WHERE user_id = ? AND item_id = ? AND amount > 0',
+                [userId, itemId],
+                function (updErr) {
+                    if (updErr) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                    if (this.changes === 0) {
+                        return interaction.reply({ content: "❌ You don't have this item!", ephemeral: true });
                     }
-                });
-                
-                // Grant XP for using items (Survive mechanic)
-                const xpGain = 10;
-                db.run('UPDATE users SET xp = xp + ? WHERE id = ?', [xpGain, userId]);
 
-                replyMessage = `You used **${item.emoji} ${item.name}**.\n`;
-                if (healthChange > 0) replyMessage += `💚 **Healed ${healthChange} HP**\n`;
-                if (radChange < 0) replyMessage += `☢️ **Removed ${Math.abs(radChange)} Rads**\n`;
-                if (radChange > 0) replyMessage += `☢️ **Gained ${radChange} Rads**\n`;
-                replyMessage += `✨ +${xpGain} XP`;
+                    // Apply Effects only after successful consumption
+                    let replyMessage = '';
 
-            } else if (item.type === 'lootbox') {
-                // Open lootbox logic
-                 // Random reward from items table?
-                 // For now simple caps reward
-                 const capReward = Math.floor(Math.random() * 500) + 100;
-                 db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [capReward, userId]);
-                 replyMessage = `You opened **${item.name}** and found **${capReward} Caps**!`;
-            }
+                    if (item.type === 'consumable') {
+                        const effects = item.effect_full.split(',');
+                        let healthChange = 0;
+                        let radChange = 0;
 
-            // Consume Item
-            db.serialize(() => {
-                if (item.amount > 1) {
-                    db.run('UPDATE inventory SET amount = amount - 1 WHERE user_id = ? AND item_id = ?', [userId, itemId]);
-                } else {
-                    db.run('DELETE FROM inventory WHERE user_id = ? AND item_id = ?', [userId, itemId]);
+                        effects.forEach(eff => {
+                            const match = eff.match(/([a-zA-Z_]+)([+-]\d+)/);
+                            if (match) {
+                                const type = match[1];
+                                const val = parseInt(match[2]);
+                                if (type === 'health') healthChange += val;
+                                if (type === 'rads') radChange += val;
+                            }
+                        });
+
+                        const xpGain = 10;
+                        db.run('UPDATE users SET xp = xp + ? WHERE id = ?', [xpGain, userId]);
+
+                        // Apply bounded health/rads changes
+                        if (healthChange !== 0 || radChange !== 0) {
+                            db.run(
+                                'UPDATE users SET health = MIN(max_health, MAX(0, health + ?)), rads = MIN(1000, MAX(0, rads + ?)) WHERE id = ?',
+                                [healthChange, radChange, userId]
+                            );
+                        }
+
+                        replyMessage = `You used **${item.emoji} ${item.name}**.\n`;
+                        if (healthChange > 0) replyMessage += `💚 **Healed ${healthChange} HP**\n`;
+                        if (radChange < 0) replyMessage += `☢️ **Removed ${Math.abs(radChange)} Rads**\n`;
+                        if (radChange > 0) replyMessage += `☢️ **Gained ${radChange} Rads**\n`;
+                        replyMessage += `✨ +${xpGain} XP`;
+                    } else if (item.type === 'lootbox') {
+                        const capReward = Math.floor(Math.random() * 500) + 100;
+                        db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [capReward, userId]);
+                        replyMessage = `You opened **${item.name}** and found **${capReward} Caps**!`;
+                    }
+
+                    // Cleanup any zero/negative rows for this item
+                    db.run('DELETE FROM inventory WHERE user_id = ? AND item_id = ? AND amount <= 0', [userId, itemId]);
+
+                    const embed = new EmbedBuilder()
+                        .setDescription(replyMessage)
+                        .setColor('#2ecc71');
+
+                    interaction.reply({ embeds: [embed] });
                 }
-            });
-
-            const embed = new EmbedBuilder()
-                .setDescription(replyMessage)
-                .setColor('#2ecc71');
-
-            interaction.reply({ embeds: [embed] });
+            );
         });
     }
 }).toJSON();

@@ -60,34 +60,43 @@ module.exports = new ApplicationCommand({
 
         const row = new ActionRowBuilder().addComponents(selectMenu);
 
-        // 3. Send Initial Message
-        const response = await interaction.reply({ 
+        // 3. Send Initial Message and fetch Message for collectors
+        const message = await interaction.reply({ 
             embeds: [embed], 
             components: [row],
-            fetchReply: true // Important for collector
+            fetchReply: true // Returns the Message object directly (v14)
         });
 
-        // 4. Create Collector for Interaction
-        const collector = response.createMessageComponentCollector({ 
+        // 4. Create Collector for Interaction on the Message object
+        const collector = message.createMessageComponentCollector({ 
             componentType: ComponentType.StringSelect, 
             time: 60000 // 1 minute timeout
         });
 
         collector.on('collect', async i => {
-            if (i.user.id !== interaction.user.id) {
-                return i.reply({ content: '❌ This menu is not for you!', ephemeral: true });
+            try {
+                if (i.user.id !== interaction.user.id) {
+                    return i.reply({ content: '❌ This menu is not for you!', ephemeral: true });
+                }
+
+                // Acknowledge immediately to prevent timeout
+                await i.deferUpdate();
+
+                const selection = i.values[0];
+                const category = categories[selection];
+
+                if (!category) return;
+
+                const categoryEmbed = new EmbedBuilder()
+                    .setTitle(`${category.name}`)
+                    .setDescription(category.cmds.join('\n') || "*No commands available.*")
+                    .setColor('#f1c40f')
+                    .setFooter({ text: 'Use the menu to switch categories.' });
+
+                await i.editReply({ embeds: [categoryEmbed], components: [row] });
+            } catch (err) {
+                console.error('[GUIDE COLLECT] Error:', err);
             }
-
-            const selection = i.values[0];
-            const category = categories[selection];
-
-            const categoryEmbed = new EmbedBuilder()
-                .setTitle(`${category.name}`)
-                .setDescription(category.cmds.join('\n') || "*No commands available.*")
-                .setColor('#f1c40f')
-                .setFooter({ text: 'Use the menu to switch categories.' });
-
-            await i.update({ embeds: [categoryEmbed], components: [row] });
         });
 
         collector.on('end', () => {

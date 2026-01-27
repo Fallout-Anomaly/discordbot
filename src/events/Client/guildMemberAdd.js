@@ -20,7 +20,12 @@ module.exports = new Event({
             console.warn(`[WELCOME] VERIFY_CHANNEL_ID is missing or invalid: ${verifyChannelId}`);
         }
 
-        const welcomeChannel = client.channels.cache.get(welcomeChannelId);
+        let welcomeChannel = client.channels.cache.get(welcomeChannelId);
+        // If channel isn't in cache (e.g., evicted after long runtime), fetch it
+        if (!welcomeChannel) {
+            welcomeChannel = await client.channels.fetch(welcomeChannelId).catch(() => null);
+        }
+        
         if (welcomeChannel) {
             // Calculate ordinal suffix (1st, 2nd, 3rd, 4th)
             const getOrdinal = (n) => {

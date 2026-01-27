@@ -22,7 +22,7 @@ module.exports = new ApplicationCommand({
             return interaction.reply({ content: "❌ Feedback channel is not configured.", ephemeral: true });
         }
 
-        const channel = client.channels.cache.get(feedbackChannelId);
+        const channel = await client.channels.fetch(feedbackChannelId).catch(() => null);
         if (!channel) return interaction.reply({ content: "❌ Feedback channel not found.", ephemeral: true });
 
         const embed = new EmbedBuilder()

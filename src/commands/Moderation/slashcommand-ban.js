@@ -26,6 +26,20 @@ module.exports = new ApplicationCommand({
         const reason = interaction.options.getString('reason') || 'No reason provided';
         const member = interaction.guild.members.cache.get(user.id) || await interaction.guild.members.fetch(user.id).catch(() => null);
 
+        // Role hierarchy checks to ensure executor outranks target (unless executor is server owner)
+        if (member) {
+            if (member.id === interaction.guild.ownerId) {
+                return interaction.reply({ content: '❌ You cannot punish the server owner.', ephemeral: true });
+            }
+            if (interaction.user.id !== interaction.guild.ownerId &&
+                interaction.member.roles.highest.position <= member.roles.highest.position) {
+                return interaction.reply({ 
+                    content: '❌ You cannot punish a member with an equal or higher role than yourself.', 
+                    ephemeral: true 
+                });
+            }
+        }
+
         if (member && !member.bannable) return interaction.reply({ content: '❌ I cannot ban this user.', ephemeral: true });
 
         try {

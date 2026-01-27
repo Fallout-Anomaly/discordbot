@@ -43,8 +43,14 @@ db.serialize(() => {
         "ALTER TABLE users ADD COLUMN last_scavenge_reset INTEGER DEFAULT 0"
     ];
 
+    // XP Cooldowns table for persistence across restarts
+    db.run(`CREATE TABLE IF NOT EXISTS xp_cooldowns (
+        user_id TEXT PRIMARY KEY,
+        cooldown_expiry INTEGER NOT NULL
+    )`);
+
     columnsToAdd.forEach(sql => {
-        db.run(sql, (err) => {
+        db.run(sql, () => {
             // Ignore error if column already exists
         });
     });
@@ -66,7 +72,7 @@ db.serialize(() => {
     ];
 
     columns.forEach(col => {
-        db.run(`ALTER TABLE users ADD COLUMN ${col}`, (err) => {
+        db.run(`ALTER TABLE users ADD COLUMN ${col}`, () => {
             // Error is expected if column already exists, safe to ignore
         });
     });

@@ -29,7 +29,7 @@ module.exports = new ApplicationCommand({
             return interaction.reply({ content: "❌ Report channel is not configured.", ephemeral: true });
         }
 
-        const reportChannel = client.channels.cache.get(reportChannelId);
+        const reportChannel = await client.channels.fetch(reportChannelId).catch(() => null);
         if (!reportChannel) {
             return interaction.reply({ content: "❌ Could not find report channel.", ephemeral: true });
         }

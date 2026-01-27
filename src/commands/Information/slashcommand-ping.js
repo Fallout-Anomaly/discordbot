@@ -8,7 +8,7 @@ module.exports = new ApplicationCommand({
     },
     run: async (client, interaction) => {
         const ping = client.ws.ping;
-        const uptime = process.uptime();
+        const uptime = Math.floor(process.uptime());
         const hours = Math.floor(uptime / 3600);
         const minutes = Math.floor((uptime % 3600) / 60);
         const seconds = Math.floor(uptime % 60);

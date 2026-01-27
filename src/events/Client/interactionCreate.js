@@ -65,6 +65,13 @@ module.exports = new Event({
                 if (!commandContinue) return;
             }
 
+            // Automatic defer if command is marked as slow
+            // IMPORTANT: If command.defer is true, command.run() MUST use interaction.editReply() 
+            // instead of interaction.reply() to avoid "Interaction already acknowledged" error
+            if (command.defer) {
+                await interaction.deferReply({ ephemeral: command.defer === 'ephemeral' }).catch(() => {});
+            }
+
             await command.run(client, interaction);
         } catch (err) {
             error(err);

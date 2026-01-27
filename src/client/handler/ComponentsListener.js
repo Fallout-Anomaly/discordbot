@@ -1,4 +1,3 @@
-const DiscordBot = require("../DiscordBot");
 const config = require("../../config");
 const { error } = require("../../utils/Console");
 
@@ -10,7 +9,9 @@ class ComponentsListener {
     constructor(client) {
         client.on('interactionCreate', async (interaction) => {
             const checkUserPermissions = async (component) => {
-                if (component.options?.public === false && interaction.user.id !== interaction.message.interaction.user.id) {
+                // Use optional chaining to handle messages that weren't from slash commands
+                // interaction.message.interaction only exists if the message was a slash command response
+                if (component.options?.public === false && interaction.user.id !== interaction.message.interaction?.user?.id) {
                     await interaction.reply({
                         content: config.messages.COMPONENT_NOT_PUBLIC,
                         ephemeral: true

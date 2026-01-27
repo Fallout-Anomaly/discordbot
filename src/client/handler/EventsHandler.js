@@ -1,12 +1,9 @@
 const { info, error, success } = require('../../utils/Console');
 const { readdirSync } = require('fs');
-const DiscordBot = require('../DiscordBot');
-const Component = require('../../structure/Component');
-const AutocompleteComponent = require('../../structure/AutocompleteComponent');
-const Event = require('../../structure/Event');
 
 class EventsHandler {
     client;
+    loadedEvents = new Map(); // Track which events have been loaded and their handlers
 
     /**
      *
@@ -18,6 +15,15 @@ class EventsHandler {
 
     load = () => {
         let total = 0;
+
+        // Clear only the listeners we previously registered, not all listeners globally
+        // This prevents removing listeners added manually in index.js or DiscordBot.js
+        for (const [eventName, handlers] of this.loadedEvents.entries()) {
+            handlers.forEach(handler => {
+                this.client.removeListener(eventName, handler);
+            });
+        }
+        this.loadedEvents.clear();
 
         for (const directory of readdirSync('./src/events/')) {
             for (const file of readdirSync('./src/events/' + directory).filter((f) => f.endsWith('.js'))) {
@@ -35,11 +41,20 @@ class EventsHandler {
                             continue;
                         }
 
+                        // Create a wrapped handler for tracking
+                        const handler = (...args) => module.run(this.client, ...args);
+
                         if (module.once) {
-                            this.client.once(module.event, (...args) => module.run(this.client, ...args));
+                            this.client.once(module.event, handler);
                         } else {
-                            this.client.on(module.event, (...args) => module.run(this.client, ...args));
+                            this.client.on(module.event, handler);
                         }
+
+                        // Track this handler so we can remove it later
+                        if (!this.loadedEvents.has(module.event)) {
+                            this.loadedEvents.set(module.event, []);
+                        }
+                        this.loadedEvents.get(module.event).push(handler);
 
                         info(`Loaded new event: ` + file);
 
@@ -48,7 +63,8 @@ class EventsHandler {
                         error('Invalid event type ' + module.__type__ + ' from event file ' + file);
                     }
                 } catch (err) {
-                    error('Unable to load a event from the path: ' + 'src/events/' + directory + '/' + file);
+                    error('Unable to load an event from the path: ' + 'src/events/' + directory + '/' + file);
+                    console.error(err);
                 }
             }
         }
