@@ -93,7 +93,8 @@ db.serialize(() => {
         reward_caps INTEGER,
         reward_xp INTEGER,
         start_time INTEGER,
-        duration INTEGER
+        duration INTEGER,
+        reward_item TEXT
     )`);
 });
 
