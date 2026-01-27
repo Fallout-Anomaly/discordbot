@@ -72,4 +72,4 @@ module.exports = new Component({
             });
         }
     }
-}).toJSON();
+});

@@ -14,4 +14,4 @@ module.exports = new Component({
             content: 'Replied from a Button interaction!'
         });
     }
-}).toJSON();
+});
