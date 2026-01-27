@@ -15,7 +15,8 @@
     "discord.js": "^14.25.1",
     "dotenv": "^16.4.5",
     "openai": "^6.16.0",
-    "quick-yaml.db": "^1.2.2"
+    "quick-yaml.db": "^1.2.2",
+    "sqlite3": "^5.1.7"
   },
   "overrides": {
     "undici": "^6.23.0"
