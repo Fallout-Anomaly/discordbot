@@ -107,4 +107,4 @@ module.exports = new ApplicationCommand({
 
         await interaction.editReply({ embeds: [embed] });
     }
-});
+}).toJSON();
