@@ -11,8 +11,8 @@ module.exports = new Component({
     async run(client, interaction) {
         const [, action, raffleId] = interaction.customId.match(/^raffle_(enter|view)_(.+)$/);
 
-        // Defer the interaction
-        await interaction.deferReply({ flags: 64 });
+        // Interaction already deferred by interactionCreate event - use editReply
+        // DO NOT call deferReply/deferUpdate again!
 
         // DONATOR TIERS (matching DonorSystem)
         const DONOR_TIERS = {

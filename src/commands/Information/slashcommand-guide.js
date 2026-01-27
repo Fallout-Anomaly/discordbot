@@ -22,7 +22,7 @@ module.exports = new ApplicationCommand({
             const line = `\`/${name}\` - ${desc}`;
 
             // Economy & RPG
-            if (['balance', 'pay', 'daily', 'shop', 'scavenge', 'inventory', 'use', 'stats', 'quests', 'rob', 'radiation', 'nuka-cola', 'power-armor', 'fish', 'hunt'].includes(name)) {
+            if (['balance', 'pay', 'daily', 'shop', 'scavenge', 'inventory', 'use', 'stats', 'quests', 'rob', 'radiation', 'nuka-cola', 'power-armor', 'fish', 'hunt', 'protection', 'stash', 'create-raffle'].includes(name)) {
                 categories.economy.cmds.push(line);
             } 
             // Utility & Info

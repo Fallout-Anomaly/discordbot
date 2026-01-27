@@ -125,7 +125,7 @@ module.exports = new ApplicationCommand({
                 return interaction.editReply({ content: '❌ Please provide a raffle title.' });
             }
 
-            const newRaffleId = `raffle_${Date.now()}`;
+            const newRaffleId = Date.now().toString();
 
             await new Promise((resolve) => {
                 db.run(
@@ -197,7 +197,7 @@ module.exports = new ApplicationCommand({
                 .setColor('#2ecc71')
                 .setFooter({ text: 'Players can now interact with the raffle via buttons!' });
 
-            return interaction.editReply({ embeds: [confirmEmbed] });
+            return interaction.editReply({ embeds: [confirmEmbed], flags: 64 });
         }
 
         if (action === 'list') {
