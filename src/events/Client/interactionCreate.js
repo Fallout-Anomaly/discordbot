@@ -43,13 +43,7 @@ module.exports = new Event({
 
         try {
             if (interaction.isButton()) {
-                // MUST acknowledge IMMEDIATELY using deferUpdate for component interactions
-                if (!interaction.deferred && !interaction.replied) {
-                    await interaction.deferUpdate().catch(() => {});
-                }
-
-                // Try exact match first
-                let component = client.collection.components.buttons.get(interaction.customId);
+                const component = client.collection.components.buttons.get(interaction.customId);
                 
                 // If no exact match, try regex patterns
                 if (!component) {
@@ -92,10 +86,7 @@ module.exports = new Event({
 
                 // Only defer if we have a handler - otherwise let collectors handle it
                 if (component) {
-                    // MUST acknowledge IMMEDIATELY using deferUpdate for component interactions
-                    if (!interaction.deferred && !interaction.replied) {
-                        await interaction.deferUpdate().catch(() => {});
-                    }
+
 
                     if (!(await checkUserPermissions(component))) return;
 
