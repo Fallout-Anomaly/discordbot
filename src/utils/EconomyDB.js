@@ -17,7 +17,6 @@ db.serialize(() => {
         id TEXT PRIMARY KEY,
         balance INTEGER DEFAULT 0,
         xp INTEGER DEFAULT 0,
-        xp INTEGER DEFAULT 0,
         health INTEGER DEFAULT 100,
         max_health INTEGER DEFAULT 100,
         rads INTEGER DEFAULT 0,
@@ -33,6 +32,28 @@ db.serialize(() => {
         weekly_last_claim INTEGER DEFAULT 0,
         hourly_last_claim INTEGER DEFAULT 0
     )`);
+
+    // Schema Migration: Add columns if they don't exist (for existing users.db)
+    const columns = [
+        "xp INTEGER DEFAULT 0",
+        "health INTEGER DEFAULT 100",
+        "max_health INTEGER DEFAULT 100",
+        "rads INTEGER DEFAULT 0",
+        "stat_strength INTEGER DEFAULT 1",
+        "stat_perception INTEGER DEFAULT 1",
+        "stat_endurance INTEGER DEFAULT 1",
+        "stat_charisma INTEGER DEFAULT 1",
+        "stat_intelligence INTEGER DEFAULT 1",
+        "stat_agility INTEGER DEFAULT 1",
+        "stat_luck INTEGER DEFAULT 1",
+        "stat_points INTEGER DEFAULT 5"
+    ];
+
+    columns.forEach(col => {
+        db.run(`ALTER TABLE users ADD COLUMN ${col}`, (err) => {
+            // Error is expected if column already exists, safe to ignore
+        });
+    });
 
     // Scavenge Timer Table
     db.run(`CREATE TABLE IF NOT EXISTS scavenge (
