@@ -20,10 +20,10 @@ module.exports = new Component({
         try {
             // Check if bot can manage roles
             if (!interaction.guild.members.me.permissions.has('ManageRoles')) {
-                return interaction.reply({ content: '❌ Bot lacks "Manage Roles" permission.', ephemeral: true });
+                return interaction.reply({ content: '❌ Bot lacks "Manage Roles" permission.', flags: 64 });
             }
             if (role.position >= interaction.guild.members.me.roles.highest.position) {
-                return interaction.reply({ content: '❌ Verification role is higher than bot role.', ephemeral: true });
+                return interaction.reply({ content: '❌ Verification role is higher than bot role.', flags: 64 });
             }
 
             await interaction.member.roles.add(role);
@@ -43,11 +43,11 @@ module.exports = new Component({
             
             await interaction.reply({ 
                 content: successMsg, 
-                ephemeral: true 
+                flags: 64
             });
         } catch (error) {
             console.error('[VERIFY] Error:', error);
-            interaction.reply({ content: '❌ An error occurred during verification. Please contact staff.', ephemeral: true });
+            interaction.reply({ content: '❌ An error occurred during verification. Please contact staff.', flags: 64 });
         }
     }
 }).toJSON();

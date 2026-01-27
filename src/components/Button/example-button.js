@@ -12,7 +12,7 @@ module.exports = new Component({
 
         await interaction.reply({
             content: 'Replied from a Button interaction!',
-            ephemeral: true
+            flags: 64
         });
 
     }
