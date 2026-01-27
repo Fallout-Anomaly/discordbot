@@ -53,7 +53,7 @@ class AIService {
             return `**No AI Key Found**\nI've found these relevant documentation items but cannot generate a full answer without a Groq API Key.\n\n${contextItems.map(i => `**${i.fullName}** (${i.type})`).join('\n')}`;
         }
 
-        const model = process.env.AI_MODEL_ANSWER || 'llama-3.3-70b-versatile'; // Stronger model for generation
+        const model = process.env.AI_MODEL_ANSWER || 'llama-3.1-8b-instant'; // Stronger model for generation
         const maxTokens = parseInt(process.env.AI_MAX_TOKENS) || 500;
 
         // Construct messages array
