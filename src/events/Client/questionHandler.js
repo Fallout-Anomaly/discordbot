@@ -150,7 +150,7 @@ module.exports = new Event({
                 .setTitle('☢️ Anomaly AI Assistant')
                 .setDescription(answer.substring(0, 4096))
                 .setColor(needsEscalation ? '#e67e22' : '#3498db')
-                .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'} • React 👍/👎 for feedback • Install: https://fallout-anomaly.github.io/websitedev/` })
+                .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'} • Use buttons below for feedback • Install: https://fallout-anomaly.github.io/websitedev/` })
                 .setTimestamp();
 
             // Add escalation notice if needed
@@ -203,11 +203,7 @@ module.exports = new Event({
             }
 
             // Reply to message
-            await message.reply({ content: replyContent, embeds: [embed], components: [feedbackRow] }).then(async (msg) => {
-                // Reactions deprecated in favor of buttons, but keep for legacy support
-                await msg.react('👍').catch(() => {}); 
-                await msg.react('👎').catch(() => {});
-            }).catch(err => {
+            await message.reply({ content: replyContent, embeds: [embed], components: [feedbackRow] }).catch(err => {
                 error('[QUESTION HANDLER] Reply Error:', err);
                 // Fallback to sending in channel if reply fails (e.g. message deleted)
                 message.channel.send({ embeds: [embed], components: [feedbackRow] }).catch(() => {});

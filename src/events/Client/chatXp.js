@@ -6,6 +6,12 @@ const db = require('../../utils/EconomyDB');
 // 10-20 XP per message
 // 1 min cooldown (persisted in database for restart resilience)
 
+// Initialize Table
+db.run(`CREATE TABLE IF NOT EXISTS xp_cooldowns (
+    user_id TEXT PRIMARY KEY,
+    cooldown_expiry INTEGER
+)`);
+
 module.exports = new Event({
     event: Events.MessageCreate,
     once: false,
