@@ -30,7 +30,7 @@ module.exports = new ApplicationCommand({
                     id: target.id,
                     stat_strength: 1, stat_perception: 1, stat_endurance: 1,
                     stat_charisma: 1, stat_intelligence: 1, stat_agility: 1, stat_luck: 1,
-                    stat_points: 5, health: 100, max_health: 100, rads: 0, xp: 0
+                    stat_points: 5, health: 100, max_health: 100, radiation: 0, xp: 0, power_armor: null
                 };
             }
 
@@ -46,8 +46,9 @@ module.exports = new ApplicationCommand({
                 points: row.stat_points !== undefined ? row.stat_points : 5,
                 health: row.health || 100,
                 max_health: row.max_health || 100,
-                rads: row.rads || 0,
-                xp: row.xp || 0
+                radiation: row.radiation || 0,
+                xp: row.xp || 0,
+                power_armor: row.power_armor || null
             };
 
             const embed = new EmbedBuilder()
@@ -64,8 +65,9 @@ module.exports = new ApplicationCommand({
                     { name: '🍀 Luck', value: `${stats.luck}`, inline: true },
                     { name: '\u200B', value: '\u200B', inline: true }, // Spacer
                     { name: '❤️ Health', value: `${stats.health}/${stats.max_health}`, inline: true },
-                    { name: '☢️ Rads', value: `${stats.rads}/1000`, inline: true },
-                    { name: '✨ XP', value: `${stats.xp}`, inline: true }
+                    { name: '☢️ Radiation', value: `${stats.radiation}%`, inline: true },
+                    { name: '✨ XP', value: `${stats.xp}`, inline: true },
+                    { name: '🤖 Power Armor', value: stats.power_armor ? `**Equipped**` : '❌ None', inline: true }
                 );
 
             if (isSelf && stats.points > 0) {

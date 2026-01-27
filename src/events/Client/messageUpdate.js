@@ -8,6 +8,13 @@ module.exports = new Event({
         // Ignore bots and webhooks
         if (newMessage.author?.bot) return;
 
+        // Only log edits from messages posted within the last 24 hours to prevent spam from old messages
+        const messageAge = Date.now() - newMessage.createdTimestamp;
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        if (messageAge > twentyFourHours) {
+            return; // Ignore edits to old messages
+        }
+
         // Handle partials so we can log content for uncached messages
         if (oldMessage && oldMessage.partial) {
             try {
