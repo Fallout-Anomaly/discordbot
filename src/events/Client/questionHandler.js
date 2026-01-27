@@ -63,11 +63,16 @@ module.exports = new Event({
                 .setTimestamp();
 
             // Handle system messages (cannot reply to them)
+            let sentMessage;
             if (message.system) {
-                 await message.channel.send({ embeds: [embed] });
+                 sentMessage = await message.channel.send({ embeds: [embed] });
             } else {
-                 await message.reply({ embeds: [embed] });
+                 sentMessage = await message.reply({ embeds: [embed] });
             }
+
+            // Add feedback reactions
+            await sentMessage.react('👍'); // Good
+            await sentMessage.react('👎'); // Bad
 
         } catch (err) {
             console.error('[QUESTION HANDLER] Error:', err);
