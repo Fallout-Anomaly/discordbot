@@ -16,6 +16,7 @@ db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         balance INTEGER DEFAULT 0,
+        xp INTEGER DEFAULT 0,
         daily_last_claim INTEGER DEFAULT 0,
         weekly_last_claim INTEGER DEFAULT 0,
         hourly_last_claim INTEGER DEFAULT 0
