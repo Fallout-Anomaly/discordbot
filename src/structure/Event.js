@@ -1,4 +1,4 @@
-const DiscordBot = require('../client/DiscordBot');
+
 
 /**
  * @template {keyof import('discord.js').ClientEvents} K

@@ -20,31 +20,52 @@ module.exports = new ApplicationCommand({
         const amount = interaction.options.getInteger('amount');
         const userId = interaction.user.id;
 
-        db.get('SELECT balance FROM users WHERE id = ?', [userId], (err, row) => {
-            if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+        if (amount <= 0) {
+            return interaction.reply({ content: '❌ Bet amount must be greater than 0.', ephemeral: true });
+        }
 
-            const currentBalance = row ? row.balance : 0;
+        // ATOMIC DEDUCTION: Check balance and deduct in a single operation
+        // This prevents double-spending where multiple requests could use the same balance
+        db.run(
+            'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+            [amount, userId, amount],
+            function (err) {
+                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
 
-            if (currentBalance < amount) {
-                return interaction.reply({ 
-                    content: `❌ You're broke! You only have **${currentBalance}** Caps.`, 
-                    ephemeral: true 
-                });
+                // If this.changes is 0, the WHERE clause failed (insufficient funds)
+                if (this.changes === 0) {
+                    db.get('SELECT balance FROM users WHERE id = ?', [userId], (err, row) => {
+                        const currentBalance = row ? row.balance : 0;
+                        return interaction.reply({ 
+                            content: `❌ You're broke! You only have **${currentBalance}** Caps.`, 
+                            ephemeral: true 
+                        });
+                    });
+                    return;
+                }
+
+                // Deduction successful, now flip the coin
+                const won = Math.random() >= 0.5;
+
+                if (won) {
+                    // Give back the bet + the win (total payout = amount * 2)
+                    const payout = amount * 2;
+                    db.run(
+                        'UPDATE users SET balance = balance + ? WHERE id = ?',
+                        [payout, userId],
+                        () => {
+                            interaction.reply({ 
+                                content: `🪙 **HEADS!** You **WON** **${amount}** Caps!\nYour new balance: **${payout}** (previous balance + ${amount})`
+                            });
+                        }
+                    );
+                } else {
+                    // Money already deducted, just notify loss
+                    interaction.reply({ 
+                        content: `💀 **TAILS!** You **LOST** **${amount}** Caps. Better luck next time!` 
+                    });
+                }
             }
-
-            // 50/50 Chance
-            const won = Math.random() >= 0.5;
-            const newBalance = won ? currentBalance + amount : currentBalance - amount;
-
-            db.run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, userId], (updateErr) => {
-                if (updateErr) return interaction.reply({ content: '❌ Update error.', ephemeral: true });
-
-                const msg = won 
-                    ? `🪙 Heaps of caps! You **WON** **${amount}** Caps!\nYour new balance: **${newBalance}**`
-                    : `💀 Bad luck, courier. You **LOST** **${amount}** Caps.\nYour new balance: **${newBalance}**`;
-
-                interaction.reply({ content: msg });
-            });
-        });
+        );
     }
 }).toJSON();

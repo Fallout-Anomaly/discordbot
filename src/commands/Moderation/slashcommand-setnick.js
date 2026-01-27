@@ -28,12 +28,33 @@ module.exports = new ApplicationCommand({
 
         if (!member) return interaction.reply({ content: '❌ User not found.', ephemeral: true });
 
+        // Role hierarchy checks to ensure executor outranks target (unless executor is server owner)
+        if (member.id === interaction.guild.ownerId) {
+            return interaction.reply({ content: '❌ You cannot punish the server owner.', ephemeral: true });
+        }
+        if (interaction.user.id !== interaction.guild.ownerId &&
+            interaction.member.roles.highest.position <= member.roles.highest.position) {
+            return interaction.reply({ 
+                content: '❌ You cannot punish a member with an equal or higher role than yourself.', 
+                ephemeral: true 
+            });
+        }
+
+        // Bot capability checks
+        const me = interaction.guild.members.me;
+        if (!me?.permissions.has('ManageNicknames')) {
+            return interaction.reply({ content: '❌ I lack the "Manage Nicknames" permission.', ephemeral: true });
+        }
+        if (!member.manageable) {
+            return interaction.reply({ content: '❌ I cannot change this user\'s nickname due to role hierarchy or missing permissions.', ephemeral: true });
+        }
+
         try {
             await member.setNickname(nickname);
             await interaction.reply({ content: `✅ Substituted nickname for **${user.tag}** to **${nickname}**.` });
         } catch (err) {
             console.error(err);
-            await interaction.reply({ content: '❌ Failed to change nickname.', ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to change nickname. Please check my permissions and role position.', ephemeral: true });
         }
     }
 }).toJSON();

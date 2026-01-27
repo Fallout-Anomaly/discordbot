@@ -85,10 +85,17 @@ module.exports = new ApplicationCommand({
 
                 const rowComponent = new ActionRowBuilder().addComponents(select);
 
-                const msg = await interaction.reply({ embeds: [embed], components: [rowComponent], fetchReply: true });
+                const message = await interaction.reply({ 
+                    embeds: [embed], 
+                    components: [rowComponent], 
+                    fetchReply: true 
+                });
 
                 // Create collector
-                const collector = msg.createMessageComponentCollector({ componentType: ComponentType.StringSelect, time: 60000 });
+                const collector = message.createMessageComponentCollector({ 
+                    componentType: ComponentType.StringSelect, 
+                    time: 60000 
+                });
 
                 collector.on('collect', async i => {
                     if (i.user.id !== interaction.user.id) return i.reply({ content: 'Not your menu.', ephemeral: true });
@@ -96,17 +103,23 @@ module.exports = new ApplicationCommand({
                     const statColumn = i.values[0];
                     const statName = i.values[0].replace('stat_', '');
 
-                    db.get('SELECT stat_points FROM users WHERE id = ?', [i.user.id], (err, row) => {
-                       if (row.stat_points <= 0) {
-                           return i.update({ content: '❌ No points left!', components: [] });
-                       }
-
-                       db.run(`UPDATE users SET ${statColumn} = ${statColumn} + 1, stat_points = stat_points - 1 WHERE id = ?`, [i.user.id], (err) => {
-                           if (err) return;
-                           i.reply({ content: `✅ Upgraded **${statName}**! Run /stats again to see changes.`, ephemeral: true });
-                           // Ideally update the embed live, but simpler to just acknowledge for now.
-                       });
-                    });
+                    // Atomic upgrade: only deduct if points > 0
+                    db.run(
+                        `UPDATE users 
+                         SET ${statColumn} = ${statColumn} + 1, 
+                             stat_points = stat_points - 1 
+                         WHERE id = ? AND stat_points > 0`,
+                        [i.user.id],
+                        function (err) {
+                            if (err) {
+                                return i.update({ content: '❌ Database error.', components: [] });
+                            }
+                            if (this.changes === 0) {
+                                return i.update({ content: '❌ Not enough points!', components: [] });
+                            }
+                            i.reply({ content: `✅ Upgraded **${statName}**! Run /stats again to see changes.`, ephemeral: true });
+                        }
+                    );
                 });
 
             } else {

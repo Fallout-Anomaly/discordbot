@@ -16,7 +16,7 @@ module.exports = new Event({
         if (message.partial) {
             try {
                 await message.fetch();
-            } catch (e) {
+            } catch {
                // Log debug if needed, but acceptable to fail if message is gone
                // console.debug(`[LOGS] Could not fetch partial message ${message.id}:`, e.message);
             }
@@ -37,7 +37,7 @@ module.exports = new Event({
         // Check permissions before fetching audit logs
         if (message.guild.members.me.permissions.has('ViewAuditLog')) {
              let deletionLog;
-             // Retry mechanism: Try up to 3 times to find the log
+             // Retry mechanism: Try up to 3 times for slow audit logs (reduced from 5 to avoid 5s lag)
              for (let i = 0; i < 3; i++) {
                  try {
                      const fetchedLogs = await message.guild.fetchAuditLogs({
@@ -45,17 +45,17 @@ module.exports = new Event({
                          type: AuditLogEvent.MessageDelete,
                      });
                      const log = fetchedLogs.entries.first();
-                     // Match criteria: Target is author, created recently (within 10s)
+                     // Match criteria: Target is author, created recently (within 15s)
                      if (log && log.target.id === message.author.id && 
-                         (Date.now() - log.createdTimestamp) < 10000) {
+                         (Date.now() - log.createdTimestamp) < 15000) {
                          deletionLog = log;
                          break;
                      }
-                 } catch (e) {
-                     // Ignore transient errors
+                } catch {
+                     // Ignore errors
                  }
-                 // Wait 500ms before retry
-                 await new Promise(resolve => setTimeout(resolve, 500));
+                 // Wait 1s between retries
+                 await new Promise(resolve => setTimeout(resolve, 1000));
              }
 
              if (deletionLog) {

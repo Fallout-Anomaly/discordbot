@@ -10,16 +10,15 @@ module.exports = new Event({
         // 1. Partial Handling (if message/reaction is old)
         if (reaction.partial) {
             try {
-                await reaction.fetch();
-            } catch (error) {
-                console.error('Something went wrong when fetching the message:', error);
+                await reaction.message.fetch();
+            } catch {
                 return;
             }
         }
         if (user.partial) {
             try {
                 await user.fetch();
-            } catch (error) {
+            } catch {
                 return;
             }
         }
@@ -45,7 +44,7 @@ module.exports = new Event({
         
         if (!content) return; // Skip empty messages (e.g. image only, unless we handle images later)
 
-        const learningPath = path.join(__dirname, '../../../knowledge/LearnedContext.txt');
+        const learningPath = path.join(process.cwd(), 'knowledge/LearnedContext.txt');
         const entry = `\n\n--- [Learned via Reaction] From ${authorTag} ---\nSource: ${msgLink}\nContent: ${content}`;
 
         try {
@@ -54,14 +53,16 @@ module.exports = new Event({
             // Reload KB
             await client.knowledge.reload();
 
-            // Confirm
-            await reaction.message.react('✅');
-            // Optional: DM the staff member
-            // user.send(`I have successfully learned that message!`).catch(() => {});
+            // Confirm if bot has permission
+            if (reaction.message.channel.permissionsFor(client.user)?.has(PermissionFlagsBits.AddReactions)) {
+                await reaction.message.react('✅').catch(() => {});
+            }
 
         } catch (err) {
             console.error('[ReactionLearn] Failed to save:', err);
-            reaction.message.react('❌');
+            if (reaction.message.channel.permissionsFor(client.user)?.has(PermissionFlagsBits.AddReactions)) {
+                await reaction.message.react('❌').catch(() => {});
+            }
         }
     }
 }).toJSON();

@@ -1,10 +1,7 @@
 const { PermissionsBitField, ChannelType } = require("discord.js");
-const DiscordBot = require("../DiscordBot");
 const config = require("../../config");
-const MessageCommand = require("../../structure/MessageCommand");
 const { handleMessageCommandOptions } = require("./CommandOptions");
-const ApplicationCommand = require("../../structure/ApplicationCommand");
-const { info, error } = require("../../utils/Console");
+const { error } = require("../../utils/Console");
 
 class CommandsListener {
     /**

@@ -32,30 +32,42 @@ module.exports = new ApplicationCommand({
             return interaction.reply({ content: '❌ You cannot pay yourself.', ephemeral: true });
         }
 
-        db.get('SELECT balance FROM users WHERE id = ?', [senderId], (err, row) => {
-            if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+        if (amount <= 0) {
+            return interaction.reply({ content: '❌ Amount must be greater than 0.', ephemeral: true });
+        }
 
-            const currentBalance = row ? row.balance : 0;
+        // ATOMIC DEDUCTION: Check balance and deduct in a single operation
+        // This prevents race conditions where multiple requests could spend the same balance
+        db.run(
+            'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+            [amount, senderId, amount],
+            function (err) {
+                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
 
-            if (currentBalance < amount) {
-                return interaction.reply({ 
-                    content: `❌ You don't have enough Caps to cover that transaction. Balance: **${currentBalance}**`, 
-                    ephemeral: true 
+                // If this.changes is 0, the WHERE clause failed (insufficient funds)
+                if (this.changes === 0) {
+                    // Fetch actual balance for user feedback
+                    db.get('SELECT balance FROM users WHERE id = ?', [senderId], (err, row) => {
+                        const currentBalance = row ? row.balance : 0;
+                        return interaction.reply({ 
+                            content: `❌ You don't have enough Caps to cover that transaction. Balance: **${currentBalance}**`, 
+                            ephemeral: true 
+                        });
+                    });
+                    return;
+                }
+
+                // Deduction successful, now safely credit target
+                db.serialize(() => {
+                    // Ensure target exists
+                    db.run('INSERT OR IGNORE INTO users (id, balance) VALUES (?, 0)', [targetId]);
+                    db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [amount, targetId]);
+                });
+
+                interaction.reply({ 
+                    content: `💸 Transaction Complete!\n**${interaction.user.username}** paid **${amount}** Caps to **${target.username}**.` 
                 });
             }
-
-            // Transaction
-            db.serialize(() => {
-                db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [amount, senderId]);
-                
-                // Ensure target exists
-                db.run('INSERT OR IGNORE INTO users (id, balance) VALUES (?, 0)', [targetId]);
-                db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [amount, targetId]);
-            });
-
-            interaction.reply({ 
-                content: `💸 Transaction Complete!\n**${interaction.user.username}** paid **${amount}** Caps to **${target.username}**.` 
-            });
-        });
+        );
     }
 }).toJSON();

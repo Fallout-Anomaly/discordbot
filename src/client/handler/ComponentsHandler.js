@@ -1,8 +1,5 @@
-const { info, error, success } = require('../../utils/Console');
+const { success, error, info } = require('../../utils/Console');
 const { readdirSync } = require('fs');
-const DiscordBot = require('../DiscordBot');
-const Component = require('../../structure/Component');
-const AutocompleteComponent = require('../../structure/AutocompleteComponent');
 
 class ComponentsHandler {
     client;
@@ -72,7 +69,7 @@ class ComponentsHandler {
 
         const componentsCollection = this.client.collection.components;
 
-        success(`Successfully loaded ${componentsCollection.autocomplete.size + componentsCollection.buttons.size + componentsCollection.selects.size + componentsCollection.buttons.size} components.`);
+        success(`Successfully loaded ${componentsCollection.autocomplete.size + componentsCollection.buttons.size + componentsCollection.selects.size + componentsCollection.modals.size} components.`);
     }
 
     reload = () => {

@@ -1,4 +1,3 @@
-const { ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const Component = require('../../structure/Component');
 
 module.exports = new Component({

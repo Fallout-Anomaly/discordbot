@@ -1,5 +1,3 @@
-const { ButtonInteraction } = require("discord.js");
-const DiscordBot = require("../../client/DiscordBot");
 const Component = require("../../structure/Component");
 
 module.exports = new Component({

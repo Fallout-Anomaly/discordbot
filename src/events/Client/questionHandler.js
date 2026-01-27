@@ -1,114 +1,133 @@
-const triggers = require('../../../data/autoTriggers.json');
 const { Events, EmbedBuilder } = require('discord.js');
 const Event = require('../../structure/Event');
 const AIService = require('../../utils/AIService');
+const AutoResponder = require('../../utils/AutoResponder');
+const config = require('../../config');
+const { info, error } = require('../../utils/Console');
 
 module.exports = new Event({
     event: Events.MessageCreate,
     once: false,
     run: async (client, message) => {
-        // ... (previous ignored checks) ...
+        // Basic checks - ignore bots and DM
         if (message.author.bot || !message.guild) return;
         
         const askChannelId = process.env.ASK_CHANNEL_ID;
-        if (!askChannelId || message.channel.id !== askChannelId) return;
+        const forumChannels = config.channels.forum_support || [];
 
-        // ... (reply/mention checks) ...
-        if (message.reference) {
-            const repliedMessage = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
-            if (repliedMessage && repliedMessage.author.id !== client.user.id) return; 
+        // Check if we are in the designated AI channel
+        const isAskChannel = message.channel.id === askChannelId;
+        
+        // Check if we are in a forum thread (check parent channel ID)
+        const isForumThread = message.channel.isThread() && forumChannels.includes(message.channel.parentId);
+
+        // If it's neither, we might still want to respond if the bot is mentioned
+        const isMentioned = message.mentions.has(client.user.id) && !message.mentions.everyone;
+
+        if (!isAskChannel && !isForumThread && !isMentioned) return;
+
+        // info(`[DEBUG] Handling message: "${message.content}" in channel ${message.channel.id} (Ask: ${isAskChannel}, Forum: ${isForumThread}, Mention: ${isMentioned})`);
+
+        // For forum threads, we generally only want to answer the first message/starter
+        if (isForumThread) {
+            // Check if this is the starter message of the thread
+            // Note: message.id !== message.channel.id; instead use position === 0
+            const isStarter = message.position === 0;
+            if (!isStarter) return;
         }
 
-        const mentionedUsers = message.mentions.users.filter(u => u.id !== client.user.id);
-        if (mentionedUsers.size > 0) return;
+        // Avoid replying if the user is replying to someone else (unless it's the bot)
+        if (message.reference) {
+            try {
+                const repliedMessage = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
+                if (repliedMessage && repliedMessage.author.id !== client.user.id) return; 
+            } catch (err) {
+                // Ignore fetch errors
+            }
+        }
 
-        await message.channel.sendTyping();
+        // Avoid tagging people unnecessarily (ignore if mentions has other users)
+        const otherMentions = message.mentions.users.filter(u => u.id !== client.user.id);
+        if (otherMentions.size > 0) return;
+
+        // 0. Auto-Trigger Check (The "Smart" Layer)
+        try {
+            const handledByAuto = await AutoResponder.checkAndRespond(message);
+            if (handledByAuto) return;
+        } catch (autoErr) {
+            error('[AUTO RESPONDER] Error:', autoErr);
+        }
+
+        // Start typing to show activity
+        await message.channel.sendTyping().catch(() => {});
 
         try {
-            const question = message.content.toLowerCase();
+            const question = message.content;
+            if (!question || question.length < 2) return;
 
-            // 0. Auto-Trigger Check (The "Smart" Layer)
-            // Loops through predefined triggers to find keyword matches
-            let triggeredResponse = null;
-            for (const trigger of triggers) {
-                // Must match ALL keywords in the list? Or ANY? 
-                // Let's do a simple weighted match or "all" for strictness.
-                // For "screen small corner", we want "screen" AND ("small" OR "corner" OR "upper").
-                // Let's stick to "matches at least 2 keywords" for better accuracy?
-                // Or just keep simple contains logic for now.
-                
-                // Let's try: if message matches critical keywords count >= 2 (if list > 1) or 1 (if list 1)
-                const matches = trigger.keywords.filter(kw => question.includes(kw.toLowerCase())).length;
-                if (matches >= 2 || (trigger.keywords.length === 1 && matches === 1)) {
-                    triggeredResponse = trigger.response;
-                    break;
+            // Fetch recent history for conversational context (only if in the designated AI channel)
+            let history = [];
+            if (isAskChannel || isForumThread) {
+                try {
+                    const historyMessages = await message.channel.messages.fetch({ limit: 6 }).catch(() => null);
+                    if (historyMessages) {
+                        history = historyMessages
+                            .filter(m => {
+                                // Exclude the current message
+                                if (m.id === message.id) return false;
+                                
+                                // Include user's own messages
+                                if (m.author.id === message.author.id) return true;
+                                
+                                // Include bot messages ONLY if they are replies to this user's messages
+                                if (m.author.id === client.user.id) {
+                                    return m.reference && m.reference.messageId && 
+                                           historyMessages.some(hm => hm.id === m.reference.messageId && hm.author.id === message.author.id);
+                                }
+                                
+                                return false;
+                            })
+                            .reverse()
+                            .map(m => {
+                                const role = m.author.id === client.user.id ? 'assistant' : 'user';
+                                let content = m.content;
+                                if (!content && m.embeds && m.embeds.length > 0) {
+                                    content = m.embeds[0].description;
+                                }
+                                return { role, content: content || '[Attachment/Embed]' };
+                            });
+                    }
+                } catch (histErr) {
+                    // Ignore history fetch errors
                 }
             }
 
-            if (triggeredResponse) {
-                // Send fast Triggered Response
-                 const embed = new EmbedBuilder()
-                    .setTitle('⚡ Anomaly Auto-Support')
-                    .setDescription(triggeredResponse)
-                    .setColor('#e74c3c') // Different color for auto-trigger
-                    .setFooter({ text: 'This represents a known common issue. If this doesn\'t help, ask a staff member.' })
-                    .setTimestamp();
-                
-                 await message.reply({ embeds: [embed] });
-                 // Add checkmark to original message
-                 await message.react('⚡');
-                 return; // SKIP AI
-            }
+            // 1. Search Knowledge Base
+            const contextItems = client.knowledge.search(question.toLowerCase());
 
-            const historyMessages = await message.channel.messages.fetch({ limit: 6 });
-            // ... (rest of AI flow) ...
-            const history = historyMessages
-                .filter(m => m.id !== message.id) 
-                .reverse()
-                .map(m => {
-                    const role = m.author.id === client.user.id ? 'assistant' : 'user';
-                    let content = m.content;
-                    if (!content && m.embeds && m.embeds.length > 0) {
-                        content = m.embeds[0].description;
-                    }
-                    return { role, content: content || '[Attachment/Embed]' };
-                });
-
-            // 1. Search Knowledge Base (using only current question for search to keep it focused)
-            const contextItems = client.knowledge.search(question);
-
-            if (contextItems.length === 0) {
-                 // Even if no context found, maybe the history has context? 
-                 // We'll let it try to answer if it's a follow-up, or default fail.
-                 // For now, let's allow it to proceed if it looks like a conversation.
-            }
-
-            // 2. Generate Answer via AI with History
+            // 2. Generate Answer via AI
             const answer = await AIService.generateAnswer(question, contextItems, history);
 
             const embed = new EmbedBuilder()
                 .setTitle('☢️ Anomaly AI Assistant')
                 .setDescription(answer.substring(0, 4096))
                 .setColor('#3498db')
-                .setFooter({ text: `React 👍 or 👎 to provide feedback • Sources: ${contextItems.map(i => i.fullName).join(', ')}` })
+                .setFooter({ text: `React 👍 or 👎 to provide feedback • Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'}` })
                 .setTimestamp();
 
-            // Handle system messages (cannot reply to them)
-            let sentMessage;
-            if (message.system) {
-                 sentMessage = await message.channel.send({ embeds: [embed] });
-            } else {
-                 sentMessage = await message.reply({ embeds: [embed] });
-            }
-
-            // Add feedback reactions
-            await sentMessage.react('👍'); // Good
-            await sentMessage.react('👎'); // Bad
+            // Reply to message
+            await message.reply({ embeds: [embed] }).then(async (msg) => {
+                // Add feedback reactions
+                await msg.react('👍').catch(() => {}); 
+                await msg.react('👎').catch(() => {});
+            }).catch(err => {
+                error('[QUESTION HANDLER] Reply Error:', err);
+                // Fallback to sending in channel if reply fails (e.g. message deleted)
+                message.channel.send({ embeds: [embed] }).catch(() => {});
+            });
 
         } catch (err) {
-            console.error('[QUESTION HANDLER] Error:', err);
-            // Don't spam the channel with errors for every message, but maybe a subtle one
-            // await message.reply("❌ I encountered an error while processing your question.");
+            error('[QUESTION HANDLER] Error:', err);
         }
     }
 }).toJSON();

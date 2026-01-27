@@ -27,7 +27,9 @@ let blacklistCache = null;
 let blacklistLoading = false;
 
 const loadBlacklist = async () => {
-    if (blacklistCache !== null || blacklistLoading) return;
+    if (blacklistLoading) return; // Already loading, don't re-enter
+    if (blacklistCache !== null) return; // Already loaded, skip
+    
     blacklistLoading = true;
     try {
         const blacklistPath = path.join(__dirname, '../../utils/uBlacklist.txt');
@@ -70,7 +72,15 @@ module.exports = new Event({
 
         // Ensure blacklist is loaded (if it failed initially or wasn't ready, we check again or wait)
         if (blacklistCache === null) {
-            await loadBlacklist(); // Last ditch effort, awaits if not ready
+            // Wait for blacklist to load with a small timeout to prevent hanging
+            const startTime = Date.now();
+            while (blacklistLoading && Date.now() - startTime < 3000) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            // If still not loaded after wait, load it now
+            if (blacklistCache === null) {
+                await loadBlacklist();
+            }
         }
         
         // Treat empty cache as "pass"
@@ -88,12 +98,18 @@ module.exports = new Event({
 
         if (isBlacklisted) {
             try {
-                await message.delete().catch(e => console.error(`[PROTECTION] Failed to delete message: ${e.message}`));
+                // Permission Check before deletion
+                const canManage = message.channel.permissionsFor(client.user)?.has('ManageMessages');
                 
+                if (canManage) {
+                    await message.delete().catch(e => console.error(`[PROTECTION] Failed to delete message: ${e.message}`));
+                }
+
                 // Only send warning if we have permission
                 if (message.channel.permissionsFor(client.user)?.has('SendMessages')) {
-                    const warning = await message.channel.send(`<@${message.author.id}>, that link is not allowed here.`);
-                    setTimeout(() => warning.delete().catch(e => console.error(`[PROTECTION] Failed to delete warning: ${e.message}`)), 5000);
+                    const warningMessage = `<@${message.author.id}>, that link is not allowed here.`;
+                    const warning = await message.channel.send(warningMessage);
+                    setTimeout(() => warning.delete().catch(() => {}), 5000);
                 }
 
                 if (logChannel) {
@@ -103,43 +119,44 @@ module.exports = new Event({
                         .addFields(
                             { name: 'User', value: `${message.author.tag} (${message.author.id})` },
                             { name: 'Channel', value: `<#${message.channel.id}>` },
-                            { name: 'Blocked Content', value: message.content }
+                            { name: 'Blocked Content', value: message.content.substring(0, 1024) }
                         )
                         .setTimestamp();
                     logChannel.send({ embeds: [embed] });
                 }
                 return; // Stop further checks if deleted
             } catch (e) {
-                console.error("[PROTECTION] Link delete failed:", e.message);
+                console.error("[PROTECTION] Link delete logic failed:", e.message);
             }
         }
 
         // 2. Anti-Spam
-        // Synchronous operations: No race condition in Node.js event loop here
+        // Check if already timed out to prevent "ghost" processing
+        if (message.member.communicationDisabledUntilTimestamp && message.member.communicationDisabledUntilTimestamp > Date.now()) return;
+
         const now = Date.now();
         const userData = messageHistory.get(message.author.id) || [];
         
         // Filter out old messages
         const recentMessages = userData.filter(msg => now - msg.timestamp < SPAM_INTERVAL);
         
-        // Add new message
-        recentMessages.push({ timestamp: now, content: message.content });
+        // Add new message (limit content length for memory safety)
+        const contentSnapshot = message.content.substring(0, 100);
+        recentMessages.push({ timestamp: now, content: contentSnapshot });
         messageHistory.set(message.author.id, recentMessages);
 
         // Analysis
         const count = recentMessages.length;
-        const duplicates = recentMessages.filter(msg => msg.content === message.content).length;
+        const duplicates = recentMessages.filter(msg => msg.content === contentSnapshot).length;
 
-        // Custom Strict Thresholds using Env or Defaults
-        // General Rate Limit: 5 messages in 5s
-        // Duplicate Limit: 3 identical messages in 5s
+        // Custom Strict Thresholds 
         const DUPLICATE_THRESHOLD = 3;
 
         if (count > SPAM_THRESHOLD || duplicates >= DUPLICATE_THRESHOLD) {
             try {
                 // Check if user can be timed out
                 if (!message.member.moderatable) {
-                    console.warn(`[PROTECTION] User ${message.author.tag} is not moderatable, skipping timeout.`);
+                    // Still delete if possible, but skip timeout
                     return;
                 }
 

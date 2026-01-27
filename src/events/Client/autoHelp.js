@@ -1,12 +1,17 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const Event = require('../../structure/Event');
 
+let helpInterval = null;
+
 module.exports = new Event({
     event: Events.ClientReady,
     once: false,
     run: async (client) => {
+        // Clear any existing interval to prevent duplicates on Ready event resumption
+        if (helpInterval) clearInterval(helpInterval);
+        
         // Run every 24 hours
-        setInterval(async () => {
+        helpInterval = setInterval(async () => {
             const channelId = process.env.AUTO_HELP_CHANNEL_ID;
             if (!channelId) return;
 
@@ -22,31 +27,60 @@ module.exports = new Event({
             const categories = {};
 
             commands.forEach((cmd) => {
-                const category = 'General'; // You might want to categorize them better if your structure allows
-                // Since this is a flat list, we'll try to guess or just list them all.
-                // Or better, let's use the folder names if possible, but we don't have that info here easily without reading files.
-                // We'll stick to a simple list for now.
-                
                 if (!categories['Commands']) categories['Commands'] = [];
                 categories['Commands'].push(`\`/${cmd.command.name}\` - ${cmd.command.description}`);
             });
 
-            const embed = new EmbedBuilder()
+            // Split command fields to respect Discord's 1024 character limit per field
+            const embeds = [];
+            let currentEmbed = new EmbedBuilder()
                 .setTitle('🤖 Daily Command List')
                 .setDescription('Here are the available commands you can use in the server:')
                 .setColor('#0099ff')
                 .setTimestamp();
 
             for (const [category, cmds] of Object.entries(categories)) {
-                embed.addFields({ name: category, value: cmds.join('\n') });
+                const commandText = cmds.join('\n');
+                
+                // If adding this field would exceed 1024 chars, create a new embed
+                if (commandText.length > 1024) {
+                    // Split long categories into pages
+                    let currentPage = '';
+                    for (const cmd of cmds) {
+                        if ((currentPage + cmd + '\n').length > 1024) {
+                            if (currentPage) {
+                                const pageNum = embeds.length + 1;
+                                currentEmbed.addFields({ name: `${category} (Page ${pageNum})`, value: currentPage.trim() });
+                                embeds.push(currentEmbed);
+                                currentEmbed = new EmbedBuilder()
+                                    .setColor('#0099ff')
+                                    .setTimestamp();
+                            }
+                            currentPage = cmd + '\n';
+                        } else {
+                            currentPage += cmd + '\n';
+                        }
+                    }
+                    if (currentPage) {
+                        const pageNum = embeds.length + 1;
+                        currentEmbed.addFields({ name: `${category} (Page ${pageNum})`, value: currentPage.trim() });
+                    }
+                } else {
+                    currentEmbed.addFields({ name: category, value: commandText });
+                }
             }
 
-            // Optional: Delete previous bot messages in this channel to keep it clean?
-            // For now, just send.
-            
+            // Add the final embed if it has fields
+            if (currentEmbed.data.fields?.length > 0) {
+                embeds.push(currentEmbed);
+            }
+
+            // Send all embeds (Discord allows multiple embeds per message up to 10)
             try {
-                await channel.send({ embeds: [embed] });
-                console.log('[AutoHelp] Posted daily command list.');
+                if (embeds.length > 0) {
+                    await channel.send({ embeds: embeds.slice(0, 10) }); // Cap at 10 embeds per message
+                    console.log(`[AutoHelp] Posted daily command list (${embeds.length} embed${embeds.length > 1 ? 's' : ''}).`);
+                }
             } catch (err) {
                 console.error('[AutoHelp] Failed to send message:', err);
             }

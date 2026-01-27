@@ -22,9 +22,20 @@ module.exports = new ApplicationCommand({
                     const minutes = Math.ceil(remaining / 60000);
                     return interaction.reply({ content: `⏳ You are currently scavenging! Return in **${minutes} minutes**.`, ephemeral: true });
                 } else {
-                    // Scavenge complete, calculate rewards
-                    db.run('DELETE FROM scavenge WHERE user_id = ?', [userId]); // clear timer
-                    return processScavengeResult(client, interaction);
+                    // Attempt atomic completion: delete only if end time passed
+                    db.run(
+                        'DELETE FROM scavenge WHERE user_id = ? AND ? >= (start_time + duration)',
+                        [userId, now],
+                        function (err) {
+                            if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                            if (this.changes === 0) {
+                                // Either already claimed or timer not finished (race)
+                                const minutes = Math.ceil((endTime - now) / 60000);
+                                return interaction.reply({ content: `⏳ Scavenging not finished or already claimed. Try again in **${Math.max(0, minutes)} minutes**.`, ephemeral: true });
+                            }
+                            return processScavengeResult(client, interaction);
+                        }
+                    );
                 }
             } else {
                 // START NEW SCAVENGE
@@ -106,11 +117,9 @@ function processScavengeResult(client, interaction) {
         if (roll < 0.1) {
             const dmg = 10;
             const rads = 5;
-            user.health -= dmg;
-            user.rads += rads;
             damageMsg = `\n⚠️ You stepped on a mine! Taken **${dmg} DMG** and **${rads} Rads**.`;
-            
-            db.run(`UPDATE users SET health = ?, rads = ? WHERE id = ?`, [user.health, user.rads, userId]);
+            // Apply bounded relative updates
+            db.run(`UPDATE users SET health = MAX(0, MIN(max_health, health - ?)), rads = MAX(0, MIN(1000, rads + ?)) WHERE id = ?`, [dmg, rads, userId]);
         }
 
         db.run('UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?', [caps, xp, userId]);

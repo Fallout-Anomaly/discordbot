@@ -1,4 +1,4 @@
-const DiscordBot = require('../client/DiscordBot');
+
 
 class ApplicationCommand {
     data;
