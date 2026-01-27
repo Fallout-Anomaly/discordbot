@@ -4,7 +4,7 @@ const { warn, error, success } = require("../utils/Console");
 const config = require("../config");
 const CommandsListener = require("./handler/CommandsListener");
 const ComponentsHandler = require("./handler/ComponentsHandler");
-const ComponentsListener = require("./handler/ComponentsListener");
+
 const EventsHandler = require("./handler/EventsHandler");
 const { QuickYAML } = require('quick-yaml.db');
 const KnowledgeBase = require("../utils/KnowledgeBase");
