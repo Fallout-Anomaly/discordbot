@@ -21,42 +21,38 @@ module.exports = new ApplicationCommand({
             const desc = cmd.command.description;
             const line = `\`/${name}\` - ${desc}`;
 
+            // Economy & RPG
             if (['balance', 'pay', 'daily', 'shop', 'scavenge', 'inventory', 'use', 'stats', 'quests'].includes(name)) {
                 categories.economy.cmds.push(line);
-            } else if (['guide', 'help', 'ping', 'serverinfo', 'userinfo', 'report', 'learn'].includes(name)) {
+            } 
+            // Utility & Info
+            else if (['guide', 'help', 'ping', 'serverinfo', 'userinfo', 'report', 'learn', 'supporter-perks', 'donor-leaderboard', 'raffle-entries'].includes(name)) {
                 categories.utility.cmds.push(line);
-            } else if (['coinflip', 'slots', 'leaderboard', 'embed', 'avatar', 'banner'].includes(name)) {
+            } 
+            // Fun & Extras
+            else if (['coinflip', 'slots', 'leaderboard', 'embed', 'avatar', 'banner'].includes(name)) {
                 categories.fun.cmds.push(line);
-            } else if (['ban', 'kick', 'mute', 'timeout', 'lock', 'unlock', 'clear', 'setup-verify', 'addrole', 'setnick'].includes(name)) {
-                // Only show moderation tostaff? We'll put it in menu but maybe hide if not staff? 
-                // For simplicity, let's include it but label it.
-                if (interaction.member.permissions.has('ManageMessages')) {
-                    categories.moderation.cmds.push(line);
-                }
             }
+            // Skip moderation/staff commands - they go in /staffguide instead
         });
 
         // 1. Create the Main Embed
         const embed = new EmbedBuilder()
             .setTitle('📖 Survivor\'s Field Guide')
-            .setDescription('Select a category from the menu below to view available commands.\n\n**Categories:**\n💰 **Economy/RPG**: Trading, scavenging, items.\n🔧 **Utility**: Information and help.\n🎲 **Fun**: Games and profiles.\n🛡️ **Moderation**: Staff tools.')
+            .setDescription('Select a category from the menu below to view available commands.\n\n**Categories:**\n💰 **Economy/RPG**: Trading, scavenging, items, quests.\n🔧 **Utility**: Information, help, supporter features.\n🎲 **Fun**: Games, gambling, and profiles.')
             .setColor('#27ae60')
             .setThumbnail('https://i.imgur.com/8Q9Q2Xn.png')
             .setFooter({ text: 'Select an option below • AnomalyBot' });
 
-        // 2. Create the Select Menu
+        // 2. Create the Select Menu (no moderation category)
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('guide_menu')
             .setPlaceholder('Select a Category')
             .addOptions(
-                { label: 'Economy & RPG', description: 'Shop, Inv, Scavenge', value: 'economy', emoji: '💰' },
-                { label: 'Utility', description: 'Help, Info, Report', value: 'utility', emoji: '🔧' },
+                { label: 'Economy & RPG', description: 'Shop, Inv, Scavenge, Quests', value: 'economy', emoji: '💰' },
+                { label: 'Utility', description: 'Help, Info, Supporters', value: 'utility', emoji: '🔧' },
                 { label: 'Fun & Extras', description: 'Gambling, Profile', value: 'fun', emoji: '🎲' }
             );
-
-        if (categories.moderation.cmds.length > 0) {
-            selectMenu.addOptions({ label: 'Moderation', description: 'Staff Only Tools', value: 'moderation', emoji: '🛡️' });
-        }
 
         const row = new ActionRowBuilder().addComponents(selectMenu);
 

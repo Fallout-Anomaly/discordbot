@@ -8,7 +8,6 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'cleanup-support',
         description: 'Manage inactive support threads: send follow-ups and auto-close unresponsive threads.',
-        defer: 'ephemeral',
         options: [
             {
                 name: 'action',
@@ -33,6 +32,9 @@ module.exports = new ApplicationCommand({
         botOwner: true
     },
     run: async (client, interaction) => {
+        // Defer reply immediately to prevent timeout
+        await interaction.deferReply({ ephemeral: true });
+
         const action = interaction.options.getString('action');
         const limit = interaction.options.getInteger('limit') || 50;
 
