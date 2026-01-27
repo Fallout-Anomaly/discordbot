@@ -33,7 +33,7 @@ module.exports = new ApplicationCommand({
     },
     run: async (client, interaction) => {
         // Defer reply immediately to prevent timeout
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: 64 });
 
         const action = interaction.options.getString('action');
         const limit = interaction.options.getInteger('limit') || 50;

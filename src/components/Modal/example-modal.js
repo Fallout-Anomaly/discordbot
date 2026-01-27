@@ -14,7 +14,7 @@ module.exports = new Component({
 
         await interaction.reply({
             content: 'Hello **' + field + '**.',
-            ephemeral: true
+            flags: 64
         });
 
     }
