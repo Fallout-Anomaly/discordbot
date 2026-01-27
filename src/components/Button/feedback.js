@@ -5,7 +5,7 @@ module.exports = new Component({
     customId: /^feedback_(worked|failed)_/,
     type: 'button',
     options: {
-        public: false
+        public: true
     },
     run: async (client, interaction) => {
         // Already deferred by interactionCreate.js - use editReply()
@@ -13,11 +13,21 @@ module.exports = new Component({
         const [, action, messageId] = customId.match(/^feedback_(worked|failed)_(.+)$/);
 
         try {
-            // Get the original response message
+            // Get the original response message (the user's question message)
             const originalMessage = await interaction.channel.messages.fetch(messageId).catch(() => null);
             if (!originalMessage) {
                 return interaction.editReply({ 
                     content: '❌ Could not find the original message.' 
+                });
+            }
+
+            // Verify that the user clicking is the one who asked the question
+            if (originalMessage.author.id !== interaction.user.id) {
+                // We must use followUp because we already deferredUpdate (which targets the message), 
+                // but we want to tell the clicked user "No" without ruining the interface.
+                return interaction.followUp({ 
+                    content: '❌ Only the user who asked the question can provide feedback.',
+                    ephemeral: true
                 });
             }
 

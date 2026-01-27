@@ -26,10 +26,16 @@ module.exports = new Event({
         // These must be acknowledged immediately to prevent 10062 Unknown interaction timeout
         const checkUserPermissions = async (component) => {
             if (component.options?.public === false && interaction.user.id !== interaction.message.interaction?.user?.id) {
-                await interaction.reply({
+                const replyData = {
                     content: config.messages.COMPONENT_NOT_PUBLIC,
                     ephemeral: true
-                });
+                };
+
+                if (interaction.deferred || interaction.replied) {
+                    await interaction.followUp(replyData);
+                } else {
+                    await interaction.reply(replyData);
+                }
                 return false;
             }
             return true;
