@@ -56,6 +56,23 @@ class AIService {
         const model = 'llama-3.1-8b-instant'; // Forced to 8B to avoid 70B rate limits
         const maxTokens = parseInt(process.env.AI_MAX_TOKENS) || 500;
 
+        // Check if a staff member has already responded in the conversation history
+        // Staff responses are typically longer and contain technical guidance
+        const hasStaffResponse = history.some(msg => {
+            const content = (msg.content || '').toLowerCase();
+            // Look for indicators of staff guidance (MCM, settings, troubleshooting steps, etc.)
+            return msg.role === 'user' && (
+                content.includes('mcm') || 
+                content.includes('visor') || 
+                content.includes('settings') ||
+                content.includes('go to') ||
+                content.includes('try this') ||
+                content.includes('workaround') ||
+                content.includes('settings') ||
+                content.length > 300 // Staff responses tend to be detailed
+            );
+        });
+
         // Construct messages array
         const messages = [
             {
@@ -68,7 +85,8 @@ class AIService {
 - If the Context has the answer, use it exclusively.
 - **Controller/Gamepad Support**: If asked about controllers, ALWAYS check the context for "Steam Input" links (steam://controllerconfig/...) or specific keybinds (e.g. "Select" for Pipboy). Remind users to reset in-game keybinds to default if mentioned in context.
 - If the Context is missing specific details, you MAY use your general knowledge about Fallout 4 modding to help, but explicitly state that this is "general advice" and might differ in the modpack.
-- **Escalation**: If you cannot adequately answer the question (no relevant context, issue is too complex, requires file access, or needs manual intervention), end your response with the exact phrase "[ESCALATE_TO_STAFF]" on a new line.
+- **IMPORTANT - Staff Already Responded**: If a detailed staff answer already exists in this conversation${hasStaffResponse ? ' (which it does - there is a staff response in the history)' : ''}, do NOT repeat it. Instead, escalate by ending with "[ESCALATE_TO_STAFF]" so staff can follow up on the user's clarification.
+- **Escalation**: If you cannot adequately answer the question (no relevant context, issue is too complex, requires file access, needs manual intervention, OR staff has already provided a detailed answer), end your response with the exact phrase "[ESCALATE_TO_STAFF]" on a new line.
 - Be concise and friendly.
 - Do NOT mention filenames or say "Based on the context".`
             }

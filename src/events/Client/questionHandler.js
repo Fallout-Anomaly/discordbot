@@ -28,13 +28,8 @@ module.exports = new Event({
 
         // info(`[DEBUG] Handling message: "${message.content}" in channel ${message.channel.id} (Ask: ${isAskChannel}, Forum: ${isForumThread}, Mention: ${isMentioned})`);
 
-        // For forum threads, we generally only want to answer the first message/starter
-        if (isForumThread) {
-            // Check if this is the starter message of the thread
-            // Note: message.id !== message.channel.id; instead use position === 0
-            const isStarter = message.position === 0;
-            if (!isStarter) return;
-        }
+        // For forum threads, respond to any message (starter or follow-ups)
+        // This allows the bot to help with follow-up questions and clarifications
 
         // Avoid replying if the user is replying to someone else (unless it's the bot)
         if (message.reference) {
@@ -67,10 +62,24 @@ module.exports = new Event({
 
             // Fetch recent history for conversational context (only if in the designated AI channel)
             let history = [];
+            let hasStaffResponse = false;
+            const staffRoleId = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
+            
             if (isAskChannel || isForumThread) {
                 try {
-                    const historyMessages = await message.channel.messages.fetch({ limit: 6 }).catch(() => null);
+                    const historyMessages = await message.channel.messages.fetch({ limit: 15 }).catch(() => null);
                     if (historyMessages) {
+                        // Check if a staff member has already provided a response
+                        hasStaffResponse = historyMessages.some(m => {
+                            if (m.author.bot) return false;
+                            
+                            // Check if the message author has the staff role
+                            if (message.guild && m.member) {
+                                return m.member.roles.has(staffRoleId);
+                            }
+                            return false;
+                        });
+                        
                         history = historyMessages
                             .filter(m => {
                                 // Exclude the current message
@@ -104,6 +113,28 @@ module.exports = new Event({
 
             // 1. Search Knowledge Base
             const contextItems = client.knowledge.search(question.toLowerCase());
+
+            // If staff already provided a detailed answer, only respond if this is a NEW clarifying question
+            // Check if the current message is just repeating the original problem (not asking for clarification)
+            const isRepeat = history.length > 0 && history.some(msg => {
+                if (msg.role !== 'user') return false;
+                // Check if current question is very similar to a previous user message
+                const simWords = (msg.content || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
+                const currWords = question.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+                const commonWords = simWords.filter(w => currWords.includes(w));
+                return commonWords.length > 3; // Similarity threshold
+            });
+
+            if (hasStaffResponse && isRepeat) {
+                // Don't respond - escalate to staff for follow-up
+                await message.reply({
+                    content: `<@&${config.roles?.staff_role || process.env.STAFF_ROLE_ID}> User is following up on this issue. A staff member has already responded.`,
+                    embeds: []
+                }).catch(err => {
+                    error('[QUESTION HANDLER] Escalation reply error:', err);
+                });
+                return;
+            }
 
             // 2. Generate Answer via AI
             const result = await AIService.generateAnswer(question, contextItems, history);
