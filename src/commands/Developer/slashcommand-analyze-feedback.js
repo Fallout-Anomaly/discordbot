@@ -1,4 +1,4 @@
-const { EmbedBuilder, ApplicationCommandOptionType, PermissionFlagsBits } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType, PermissionFlagsBits, ChannelType } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
 const AIService = require('../../utils/AIService');
@@ -23,6 +23,13 @@ module.exports = new ApplicationCommand({
                 ]
             },
             {
+                name: 'channel',
+                description: 'Feedback channel to scan (optional)',
+                type: ApplicationCommandOptionType.Channel,
+                required: false,
+                channelTypes: [ChannelType.GuildText]
+            },
+            {
                 name: 'limit',
                 description: 'Number of recent messages to scan (default: 50)',
                 type: ApplicationCommandOptionType.Integer,
@@ -34,14 +41,17 @@ module.exports = new ApplicationCommand({
         const action = interaction.options.getString('action');
         const limit = interaction.options.getInteger('limit') || 50;
 
-        const feedbackChannelId = process.env.FEEDBACK_CHANNEL_ID;
-        if (!feedbackChannelId) {
-            return interaction.reply({ content: '❌ Feedback channel not configured (FEEDBACK_CHANNEL_ID).', flags: 64 });
-        }
-
-        const feedbackChannel = await client.channels.fetch(feedbackChannelId).catch(() => null);
+        const selectedChannel = interaction.options.getChannel('channel');
+        let feedbackChannel = selectedChannel;
         if (!feedbackChannel) {
-            return interaction.reply({ content: '❌ Feedback channel not found.', flags: 64 });
+            const feedbackChannelId = process.env.FEEDBACK_CHANNEL_ID;
+            if (!feedbackChannelId) {
+                return interaction.reply({ content: '❌ Feedback channel not configured. Provide the `channel` option when running this command or set FEEDBACK_CHANNEL_ID in .env.', flags: 64 });
+            }
+            feedbackChannel = await client.channels.fetch(feedbackChannelId).catch(() => null);
+        }
+        if (!feedbackChannel || feedbackChannel.type !== ChannelType.GuildText) {
+            return interaction.reply({ content: '❌ Invalid or missing feedback channel. Please select a text channel.', flags: 64 });
         }
 
         if (action === 'scan') {

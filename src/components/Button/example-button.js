@@ -9,11 +9,9 @@ module.exports = new Component({
      * @param {ButtonInteraction} interaction 
      */
     run: async (client, interaction) => {
-
-        await interaction.reply({
-            content: 'Replied from a Button interaction!',
-            flags: 64
+        await interaction.deferReply({ flags: 64 });
+        await interaction.editReply({
+            content: 'Replied from a Button interaction!'
         });
-
     }
 }).toJSON();
