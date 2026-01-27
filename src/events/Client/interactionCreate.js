@@ -37,16 +37,20 @@ module.exports = new Event({
 
         try {
             if (interaction.isButton()) {
+                // MUST acknowledge interaction immediately, even if handler doesn't exist
+                if (!interaction.deferred && !interaction.replied) {
+                    await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                }
+
                 const component = client.collection.components.buttons.get(interaction.customId);
-                if (!component) return;
+                if (!component) {
+                    info(`[BUTTON] Handler not found for button: ${interaction.customId}`);
+                    return;
+                }
 
                 if (!(await checkUserPermissions(component))) return;
 
                 try {
-                    // Auto-defer to prevent 3-second timeout (Unknown interaction 10062)
-                    if (!interaction.deferred && !interaction.replied) {
-                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
-                    }
                     await component.run(client, interaction);
                 } catch (err) {
                     error('[BUTTON]', err);
@@ -55,16 +59,20 @@ module.exports = new Event({
             }
 
             if (interaction.isAnySelectMenu()) {
+                // MUST acknowledge interaction immediately, even if handler doesn't exist
+                if (!interaction.deferred && !interaction.replied) {
+                    await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                }
+
                 const component = client.collection.components.selects.get(interaction.customId);
-                if (!component) return;
+                if (!component) {
+                    info(`[SELECT MENU] Handler not found for select menu: ${interaction.customId}`);
+                    return;
+                }
 
                 if (!(await checkUserPermissions(component))) return;
 
                 try {
-                    // Auto-defer to prevent 3-second timeout (Unknown interaction 10062)
-                    if (!interaction.deferred && !interaction.replied) {
-                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
-                    }
                     await component.run(client, interaction);
                 } catch (err) {
                     error('[SELECT MENU]', err);
@@ -73,14 +81,18 @@ module.exports = new Event({
             }
 
             if (interaction.isModalSubmit()) {
+                // MUST acknowledge interaction immediately, even if handler doesn't exist
+                if (!interaction.deferred && !interaction.replied) {
+                    await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                }
+
                 const component = client.collection.components.modals.get(interaction.customId);
-                if (!component) return;
+                if (!component) {
+                    info(`[MODAL] Handler not found for modal: ${interaction.customId}`);
+                    return;
+                }
 
                 try {
-                    // Auto-defer to prevent 3-second timeout (Unknown interaction 10062)
-                    if (!interaction.deferred && !interaction.replied) {
-                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
-                    }
                     await component.run(client, interaction);
                 } catch (err) {
                     error('[MODAL]', err);
