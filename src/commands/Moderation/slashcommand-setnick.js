@@ -19,7 +19,7 @@ module.exports = new ApplicationCommand({
                 required: true
             }
         ],
-        defaultMemberPermissions: PermissionFlagsBits.ManageNicknames
+        defaultMemberPermissions: PermissionFlagsBits.ManageNicknames.toString()
     },
     run: async (client, interaction) => {
         const user = interaction.options.getUser('user');

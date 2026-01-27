@@ -13,7 +13,7 @@ module.exports = new ApplicationCommand({
                 required: true
             }
         ],
-        defaultMemberPermissions: PermissionFlagsBits.Administrator
+        defaultMemberPermissions: PermissionFlagsBits.Administrator.toString()
     },
     options: {
         botOwner: true 
