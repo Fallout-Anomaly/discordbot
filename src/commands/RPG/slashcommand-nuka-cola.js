@@ -85,6 +85,13 @@ module.exports = new ApplicationCommand({
             });
         }
 
+        // Fetch user data for health calculations
+        const userData = await new Promise((resolve) => {
+            db.get('SELECT health, radiation FROM users WHERE id = ?', [userId], (err, row) => {
+                resolve(row || { health: 100, radiation: 0 });
+            });
+        });
+
         // Check if player has the item in inventory
         const invData = await new Promise((resolve) => {
             db.get(
@@ -101,51 +108,30 @@ module.exports = new ApplicationCommand({
             });
         }
 
-        // Deduct cost
-        const newBalance = userData.balance - beverage.cost;
-
         // Apply effects
         const currentHealth = userData.health || 100;
         let newHealth = Math.min(100, currentHealth + (beverage.health || 0));
         let radiationReduction = beverage.radiation || 0;
 
-        // Update database
-        let updateQuery = 'UPDATE users SET ';
-        let params = [];
-
-        if (beverage.health) {
-            updateQuery += 'health = ?, ';
-            params.push(newHealth);
-        }
-
-        if (radiationReduction !== 0) {
-            updateQuery += 'radiation = MAX(0, radiation + ?), ';
-            params.push(radiationReduction);
-        }
-
-        updateQuery += 'balance = ? WHERE id = ?';
-        params.push(-beverage.cost);
-        params.push(userId);
-
         // Remove 1 item from inventory and deduct caps
         await new Promise((resolve) => {
             db.serialize(() => {
-                // Deduct caps
-                db.run('UPDATE users SET balance = balance ? WHERE id = ?', params.slice(-2), () => {});
+                // Apply health changes if any
+                if (beverage.health) {
+                    db.run('UPDATE users SET health = ? WHERE id = ?', [newHealth, userId], () => {});
+                }
+                
+                // Apply radiation changes if any
+                if (radiationReduction !== 0) {
+                    db.run('UPDATE users SET radiation = MAX(0, radiation + ?) WHERE id = ?', [radiationReduction, userId], () => {});
+                }
                 
                 // Remove item from inventory
                 db.run(
-                    'UPDATE inventory SET amuserData.health} → ${Math.min(100, userData.health + beverage.health)_id = ? AND item_id = ? AND amount > 0',
+                    'UPDATE inventory SET amount = amount - 1 WHERE user_id = ? AND item_id = ? AND amount > 0',
                     [userId, itemKey],
                     () => resolve()
                 );
-            });
-        });
-
-        // Get user's current health and radiation for display
-        const userData = await new Promise((resolve) => {
-            db.get('SELECT health, radiation FROM users WHERE id = ?', [userId], (err, row) => {
-                resolve(row || { health: 100, radiation: 0 });
             });
         });
 

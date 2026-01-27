@@ -22,7 +22,7 @@ module.exports = new ApplicationCommand({
             const line = `\`/${name}\` - ${desc}`;
 
             // Economy & RPG
-            if (['balance', 'pay', 'daily', 'shop', 'scavenge', 'inventory', 'use', 'stats', 'quests', 'rob', 'radiation', 'nuka-cola', 'power-armor'].includes(name)) {
+            if (['balance', 'pay', 'daily', 'shop', 'scavenge', 'inventory', 'use', 'stats', 'quests', 'rob', 'radiation', 'nuka-cola', 'power-armor', 'fish', 'hunt'].includes(name)) {
                 categories.economy.cmds.push(line);
             } 
             // Utility & Info
@@ -39,7 +39,7 @@ module.exports = new ApplicationCommand({
         // 1. Create the Main Embed
         const embed = new EmbedBuilder()
             .setTitle('📖 Survivor\'s Field Guide')
-            .setDescription('Select a category from the menu below to view available commands.\n\n**Categories:**\n💰 **Economy/RPG**: Trading, scavenging, items, quests, robbing, radiation, consumables, power armor.\n🔧 **Utility**: Information, help, supporter features.\n🎲 **Fun**: Games, gambling, and profiles.')
+            .setDescription('Select a category from the menu below to view available commands.\n\n**Categories:**\n💰 **Economy/RPG**: Trading, scavenging, items, quests, robbing, radiation, consumables, power armor, fishing, hunting.\n🔧 **Utility**: Information, help, supporter features.\n🎲 **Fun**: Games, gambling, and profiles.')
             .setColor('#27ae60')
             .setThumbnail('https://i.imgur.com/8Q9Q2Xn.png')
             .setFooter({ text: 'Select an option below • AnomalyBot' });
@@ -49,22 +49,22 @@ module.exports = new ApplicationCommand({
             .setCustomId('guide_menu')
             .setPlaceholder('Select a Category')
             .addOptions(
-                { label: 'Economy & RPG', description: 'Shop, Inv, Quests, Rob, Radiation, Armor', value: 'economy', emoji: '💰' },
+                { label: 'Economy & RPG', description: 'Shop, Inv, Quests, Rob, Fish, Hunt', value: 'economy', emoji: '💰' },
                 { label: 'Utility', description: 'Help, Info, Supporters', value: 'utility', emoji: '🔧' },
                 { label: 'Fun & Extras', description: 'Gambling, Profile', value: 'fun', emoji: '🎲' }
             );
 
         const row = new ActionRowBuilder().addComponents(selectMenu);
 
-        // 3. Send Initial Message and fetch Message for collectors
-        const { message } = await interaction.reply({ 
+        // 3. Send Initial Message and fetch for collectors
+        const reply = await interaction.reply({ 
             embeds: [embed], 
             components: [row],
-            withResponse: true // Returns the Message object directly (v14)
+            withResponse: true
         });
 
         // 4. Create Collector for Interaction on the Message object
-        const collector = message.createMessageComponentCollector({ 
+        const collector = reply.createMessageComponentCollector({ 
             componentType: ComponentType.StringSelect, 
             time: 60000 // 1 minute timeout
         });

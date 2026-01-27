@@ -7,23 +7,26 @@ module.exports = new Component({
         public: true
     },
     run: async (client, interaction) => {
+        // Defer immediately to prevent timeout
+        await interaction.deferReply({ flags: 64 });
+
         const roleId = process.env.MEMBER_ROLE_ID;
-        if (!roleId) return interaction.reply({ content: '❌ Verification role is not configured.', flags: 64 });
+        if (!roleId) return interaction.editReply({ content: '❌ Verification role is not configured.' });
 
         const role = interaction.guild.roles.cache.get(roleId);
-        if (!role) return interaction.reply({ content: '❌ Verification role not found.', flags: 64 });
+        if (!role) return interaction.editReply({ content: '❌ Verification role not found.' });
 
         if (interaction.member.roles.cache.has(roleId)) {
-            return interaction.reply({ content: '✅ You are already verified!', flags: 64 });
+            return interaction.editReply({ content: '✅ You are already verified!' });
         }
 
         try {
             // Check if bot can manage roles
             if (!interaction.guild.members.me.permissions.has('ManageRoles')) {
-                return interaction.reply({ content: '❌ Bot lacks "Manage Roles" permission.', flags: 64 });
+                return interaction.editReply({ content: '❌ Bot lacks "Manage Roles" permission.' });
             }
             if (role.position >= interaction.guild.members.me.roles.highest.position) {
-                return interaction.reply({ content: '❌ Verification role is higher than bot role.', flags: 64 });
+                return interaction.editReply({ content: '❌ Verification role is higher than bot role.' });
             }
 
             await interaction.member.roles.add(role);
@@ -41,13 +44,12 @@ module.exports = new Component({
                 .replace(/{role}/g, `<@&${roleId}>`)
                 .replace(/\\n/g, '\n'); // Handle escaped newlines if entered via command
             
-            await interaction.reply({ 
-                content: successMsg, 
-                flags: 64
+            await interaction.editReply({ 
+                content: successMsg
             });
         } catch (error) {
             console.error('[VERIFY] Error:', error);
-            interaction.reply({ content: '❌ An error occurred during verification. Please contact staff.', flags: 64 });
+            interaction.editReply({ content: '❌ An error occurred during verification. Please contact staff.' });
         }
     }
 }).toJSON();
