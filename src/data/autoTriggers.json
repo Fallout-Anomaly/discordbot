@@ -26,5 +26,45 @@
     {
         "keywords": ["controller", "gamepad", "input"],
         "response": "**Controller Support**:\n1. Use the official Steam Input config tailored for Anomaly.\n2. Ensure 'Gamepad' is enabled in settings.\n3. Do not use external mappers like DS4Windows if Steam Input is active."
+    },
+    {
+        "keywords": ["save", "saving", "how to save", "sleep", "cigarette"],
+        "response": "**How to Save**:\nAnomaly restricts standard saving. You can save by:\n1. **Sleeping** in a bed for at least 1 hour.\n2. **Smoking** a cigarette (Use from Radial Menu 'H', weapon holstered).\n3. Reaching specific safe zones (like Vault 111 security room)."
+    },
+    {
+        "keywords": ["heal", "health", "broken", "limb", "stimpak"],
+        "response": "**Healing System**:\n- **Stimpaks**: Heal over time. SP-2 requires weapon holstered.\n- **IFAK**: Stops bleeding and heals slowly.\n- **Splints**: Fix broken limbs (sets to 1HP).\n*Note: Sleeping does not auto-heal limbs.*"
+    },
+    {
+        "keywords": ["rads", "radiation", "radaway", "poisoning"],
+        "response": "**Radiation System**:\n- **RadAway**: Removed. Use **Ca-DTPA Injectors** instead.\n- **Rad-X**: Removed. Use **Potassium Iodide**.\n- **Cleansing Tonic**: Cures Radiation Poisoning.\n- **Alcohol**: Lowers internal radiation (IRA)."
+    },
+    {
+        "keywords": ["flashlight", "torch", "light"],
+        "response": "**Using the Flashlight**:\nHold the `Tab` key (Pip-Boy key) to toggle your flashlight/headlamp."
+    },
+    {
+        "keywords": ["black face", "dark face", "face bug"],
+        "response": "**Black Face Bug**:\nThis usually happens if you:\n1. Modified the load order.\n2. Loaded a save from a different modlist.\nTry creating a new character to verify if the issue persists."
+    },
+    {
+        "keywords": ["add mod", "install mod", "my own mods"],
+        "response": "**Adding Mods**:\nAdding your own mods is **not recommended** and voids official support. If you must, ensure they are compatible with complex systems like MAIM and SCOURGE."
+    },
+    {
+        "keywords": ["clean", "mask", "wipe", "visor"],
+        "response": "**Gas Mask Wiping**:\nPress `Shift + K` to wipe rain or blood off your gas mask visor."
+    },
+    {
+        "keywords": ["night vision", "nvg"],
+        "response": "**Night Vision**:\nPress `Shift + U` to toggle Night Vision (if you have the equipment)."
+    },
+    {
+        "keywords": ["build", "planner", "calculator"],
+        "response": "**Character Builder**:\nPlan your build using our interactive tool: [Fallout Anomaly Character Builder](https://fallout-anomaly.github.io/websitedev/pages/guide.html#ai-assistant)"
+    },
+    {
+        "keywords": ["power armor", "fusion core", "enter power armor"],
+        "response": "**Power Armor Training**:\nYou cannot use Power Armor immediately. You must receive training from a faction (e.g., Brotherhood of Steel) via their questline first."
     }
 ]
