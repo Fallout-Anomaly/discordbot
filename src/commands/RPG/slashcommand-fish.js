@@ -1,0 +1,88 @@
+const { EmbedBuilder } = require('discord.js');
+const ApplicationCommand = require('../../structure/ApplicationCommand');
+const db = require('../../utils/EconomyDB');
+
+const FISH_TYPES = [
+    { name: 'Radiated Catfish', caps: 25, xp: 10, chance: 35, emoji: '🐟', rarity: 'Common' },
+    { name: 'Glowing Salmon', caps: 50, xp: 20, chance: 25, emoji: '🐠', rarity: 'Uncommon' },
+    { name: 'Mutant Bass', caps: 75, xp: 30, chance: 20, emoji: '🎣', rarity: 'Rare' },
+    { name: 'Two-Headed Trout', caps: 125, xp: 50, chance: 12, emoji: '🐡', rarity: 'Epic' },
+    { name: 'Deathclaw Egg (in water?!)', caps: 300, xp: 100, chance: 5, emoji: '🥚', rarity: 'Legendary' },
+    { name: 'Old Boot', caps: 5, xp: 5, chance: 3, emoji: '👢', rarity: 'Junk' }
+];
+
+const FAILURE_MESSAGES = [
+    'The fish got away! 🎣',
+    'Your line snapped! Maybe it was a Deathclaw...',
+    'A Radroach ate your bait! 🪳',
+    'You caught nothing but disappointment.',
+    'The fish laughed at you. Actually laughed.',
+    'A Mirelurk stole your catch! 🦀'
+];
+
+module.exports = new ApplicationCommand({
+    command: {
+        name: 'fish',
+        description: 'Fish in the irradiated waters of the wasteland',
+    },
+    cooldown: 300, // 5 minutes
+    run: async (client, interaction) => {
+        const userId = interaction.user.id;
+
+        // Roll for catch
+        const roll = Math.random() * 100;
+        let cumulativeChance = 0;
+        let caught = null;
+
+        for (const fish of FISH_TYPES) {
+            cumulativeChance += fish.chance;
+            if (roll <= cumulativeChance) {
+                caught = fish;
+                break;
+            }
+        }
+
+        if (!caught) {
+            // Failed to catch anything
+            const failMsg = FAILURE_MESSAGES[Math.floor(Math.random() * FAILURE_MESSAGES.length)];
+            const embed = new EmbedBuilder()
+                .setTitle('🎣 Fishing Failed')
+                .setDescription(failMsg)
+                .setColor('#95a5a6')
+                .setFooter({ text: 'Better luck next time, wastelander!' });
+
+            return interaction.reply({ embeds: [embed] });
+        }
+
+        // Success! Give rewards
+        await new Promise((resolve) => {
+            db.run(
+                'UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?',
+                [caught.caps, caught.xp, userId],
+                () => resolve()
+            );
+        });
+
+        // Get new balance
+        const userData = await new Promise((resolve) => {
+            db.get('SELECT balance, xp FROM users WHERE id = ?', [userId], (err, row) => {
+                resolve(row || { balance: caught.caps, xp: caught.xp });
+            });
+        });
+
+        const embed = new EmbedBuilder()
+            .setTitle(`${caught.emoji} Fishing Success!`)
+            .setDescription(`You caught a **${caught.name}**!`)
+            .addFields(
+                { name: 'Rarity', value: caught.rarity, inline: true },
+                { name: '💰 Caps Earned', value: `+${caught.caps}`, inline: true },
+                { name: '✨ XP Gained', value: `+${caught.xp}`, inline: true },
+                { name: 'New Balance', value: `${userData.balance} Caps`, inline: false }
+            )
+            .setColor(caught.rarity === 'Legendary' ? '#FFD700' : caught.rarity === 'Epic' ? '#9B59B6' : caught.rarity === 'Rare' ? '#3498DB' : '#2ECC71')
+            .setFooter({ text: 'The waters of the wasteland are full of surprises!' })
+            .setTimestamp();
+
+        return interaction.reply({ embeds: [embed] });
+    }
+}).toJSON();

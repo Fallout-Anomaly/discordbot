@@ -66,9 +66,9 @@ module.exports = new ApplicationCommand({
                 name: 'armor',
                 description: 'Which armor to equip',
                 type: ApplicationCommandOptionType.String,
-                choices: Object.entries(POWER_ARMOR_SETS).map(([key, data]) => ({
+                choices: Object.entries(POWER_ARMOR_SETS).map(([armorId, data]) => ({
                     name: `${data.emoji} ${data.name}`.slice(0, 100),
-                    value: key
+                    value: armorId
                 })),
                 required: false
             }
@@ -119,7 +119,7 @@ module.exports = new ApplicationCommand({
 
         if (action === 'browse') {
             const armorList = Object.entries(POWER_ARMOR_SETS)
-                .map(([key, data]) => `${data.emoji} **${data.name}** - ${data.cost} Caps (${data.damageResist}% Resist)\n   ${data.description}`)
+                .map(([_key, data]) => `${data.emoji} **${data.name}** - ${data.cost} Caps (${data.damageResist}% Resist)\n   ${data.description}`)
                 .join('\n\n');
 
             const embed = new EmbedBuilder()
