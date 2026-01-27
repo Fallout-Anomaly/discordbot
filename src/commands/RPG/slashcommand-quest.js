@@ -69,14 +69,38 @@ module.exports = new ApplicationCommand({
                     return interaction.editReply({ content: '❌ You already have an active quest! Finish or abandon it first.' }); // Abandon feature not implemented yet
                 }
 
-                // Get user info (level) for scaling
-                db.get('SELECT xp FROM users WHERE id = ?', [userId], async (err, user) => {
+                // Get user info and check daily limits
+                db.get('SELECT xp, daily_quest_count, last_quest_reset FROM users WHERE id = ?', [userId], async (err, user) => {
+                    const now = Date.now();
+                    const ONE_DAY = 24 * 60 * 60 * 1000;
+                    
+                    let dailyCount = user ? (user.daily_quest_count || 0) : 0;
+                    let lastReset = user ? (user.last_quest_reset || 0) : 0;
+
+                    // Reset if 24h passed (or just check date string for "today")
+                    // Simple logic: if last reset was > 20 hours ago, reset. Or use midnight.
+                    // Let's use simple day comparison to local string or UTC
+                    
+                    const lastDate = new Date(lastReset).toDateString();
+                    const todayDate = new Date().toDateString();
+
+                    if (lastDate !== todayDate) {
+                        dailyCount = 0;
+                        lastReset = now;
+                        // We will update this in DB when we insert the quest
+                        // Actually, we should update reset time now or during insert.
+                    }
+
+                    if (dailyCount >= 5) {
+                        return interaction.editReply({ content: '🛑 **Daily Limit Reached!**\nYou can only accept 5 quests per day. Come back tomorrow!' });
+                    }
+
                     const level = user ? Math.floor(Math.sqrt(user.xp / 100)) + 1 : 1;
                     
                     // Generate AI Quest
                     const questData = await AIService.generateQuest({ level: level, weapon: 'Unknown' });
 
-                    // Calculate Rewards based on difficulty
+                    // Calculate Rewards
                     let caps = 50;
                     let xp = 100;
                     let duration = 15; // minutes
@@ -84,7 +108,6 @@ module.exports = new ApplicationCommand({
                     if (questData.difficulty === 'Medium') { caps = 120; xp = 250; duration = 30; }
                     if (questData.difficulty === 'Hard') { caps = 300; xp = 500; duration = 60; }
                     
-                    // Randomize slightly
                     caps = Math.floor(caps * (0.8 + Math.random() * 0.4));
                     const rewardItem = questData.reward_item || null;
 
@@ -94,10 +117,18 @@ module.exports = new ApplicationCommand({
                         [userId, questData.title, questData.description, questData.objective, questData.difficulty, caps, xp, startTime, duration, rewardItem], 
                         (err) => {
                             if (err) {
-                                // If column missing, try without reward_item (backward compatibility or migration needed)
                                 console.error(err);
-                                return interaction.editReply('❌ Failed to save quest to database. (DB Schema mismatch?)');
+                                return interaction.editReply('❌ Failed to save quest.');
                             }
+
+                            // Update Daily Count
+                            db.run(`UPDATE users SET daily_quest_count = ?, last_quest_reset = ? WHERE id = ?`, 
+                                [dailyCount + 1, Date.now(), userId], 
+                                (err) => {
+                                    // If user row didn't exist (unlikely if they have xp), this might fail to update count
+                                    // But usually users are created on join/message.
+                                }
+                            );
 
                             const embed = new EmbedBuilder()
                                 .setTitle(`🆕 New Quest: ${questData.title}`)
@@ -106,10 +137,11 @@ module.exports = new ApplicationCommand({
                                     { name: 'Objective', value: questData.objective },
                                     { name: 'Difficulty', value: questData.difficulty, inline: true },
                                     { name: 'Duration', value: `${duration} Minutes`, inline: true },
-                                    { name: 'Rewards', value: `${caps} Caps, ${xp} XP` + (rewardItem ? `, 1x ${rewardItem}` : ''), inline: true }
+                                    { name: 'Rewards', value: `${caps} Caps, ${xp} XP` + (rewardItem ? `, 1x ${rewardItem}` : ''), inline: true },
+                                    { name: 'Instructions', value: `⏳ **Wait for the timer.**\nReturn in ${duration} minutes and use \`/quests complete\` to claim.`, inline: false }
                                 )
                                 .setColor('#3498db')
-                                .setFooter({ text: questData.flavor || 'Good luck, wastelander.' });
+                                .setFooter({ text: `Quest ${dailyCount + 1}/5 today • ${questData.flavor || ''}` });
 
                             interaction.editReply({ content: '✅ Quest Accepted!', embeds: [embed] });
                     });

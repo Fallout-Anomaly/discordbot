@@ -30,8 +30,22 @@ db.serialize(() => {
         stat_points INTEGER DEFAULT 5,
         daily_last_claim INTEGER DEFAULT 0,
         weekly_last_claim INTEGER DEFAULT 0,
-        hourly_last_claim INTEGER DEFAULT 0
+        hourly_last_claim INTEGER DEFAULT 0,
+        daily_quest_count INTEGER DEFAULT 0,
+        last_quest_reset INTEGER DEFAULT 0
     )`);
+
+    // Migration for existing tables
+    const columnsToAdd = [
+        "ALTER TABLE users ADD COLUMN daily_quest_count INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN last_quest_reset INTEGER DEFAULT 0"
+    ];
+
+    columnsToAdd.forEach(sql => {
+        db.run(sql, (err) => {
+            // Ignore error if column already exists
+        });
+    });
 
     // Schema Migration: Add columns if they don't exist (for existing users.db)
     const columns = [
