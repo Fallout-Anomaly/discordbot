@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'lock',
         description: 'Lock the current channel.',
-        defaultMemberPermissions: PermissionFlagsBits.ManageChannels
+        defaultMemberPermissions: PermissionFlagsBits.ManageChannels.toString()
     },
     run: async (client, interaction) => {
         try {

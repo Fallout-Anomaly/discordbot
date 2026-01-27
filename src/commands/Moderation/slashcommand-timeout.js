@@ -25,7 +25,7 @@ module.exports = new ApplicationCommand({
                 required: false
             }
         ],
-        defaultMemberPermissions: PermissionFlagsBits.ModerateMembers
+        defaultMemberPermissions: PermissionFlagsBits.ModerateMembers.toString()
     },
     run: async (client, interaction) => {
         const user = interaction.options.getUser('user');

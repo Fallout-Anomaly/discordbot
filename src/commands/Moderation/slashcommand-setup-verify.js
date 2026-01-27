@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'setup-verify',
         description: 'Post the verification message in the current channel.',
-        defaultMemberPermissions: PermissionFlagsBits.Administrator
+        defaultMemberPermissions: PermissionFlagsBits.Administrator.toString()
     },
     run: async (client, interaction) => {
         const embed = new EmbedBuilder()
