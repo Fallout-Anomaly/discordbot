@@ -1,5 +1,6 @@
 const db = require('../../utils/EconomyDB');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const config = require('../../config');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -8,7 +9,16 @@ module.exports = new ApplicationCommand({
     },
     run: async (client, interaction) => {
         const userId = interaction.user.id;
-        const reward = 100; // Daily reward amount
+        
+        // Donator Check
+        let reward = 100;
+        let isDonator = false;
+        
+        const donatorRoles = config.users.donator_roles || [];
+        if (interaction.member && interaction.member.roles.cache.hasAny(...donatorRoles)) {
+            reward = 200; // 2x Bonus
+            isDonator = true;
+        }
 
         db.get('SELECT daily_last_claim, balance FROM users WHERE id = ?', [userId], (err, row) => {
             if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
@@ -28,16 +38,18 @@ module.exports = new ApplicationCommand({
             }
 
             // Grant reward inside serialized block
+            const bonusText = isDonator ? ' (Patron Bonus x2)' : '';
+
             db.serialize(() => {
                 if (!row) {
                     db.run('INSERT INTO users (id, balance, daily_last_claim) VALUES (?, ?, ?)', [userId, reward, now], (err) => {
                          if (err) console.error(err);
-                         interaction.reply({ content: `🎁 You found a stash! Received **${reward}** Bottle Caps.` });
+                         interaction.reply({ content: `🎁 You found a stash! Received **${reward} Caps**${bonusText}!` });
                     });
                 } else {
                     db.run('UPDATE users SET balance = balance + ?, daily_last_claim = ? WHERE id = ?', [reward, now, userId], (err) => {
                          if (err) console.error(err);
-                         interaction.reply({ content: `🎁 You found a stash! Received **${reward}** Bottle Caps.` });
+                         interaction.reply({ content: `🎁 You found a stash! Received **${reward} Caps**${bonusText}!` });
                     });
                 }
             });

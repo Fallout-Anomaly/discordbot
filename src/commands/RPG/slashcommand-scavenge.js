@@ -1,6 +1,7 @@
 const db = require('../../utils/EconomyDB');
 const { EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const config = require('../../config');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -38,17 +39,31 @@ module.exports = new ApplicationCommand({
                         db.run('UPDATE users SET daily_scavenge_count = 0, last_scavenge_reset = ? WHERE id = ?', [now, userId]);
                     }
 
-                    if (count >= 10) {
-                        return interaction.reply({ content: '🛑 **Daily Limit Reached**\nYou are too exhausted to scavenge more today. (Limit: 10/day)', ephemeral: true });
+                    // Patron Benefits
+                    let dailyLimit = 10;
+                    let scavengeDuration = 15; // Minutes
+                    let isDonator = false;
+
+                    const donatorRoles = config.users.donator_roles || [];
+                    if (interaction.member && interaction.member.roles.cache.hasAny(...donatorRoles)) {
+                        dailyLimit = 15; // +5 Scavenges
+                        scavengeDuration = 10; // -5 Minutes duration
+                        isDonator = true;
                     }
 
-                    const duration = 15 * 60 * 1000; // 15 minutes
-                    db.run('INSERT OR REPLACE INTO scavenge (user_id, start_time, duration) VALUES (?, ?, ?)', [userId, now, duration]);
+                    if (count >= dailyLimit) {
+                         const limitMsg = isDonator ? `(Patron Limit: ${dailyLimit}/day)` : `(Limit: ${dailyLimit}/day. Patrons get 15!)`;
+                        return interaction.reply({ content: `🛑 **Daily Limit Reached**\nYou are too exhausted to scavenge more today. ${limitMsg}`, ephemeral: true });
+                    }
+
+                    const durationMs = scavengeDuration * 60 * 1000;
+                    db.run('INSERT OR REPLACE INTO scavenge (user_id, start_time, duration) VALUES (?, ?, ?)', [userId, now, durationMs]);
                     
                     // Increment count
                     db.run('UPDATE users SET daily_scavenge_count = daily_scavenge_count + 1 WHERE id = ?', [userId]);
 
-                    interaction.reply({ content: `🎒 You head out into the wasteland... (Attempt ${count + 1}/10)\nCheck back in **15 minutes** to see what you found.` });
+                    const patronMsg = isDonator ? '⚡ **Patron Speed Boost Active!**\n' : '';
+                    interaction.reply({ content: `🎒 You head out into the wasteland... (Attempt ${count + 1}/${dailyLimit})\n${patronMsg}Check back in **${scavengeDuration} minutes** to see what you found.` });
                 });
             }
         });

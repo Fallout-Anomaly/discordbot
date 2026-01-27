@@ -1,6 +1,7 @@
 const db = require('../../utils/EconomyDB');
 const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const config = require('../../config');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -152,12 +153,21 @@ module.exports = new ApplicationCommand({
                 db.get('SELECT balance, stat_charisma FROM users WHERE id = ?', [userId], (err, userRow) => {
                     if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
                     
+
+
                     const balance = userRow ? userRow.balance : 0;
                     const charisma = userRow ? (userRow.stat_charisma || 1) : 1;
                     
                     // Charisma Discount
-                    const discount = Math.min(charisma * 0.01, 0.10);
-                    const finalCost = Math.floor(totalCost * (1 - discount));
+                    let discountPercent = Math.min(charisma * 0.01, 0.10); // Max 10% via stats
+
+                    // Donator Discount
+                    const donatorRoles = config.users.donator_roles || [];
+                    if (interaction.member && interaction.member.roles.cache.hasAny(...donatorRoles)) {
+                        discountPercent += 0.05; // +5% Flat Discount
+                    }
+
+                    const finalCost = Math.floor(totalCost * (1 - discountPercent));
 
                     if (balance < finalCost) {
                         return interaction.reply({ content: `❌ You need **${finalCost} Caps** to buy this (Short by ${finalCost - balance}).`, ephemeral: true });
@@ -177,7 +187,7 @@ module.exports = new ApplicationCommand({
                         });
                     });
 
-                    const discountMsg = discount > 0 ? ` (Discount applied: -${Math.floor(discount*100)}%)` : '';
+                    const discountMsg = discountPercent > 0 ? ` (Discount applied: -${Math.floor(discountPercent*100)}%)` : '';
                     interaction.reply({ content: `🛍️ Purchase successful! You bought **${amount}x ${item.emoji} ${item.name}** for **${finalCost} Caps**${discountMsg}.` });
                 });
             });
