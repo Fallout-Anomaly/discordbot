@@ -5,6 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'bf',
         description: 'Submit feedback/requests specifically for the BOT.',
+        defer: 'ephemeral',
         options: [
             {
                 name: 'feedback',
@@ -19,11 +20,11 @@ module.exports = new ApplicationCommand({
         const feedbackChannelId = process.env.REPORT_CHANNEL_ID;
 
         if (!feedbackChannelId) {
-            return interaction.reply({ content: "❌ Feedback channel is not configured.", ephemeral: true });
+            return interaction.editReply({ content: "❌ Feedback channel is not configured." });
         }
 
         const channel = await client.channels.fetch(feedbackChannelId).catch(() => null);
-        if (!channel) return interaction.reply({ content: "❌ Feedback channel not found.", ephemeral: true });
+        if (!channel) return interaction.editReply({ content: "❌ Feedback channel not found." });
 
         const embed = new EmbedBuilder()
             .setTitle('💡 New Bot Feedback')
@@ -36,10 +37,10 @@ module.exports = new ApplicationCommand({
 
         try {
             await channel.send({ embeds: [embed] });
-            await interaction.reply({ content: '✅ Thank you! Your feedback has been sent to the developers.', ephemeral: true });
+            await interaction.editReply({ content: '✅ Thank you! Your feedback has been sent to the developers.' });
         } catch (err) {
             console.error(err);
-            await interaction.reply({ content: '❌ Failed to send feedback.', ephemeral: true });
+            await interaction.editReply({ content: '❌ Failed to send feedback.' });
         }
     }
 }).toJSON();

@@ -9,6 +9,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'analyze-feedback',
         description: 'Scan and analyze player feedback from the feedback channel',
+        defer: 'ephemeral', // IMPORTANT: Defer immediately to prevent 10062 Unknown interaction
         options: [
             {
                 name: 'action',
@@ -40,7 +41,7 @@ module.exports = new ApplicationCommand({
     run: async (client, interaction) => {
         // Owner-only check
         if (interaction.user.id !== config.users.ownerId) {
-            return interaction.reply({ content: config.messages.NOT_BOT_OWNER, flags: 64 });
+            return interaction.editReply({ content: config.messages.NOT_BOT_OWNER });
         }
 
         const action = interaction.options.getString('action');
@@ -48,20 +49,30 @@ module.exports = new ApplicationCommand({
 
         const selectedChannel = interaction.options.getChannel('channel');
         let feedbackChannel = selectedChannel;
+        
         if (!feedbackChannel) {
             const feedbackChannelId = process.env.FEEDBACK_CHANNEL_ID;
             if (!feedbackChannelId) {
-                return interaction.reply({ content: '❌ Feedback channel not configured. Provide the `channel` option when running this command or set FEEDBACK_CHANNEL_ID in .env.', flags: 64 });
+                return interaction.editReply({ content: '❌ Feedback channel not configured. Provide the `channel` option when running this command or set FEEDBACK_CHANNEL_ID in .env.' });
             }
-            feedbackChannel = await client.channels.fetch(feedbackChannelId).catch(() => null);
+            try {
+                feedbackChannel = await client.channels.fetch(feedbackChannelId);
+            } catch (err) {
+                error('[FEEDBACK] Channel fetch error:', err);
+                return interaction.editReply({ content: `❌ Unable to access feedback channel (${feedbackChannelId}). Please check if the channel exists and the bot has permission to access it.` });
+            }
         }
-        if (!feedbackChannel || feedbackChannel.type !== ChannelType.GuildText) {
-            return interaction.reply({ content: '❌ Invalid or missing feedback channel. Please select a text channel.', flags: 64 });
+        
+        if (!feedbackChannel) {
+            return interaction.editReply({ content: '❌ Feedback channel not found. Please select a valid text channel.' });
+        }
+        
+        // Check if channel is a text-based channel (supports messages)
+        if (!feedbackChannel.isTextBased?.()) {
+            return interaction.editReply({ content: `❌ Invalid channel type. The feedback channel must be a text channel, but <#${feedbackChannel.id}> is a ${feedbackChannel.type} channel.` });
         }
 
         if (action === 'scan') {
-            await interaction.deferReply();
-
             try {
                 const messages = await feedbackChannel.messages.fetch({ limit });
                 let scanned = 0;
@@ -155,8 +166,6 @@ module.exports = new ApplicationCommand({
         }
 
         if (action === 'summary') {
-            await interaction.deferReply();
-
             try {
                 // Get all feedback
                 const allFeedback = await new Promise((resolve) => {
@@ -221,8 +230,6 @@ module.exports = new ApplicationCommand({
         }
 
         if (action === 'issues') {
-            await interaction.deferReply();
-
             try {
                 // Get bug reports and issues
                 const issues = await new Promise((resolve) => {
@@ -259,8 +266,8 @@ module.exports = new ApplicationCommand({
 
         if (action === 'clear') {
             await db.run('DELETE FROM feedback', [], (err) => {
-                if (err) return interaction.reply({ content: `❌ Error clearing database: ${err.message}`, flags: 64 });
-                interaction.reply({ content: '✅ Feedback database cleared.', flags: 64 });
+                if (err) return interaction.editReply({ content: `❌ Error clearing database: ${err.message}` });
+                interaction.editReply({ content: '✅ Feedback database cleared.' });
             });
         }
     }

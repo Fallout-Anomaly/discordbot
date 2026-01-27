@@ -5,6 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'ban',
         description: 'Ban a user from the server.',
+        defer: 'ephemeral',
         options: [
             {
                 name: 'user',
@@ -29,25 +30,24 @@ module.exports = new ApplicationCommand({
         // Role hierarchy checks to ensure executor outranks target (unless executor is server owner)
         if (member) {
             if (member.id === interaction.guild.ownerId) {
-                return interaction.reply({ content: '❌ You cannot punish the server owner.', ephemeral: true });
+                return interaction.editReply({ content: '❌ You cannot punish the server owner.' });
             }
             if (interaction.user.id !== interaction.guild.ownerId &&
                 interaction.member.roles.highest.position <= member.roles.highest.position) {
-                return interaction.reply({ 
-                    content: '❌ You cannot punish a member with an equal or higher role than yourself.', 
-                    ephemeral: true 
+                return interaction.editReply({ 
+                    content: '❌ You cannot punish a member with an equal or higher role than yourself.' 
                 });
             }
         }
 
-        if (member && !member.bannable) return interaction.reply({ content: '❌ I cannot ban this user.', ephemeral: true });
+        if (member && !member.bannable) return interaction.editReply({ content: '❌ I cannot ban this user.' });
 
         try {
             await interaction.guild.members.ban(user.id, { reason });
-            await interaction.reply({ content: `✅ **${user.tag}** has been banned. Reason: ${reason}` });
+            await interaction.editReply({ content: `✅ **${user.tag}** has been banned. Reason: ${reason}` });
         } catch (err) {
             console.error(err);
-            await interaction.reply({ content: '❌ Failed to ban user.', ephemeral: true });
+            await interaction.editReply({ content: '❌ Failed to ban user.' });
         }
     }
 }).toJSON();

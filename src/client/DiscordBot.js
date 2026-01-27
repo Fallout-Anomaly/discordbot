@@ -66,7 +66,9 @@ class DiscordBot extends Client {
         });
         
         new CommandsListener(this);
-        new ComponentsListener(this);
+        // ComponentsListener has been integrated into src/events/Client/interactionCreate.js
+        // to prevent duplicate processing and ensure proper acknowledgment order
+        // new ComponentsListener(this);
     }
 
     startStatusRotation = () => {

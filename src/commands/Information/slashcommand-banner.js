@@ -5,6 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'banner',
         description: 'Display a user\'s banner.',
+        defer: 'ephemeral',
         options: [
             {
                 name: 'user',
@@ -32,6 +33,6 @@ module.exports = new ApplicationCommand({
             .setColor('#3498db')
             .setTimestamp();
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
     }
 }).toJSON();
