@@ -103,6 +103,9 @@ module.exports = new ApplicationCommand({
                 collector.on('collect', async i => {
                     if (i.user.id !== interaction.user.id) return i.reply({ content: 'Not your menu.', flags: 64 });
 
+                    // Fix: Defer immediately to prevent timeout
+                    await i.deferReply({ flags: 64 });
+
                     const statColumn = i.values[0];
                     const statName = i.values[0].replace('stat_', '');
 
@@ -115,12 +118,12 @@ module.exports = new ApplicationCommand({
                         [i.user.id],
                         function (err) {
                             if (err) {
-                                return i.update({ content: '❌ Database error.', components: [] });
+                                return i.editReply({ content: '❌ Database error.' });
                             }
                             if (this.changes === 0) {
-                                return i.update({ content: '❌ Not enough points!', components: [] });
+                                return i.editReply({ content: '❌ Not enough points!' });
                             }
-                            i.reply({ content: `✅ Upgraded **${statName}**! Run /stats again to see changes.`, flags: 64 });
+                            i.editReply({ content: `✅ Upgraded **${statName}**! Run /stats again to see changes.` });
                         }
                     );
                 });
