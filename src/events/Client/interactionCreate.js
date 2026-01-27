@@ -37,9 +37,9 @@ module.exports = new Event({
 
         try {
             if (interaction.isButton()) {
-                // MUST acknowledge interaction immediately, even if handler doesn't exist
+                // MUST acknowledge IMMEDIATELY using deferUpdate for component interactions
                 if (!interaction.deferred && !interaction.replied) {
-                    await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                    await interaction.deferUpdate().catch(() => {});
                 }
 
                 const component = client.collection.components.buttons.get(interaction.customId);
@@ -59,9 +59,9 @@ module.exports = new Event({
             }
 
             if (interaction.isAnySelectMenu()) {
-                // MUST acknowledge interaction immediately, even if handler doesn't exist
+                // MUST acknowledge IMMEDIATELY using deferUpdate for component interactions
                 if (!interaction.deferred && !interaction.replied) {
-                    await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                    await interaction.deferUpdate().catch(() => {});
                 }
 
                 const component = client.collection.components.selects.get(interaction.customId);
@@ -81,7 +81,7 @@ module.exports = new Event({
             }
 
             if (interaction.isModalSubmit()) {
-                // MUST acknowledge interaction immediately, even if handler doesn't exist
+                // MUST acknowledge IMMEDIATELY for modal interactions
                 if (!interaction.deferred && !interaction.replied) {
                     await interaction.deferReply({ ephemeral: true }).catch(() => {});
                 }
@@ -101,9 +101,17 @@ module.exports = new Event({
             }
         } catch (err) {
             error('[COMPONENT HANDLER]', err);
-            // Try to reply with error if possible
+            // Try to acknowledge if possible
             if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ content: 'An error occurred processing this interaction.', ephemeral: true }).catch(() => {});
+                try {
+                    if (interaction.isButton() || interaction.isAnySelectMenu()) {
+                        await interaction.deferUpdate().catch(() => {});
+                    } else if (interaction.isModalSubmit()) {
+                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                    }
+                } catch (ackErr) {
+                    error('[COMPONENT HANDLER ACK ERROR]', ackErr);
+                }
             }
             return;
         }

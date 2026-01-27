@@ -81,18 +81,32 @@ module.exports = new ApplicationCommand({
                 
                 // Handle forum channels differently - fetch from threads
                 if (isForumChannel) {
-                    const threads = await feedbackChannel.threads.fetchActive();
-                    for (const [, thread] of threads) {
-                        try {
-                            const threadMessages = await thread.messages.fetch({ limit });
-                            for (const [, msg] of threadMessages) {
-                                messages.set(msg.id, msg);
-                                if (messages.size >= limit) break;
+                    try {
+                        const threadsCollection = await feedbackChannel.threads.fetchActive();
+                        
+                        // Ensure we have an iterable collection
+                        if (threadsCollection && typeof threadsCollection[Symbol.iterator] === 'function') {
+                            for (const [, thread] of threadsCollection) {
+                                try {
+                                    const threadMessages = await thread.messages.fetch({ limit });
+                                    if (threadMessages) {
+                                        for (const [, msg] of threadMessages) {
+                                            messages.set(msg.id, msg);
+                                            if (messages.size >= limit) break;
+                                        }
+                                    }
+                                    if (messages.size >= limit) break;
+                                } catch (threadErr) {
+                                    error('[FEEDBACK] Thread fetch error:', threadErr);
+                                }
                             }
-                            if (messages.size >= limit) break;
-                        } catch {
-                            // Continue if thread fetch fails
+                        } else {
+                            error('[FEEDBACK] Forum threads collection is not iterable');
+                            return interaction.editReply({ content: '❌ Error accessing forum threads. Please ensure the bot has permission to read the forum channel.' });
                         }
+                    } catch (forumErr) {
+                        error('[FEEDBACK] Forum channel error:', forumErr);
+                        return interaction.editReply({ content: `❌ Error scanning forum channel: ${forumErr.message}` });
                     }
                 } else {
                     // Handle text channels - fetch directly
