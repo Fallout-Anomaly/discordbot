@@ -105,7 +105,6 @@ module.exports = new ApplicationCommand({
                     { name: '👤 Target New Balance', value: `**${Math.max(0, targetData.balance - stolenAmount)} Caps**`, inline: false }
                 )
                 .setColor('#FFD700')
-                .setThumbnail('https://i.imgur.com/8Q9Q2Xn.png')
                 .setFooter({ text: 'Vault-Tec: "War never changes..."' });
 
             return interaction.reply({ embeds: [embed] });
@@ -135,7 +134,6 @@ module.exports = new ApplicationCommand({
                     { name: '🏆 Their Reward', value: `**${rewardAmount} Caps**`, inline: false }
                 )
                 .setColor('#FF4444')
-                .setThumbnail('https://i.imgur.com/8Q9Q2Xn.png')
                 .setFooter({ text: 'Better luck next time, vault dweller!' });
 
             return interaction.reply({ embeds: [embed] });

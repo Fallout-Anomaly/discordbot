@@ -66,7 +66,7 @@ module.exports = new ApplicationCommand({
                 type: ApplicationCommandOptionType.String,
                 required: true,
                 choices: Object.entries(BEVERAGES).map(([key, data]) => ({
-                    name: `${data.emoji} ${data.name} - ${data.cost} Caps`,
+                    name: `${data.emoji} ${data.name}`.slice(0, 100),
                     value: key
                 }))
             }

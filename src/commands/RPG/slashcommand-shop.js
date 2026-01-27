@@ -106,7 +106,6 @@ module.exports = new ApplicationCommand({
                 const embed = new EmbedBuilder()
                     .setTitle(title)
                     .setColor('#2ecc71')
-                    .setThumbnail('https://i.imgur.com/7123123.png') 
                     .setDescription('Welcome, traveler! Here is what we have in stock.');
 
                 let currentFieldCount = 0;
@@ -237,7 +236,7 @@ module.exports = new ApplicationCommand({
                 if (err || !rows) return interaction.respond([]);
                 
                 const results = rows.map(item => ({
-                    name: `${item.emoji} ${item.name} (${item.price}c)`,
+                    name: `${item.emoji} ${item.name}`.slice(0, 100),
                     value: item.id
                 }));
                 
@@ -250,7 +249,7 @@ module.exports = new ApplicationCommand({
                  if (err || !rows) return interaction.respond([]);
                  
                  const results = rows.map(item => ({
-                     name: `${item.name} (x${item.amount}) - Sell: ${Math.floor(item.price*0.5)}c`,
+                     name: `${item.name} (x${item.amount})`.slice(0, 100),
                      value: item.id
                  }));
                  interaction.respond(results).catch(() => {});
