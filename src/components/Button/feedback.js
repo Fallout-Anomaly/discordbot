@@ -51,14 +51,20 @@ module.exports = new Component({
 
             if (!didWork) {
                 // If it didn't work, escalate to staff
-                responseEmbed
-                    .addField('Next Steps', `<@&${staffRoleId}> - This user reports the solution didn't work. They may need additional assistance.`, false);
+                responseEmbed.addFields({ 
+                    name: 'Next Steps', 
+                    value: `<@&${staffRoleId}> - This user reports the solution didn't work. They may need additional assistance.`, 
+                    inline: false 
+                });
                 
                 responseContent = `<@&${staffRoleId}> User reports: Solution didn't work. Ready to assist with follow-up.`;
             } else {
                 // If it worked, celebrate
-                responseEmbed
-                    .addField('Glad We Could Help!', 'If you encounter any other issues, feel free to ask!', false);
+                responseEmbed.addFields({ 
+                    name: 'Glad We Could Help!', 
+                    value: 'If you encounter any other issues, feel free to ask!', 
+                    inline: false 
+                });
             }
 
             // Reply with feedback recorded
