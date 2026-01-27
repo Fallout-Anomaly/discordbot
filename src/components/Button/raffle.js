@@ -3,9 +3,11 @@ const Component = require('../../structure/Component');
 const db = require('../../utils/EconomyDB');
 
 module.exports = new Component({
-    name: 'raffle',
-    type: 'button',
     customId: /^raffle_(enter|view)_/,
+    type: 'button',
+    options: {
+        public: false
+    },
     async run(client, interaction) {
         const [, action, raffleId] = interaction.customId.match(/^raffle_(enter|view)_(.+)$/);
 
