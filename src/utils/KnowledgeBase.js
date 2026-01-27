@@ -63,25 +63,45 @@ class KnowledgeBase {
                     if (this.extensions.some(ext => file.endsWith(ext.trim()))) {
                         const filePath = path.join(this.knowledgeDir, file);
                         const content = await fs.promises.readFile(filePath, 'utf8');
-                        
-                        const tokens = this.tokenize(content);
-                        const termFreqs = this.getTermFrequencies(tokens);
-                        
-                        // Extract filename tokens for special matching
-                        const filenameTokens = this.tokenize(file.replace(/\.[^/.]+$/, ""));
 
-                        tempIndex.push({
-                            name: file,
-                            content: content,
-                            termFreqs: termFreqs,
-                            totalTokens: tokens.length,
-                            filenameTokens: filenameTokens
-                        });
-
-                        // Update global document frequencies
-                        for (const term of termFreqs.keys()) {
-                            tempDocFreq.set(term, (tempDocFreq.get(term) || 0) + 1);
+                        // CHUNKING LOGIC
+                        const CHUNK_SIZE = 3000;
+                        const CHUNK_OVERLAP = 200;
+                        
+                        // If file is small, treat as one chunk
+                        let chunks = [];
+                        if (content.length <= CHUNK_SIZE) {
+                            chunks.push({ text: content, start: 0 });
+                        } else {
+                            // Split into overlapping chunks
+                            for (let i = 0; i < content.length; i += (CHUNK_SIZE - CHUNK_OVERLAP)) {
+                                chunks.push({
+                                    text: content.substring(i, i + CHUNK_SIZE),
+                                    start: i
+                                });
+                            }
                         }
+
+                        // Index each chunk as a separate searchable item
+                        chunks.forEach((chunk, index) => {
+                            const tokens = this.tokenize(chunk.text);
+                            const termFreqs = this.getTermFrequencies(tokens);
+                            const filenameTokens = this.tokenize(file.replace(/\.[^/.]+$/, ""));
+
+                            tempIndex.push({
+                                name: `${file} (Part ${index + 1})`,
+                                originalFile: file,
+                                content: chunk.text,
+                                termFreqs: termFreqs,
+                                totalTokens: tokens.length,
+                                filenameTokens: filenameTokens
+                            });
+
+                            // Update global document frequencies
+                            for (const term of termFreqs.keys()) {
+                                tempDocFreq.set(term, (tempDocFreq.get(term) || 0) + 1);
+                            }
+                        });
                     }
                 }
 
@@ -89,7 +109,7 @@ class KnowledgeBase {
                 this.documentFrequency = tempDocFreq;
                 this.totalDocuments = tempIndex.length;
                 this.loaded = true;
-                console.log(`Knowledge Base indexed: ${this.totalDocuments} docs (Advanced Search Enabled)`);
+                console.log(`Knowledge Base indexed: ${this.totalDocuments} chunks from ${files.length} files.`);
             } catch (error) {
                 console.error("Failed to load knowledge base:", error);
                 this.index = [];
@@ -115,36 +135,35 @@ class KnowledgeBase {
         for (const doc of this.index) {
             let score = 0;
             
-            // 1. TF-IDF Scoring for content
+            // 1. TF-IDF Scoring
             for (const token of queryTokens) {
                 const tf = doc.termFreqs.get(token) || 0;
                 if (tf > 0) {
                     const df = this.documentFrequency.get(token) || 1;
                     const idf = Math.log(this.totalDocuments / df);
-                    // Weight: TF * (IDF + 1)
                     score += tf * (idf + 1);
                 }
             }
 
-            // 2. Extra boost for filename matches
+            // 2. Filename Boost
             for (const token of queryTokens) {
                 if (doc.filenameTokens.includes(token)) {
-                    score += 50; // Significant bonus for term in filename
+                    score += 10; 
                 }
             }
 
-            // 3. Bonus for exact phrases? (Simple implementation)
+            // 3. Exact Match Boost
             const contentLower = doc.content.toLowerCase();
             const queryLower = query.toLowerCase().trim();
             if (contentLower.includes(queryLower)) {
-                score += 100; // Big bonus for exact string match
+                score += 50; 
             }
 
             if (score > 0) {
                 results.push({ 
                     fullName: doc.name,
-                    type: 'Documentation',
-                    description: doc.content.substring(0, 500) + '...',
+                    type: 'Documentation/Log',
+                    description: doc.content, // Send full chunk content
                     fullContent: doc.content,
                     score 
                 });
