@@ -40,7 +40,9 @@ db.serialize(() => {
         "ALTER TABLE users ADD COLUMN daily_quest_count INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN last_quest_reset INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN daily_scavenge_count INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN last_scavenge_reset INTEGER DEFAULT 0"
+        "ALTER TABLE users ADD COLUMN last_scavenge_reset INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN radiation INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN power_armor TEXT DEFAULT NULL"
     ];
 
     // XP Cooldowns table for persistence across restarts
