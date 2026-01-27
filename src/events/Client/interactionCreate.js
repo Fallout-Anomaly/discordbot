@@ -14,13 +14,6 @@ module.exports = new Event({
             if (!command) return;
 
             try {
-                if (typeof command.run === 'function' && interaction.commandName === 'use') {
-                     // Special case for 'use' command where I put autocomplete in run for now (legacy fix attempt)
-                     // actually let's just fix the command file instead.
-                     // But wait, I can't easily edit the file I just wrote without another step.
-                     // I will update the interaction handler to try 'autocomplete' method, and if missing, maybe log warning.
-                }
-
                 if (command.autocomplete) await command.autocomplete(client, interaction);
             } catch (err) {
                 error(err);
