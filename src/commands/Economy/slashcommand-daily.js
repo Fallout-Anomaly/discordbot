@@ -27,14 +27,20 @@ module.exports = new ApplicationCommand({
                 });
             }
 
-            // Grant reward
-            if (!row) {
-                db.run('INSERT INTO users (id, balance, daily_last_claim) VALUES (?, ?, ?)', [userId, reward, now]);
-            } else {
-                db.run('UPDATE users SET balance = balance + ?, daily_last_claim = ? WHERE id = ?', [reward, now, userId]);
-            }
-
-            interaction.reply({ content: `🎁 You found a stash! Received **${reward}** Bottle Caps.` });
+            // Grant reward inside serialized block
+            db.serialize(() => {
+                if (!row) {
+                    db.run('INSERT INTO users (id, balance, daily_last_claim) VALUES (?, ?, ?)', [userId, reward, now], (err) => {
+                         if (err) console.error(err);
+                         interaction.reply({ content: `🎁 You found a stash! Received **${reward}** Bottle Caps.` });
+                    });
+                } else {
+                    db.run('UPDATE users SET balance = balance + ?, daily_last_claim = ? WHERE id = ?', [reward, now, userId], (err) => {
+                         if (err) console.error(err);
+                         interaction.reply({ content: `🎁 You found a stash! Received **${reward}** Bottle Caps.` });
+                    });
+                }
+            });
         });
     }
 }).toJSON();
