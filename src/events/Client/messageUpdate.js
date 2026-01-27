@@ -28,16 +28,16 @@ module.exports = new Event({
         const logChannel = client.channels.cache.get(logChannelId);
         if (!logChannel) return;
 
-        const oldContent = oldMessage.content || '*[Unknown/Partial]*';
-        const newContent = newMessage.content || '*[No Content]*';
+        const oldContent = oldMessage.content || '*[Content Not Available]*';
+        const newContent = newMessage.content || '*[Content Not Available]*';
 
         const embed = new EmbedBuilder()
             .setTitle('✏️ Message Edited')
             .setColor('#f1c40f') // Yellow
             .setAuthor({ name: newMessage.author.tag, iconURL: newMessage.author.displayAvatarURL() })
             .addFields(
-                { name: 'Start', value: oldContent.substring(0, 1024) },
-                { name: 'End', value: newContent.substring(0, 1024) },
+                { name: 'Start', value: oldContent.substring(0, Math.min(oldContent.length, 1024)) },
+                { name: 'End', value: newContent.substring(0, Math.min(newContent.length, 1024)) },
                 { name: 'Channel', value: `<#${newMessage.channel.id}>` },
                 { name: 'Jump to Message', value: `[Click Here](${newMessage.url})` }
             )
