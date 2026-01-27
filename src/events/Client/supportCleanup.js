@@ -8,7 +8,7 @@ const { error, info } = require("../../utils/Console");
 let cleanupInterval = null;
 
 module.exports = new Event({
-    event: 'ready',
+    event: 'clientReady',
     run: (client) => {
         // Initialize the support followups table
         db.run(`CREATE TABLE IF NOT EXISTS support_followups (

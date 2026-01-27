@@ -65,9 +65,6 @@ module.exports = new ApplicationCommand({
                     { name: '7 days', value: '7d' }
                 ]
             },
-                required: false,
-                min_value: 0
-            },
             {
                 name: 'max-entries',
                 description: 'Maximum number of entries (0 = unlimited)',
