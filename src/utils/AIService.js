@@ -38,7 +38,7 @@ class AIService {
         }
     }
 
-    async generateAnswer(userQuestion, contextItems) {
+    async generateAnswer(userQuestion, contextItems, history = []) {
         if (!Array.isArray(contextItems)) {
             console.error("AI Generate Error: Invalid context items format.");
             return "I encountered an internal error (invalid context).";
@@ -56,26 +56,34 @@ class AIService {
         const model = process.env.AI_MODEL_ANSWER || 'llama-3.3-70b-versatile'; // Stronger model for generation
         const maxTokens = parseInt(process.env.AI_MAX_TOKENS) || 500;
 
-        try {
-            const response = await this.openai.chat.completions.create({
-                model: model,
-                messages: [
-                    {
-                        role: 'system',
-                        content: `You are 'Anomaly Support', a helpful assistant for the 'Fallout Anomaly' modpack.
+        // Construct messages array
+        const messages = [
+            {
+                role: 'system',
+                content: `You are 'Anomaly Support', a helpful assistant for the 'Fallout Anomaly' modpack.
 - First, check the provided Context for the answer.
 - If the Context has the answer, use it exclusively.
 - **Controller/Gamepad Support**: If asked about controllers, ALWAYS check the context for "Steam Input" links (steam://controllerconfig/...) or specific keybinds (e.g. "Select" for Pipboy). Remind users to reset in-game keybinds to default if mentioned in context.
 - If the Context is missing specific details, you MAY use your general knowledge about Fallout 4 modding to help, but explicitly state that this is "general advice" and might differ in the modpack.
 - Be concise and friendly.
 - Do NOT mention filenames or say "Based on the context".`
-                    },
-                    {
-                        role: 'user', 
-                        content: `Context:\n${contextString}\n\nQuestion: ${userQuestion}`
-                    }
-                ],
-                max_tokens: maxTokens
+            }
+        ];
+
+        // Add history
+        history.forEach(msg => messages.push({ role: msg.role, content: msg.content }));
+
+        // Add current context and question
+        messages.push({
+            role: 'user',
+            content: `Context:\n${contextString}\n\nQuestion: ${userQuestion}`
+        });
+
+        try {
+            const response = await this.openai.chat.completions.create({
+                model: model,
+                messages: messages,
+                maxTokens: maxTokens
             }, { timeout: 30000 }); // 30s timeout
 
             return response.choices[0].message.content.trim();
