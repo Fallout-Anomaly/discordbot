@@ -203,10 +203,15 @@ module.exports = new Event({
             }
 
             // Reply to message
-            await message.reply({ content: replyContent, embeds: [embed], components: [feedbackRow] }).catch(err => {
+            const replyOptions = { embeds: [embed], components: [feedbackRow] };
+            if (replyContent) {
+                replyOptions.content = replyContent;
+            }
+            
+            await message.reply(replyOptions).catch(err => {
                 error('[QUESTION HANDLER] Reply Error:', err);
                 // Fallback to sending in channel if reply fails (e.g. message deleted)
-                message.channel.send({ embeds: [embed], components: [feedbackRow] }).catch(() => {});
+                message.channel.send(replyOptions).catch(() => {});
             });
 
         } catch (err) {
