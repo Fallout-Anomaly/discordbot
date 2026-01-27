@@ -43,7 +43,7 @@ module.exports = new Event({
 
         try {
             if (interaction.isButton()) {
-                const component = client.collection.components.buttons.get(interaction.customId);
+                let component = client.collection.components.buttons.get(interaction.customId);
                 
                 // If no exact match, try regex patterns
                 if (!component) {
