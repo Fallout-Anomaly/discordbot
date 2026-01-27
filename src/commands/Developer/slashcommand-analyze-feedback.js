@@ -84,25 +84,27 @@ module.exports = new ApplicationCommand({
                     try {
                         const threadsCollection = await feedbackChannel.threads.fetchActive();
                         
-                        // Ensure we have an iterable collection
-                        if (threadsCollection && typeof threadsCollection[Symbol.iterator] === 'function') {
-                            for (const [, thread] of threadsCollection) {
-                                try {
-                                    const threadMessages = await thread.messages.fetch({ limit });
-                                    if (threadMessages) {
-                                        for (const [, msg] of threadMessages) {
-                                            messages.set(msg.id, msg);
-                                            if (messages.size >= limit) break;
-                                        }
+                        // Convert collection to array of threads and iterate
+                        const threadArray = Array.from(threadsCollection.values());
+                        
+                        if (threadArray.length === 0) {
+                            return interaction.editReply({ content: '❌ No active threads found in the forum channel. The forum may be empty.' });
+                        }
+                        
+                        for (const thread of threadArray) {
+                            try {
+                                const threadMessages = await thread.messages.fetch({ limit });
+                                if (threadMessages && threadMessages.size > 0) {
+                                    for (const msg of threadMessages.values()) {
+                                        messages.set(msg.id, msg);
+                                        if (messages.size >= limit) break;
                                     }
-                                    if (messages.size >= limit) break;
-                                } catch (threadErr) {
-                                    error('[FEEDBACK] Thread fetch error:', threadErr);
                                 }
+                                if (messages.size >= limit) break;
+                            } catch (threadErr) {
+                                error('[FEEDBACK] Thread message fetch error:', threadErr);
+                                // Continue to next thread if one fails
                             }
-                        } else {
-                            error('[FEEDBACK] Forum threads collection is not iterable');
-                            return interaction.editReply({ content: '❌ Error accessing forum threads. Please ensure the bot has permission to read the forum channel.' });
                         }
                     } catch (forumErr) {
                         error('[FEEDBACK] Forum channel error:', forumErr);
