@@ -17,9 +17,10 @@ module.exports = new ApplicationCommand({
             const name = cmd.command.name;
             let category = '🔧 Utility';
 
-            if (['ban', 'kick', 'mute', 'timeout', 'lock', 'unlock', 'clear', 'setup-verify'].includes(name)) category = '🛡️ Moderation';
-            else if (['balance', 'pay', 'daily', 'coinflip', 'slots', 'leaderboard'].includes(name)) category = '💰 Economy';
-            else if (['scavenge', 'stats', 'inventory', 'shop'].includes(name)) category = '☢️ RPG & Survival';
+            if (['ban', 'kick', 'mute', 'timeout', 'lock', 'unlock', 'clear', 'setup-verify'].includes(name)) {
+                // Skip moderation commands for public guide
+                return;
+            } else if (['balance', 'pay', 'daily', 'coinflip', 'slots', 'leaderboard', 'shop', 'scavenge', 'stats', 'inventory'].includes(name)) category = '💰 Economy & RPG';
             else if (['embed', 'say', 'verify'].includes(name)) category = '🛠️ Tools';
             
             if (!categories[category]) categories[category] = [];
