@@ -8,7 +8,8 @@ module.exports = new Component({
         public: true
     },
     run: async (client, interaction) => {
-        // Already deferred by interactionCreate.js - use editReply()
+        // Defer interaction
+        await interaction.deferReply({ flags: 64 });
         const customId = interaction.customId;
         const [, action, messageId] = customId.match(/^feedback_(worked|failed)_(.+)$/);
 
