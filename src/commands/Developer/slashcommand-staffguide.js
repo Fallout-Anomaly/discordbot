@@ -5,13 +5,13 @@ const config = require('../../config');
 module.exports = new ApplicationCommand({
     command: {
         name: 'staffguide',
-        description: 'Interactive Staff Guide for moderation and admin commands.',
+        description: 'Interactive Staff Guide for moderation and admin commands (Staff Only).',
     },
     run: async (client, interaction) => {
         // Check if user is staff
         const staffRoleId = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
         if (!interaction.member.roles.cache.has(staffRoleId)) {
-            return interaction.reply({ content: '❌ This command is for staff only.', ephemeral: true });
+            return interaction.reply({ content: '❌ This command is for staff only.', flags: 64 });
         }
 
         const commands = client.collection.application_commands;
@@ -68,11 +68,11 @@ module.exports = new ApplicationCommand({
         const row = new ActionRowBuilder().addComponents(selectMenu);
 
         // 3. Send Initial Message
-        const message = await interaction.reply({ 
+        const { message } = await interaction.reply({ 
             embeds: [embed], 
             components: [row],
-            ephemeral: true,
-            fetchReply: true
+            flags: 64,
+            withResponse: true
         });
 
         // 4. Create Collector
@@ -84,7 +84,7 @@ module.exports = new ApplicationCommand({
         collector.on('collect', async i => {
             try {
                 if (i.user.id !== interaction.user.id) {
-                    return i.reply({ content: '❌ This menu is not for you!', ephemeral: true });
+                    return i.reply({ content: '❌ This menu is not for you!', flags: 64 });
                 }
 
                 await i.deferUpdate();

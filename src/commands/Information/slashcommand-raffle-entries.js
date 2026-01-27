@@ -19,7 +19,7 @@ module.exports = new ApplicationCommand({
         const targetUser = interaction.options.getUser('user');
         
         if (targetUser && !isStaff) {
-            return interaction.reply({ content: '❌ Only staff can check other users\' raffle entries.', ephemeral: true });
+            return interaction.reply({ content: '❌ Only staff can check other users\' raffle entries.', flags: 64 });
         }
 
         const userId = targetUser ? targetUser.id : interaction.user.id;
@@ -28,7 +28,7 @@ module.exports = new ApplicationCommand({
         if (!donor) {
             return interaction.reply({
                 content: `${targetUser ? targetUser.username : 'You'} ${targetUser ? 'is' : 'are'} not a supporter. Become one to enter the raffle!`,
-                ephemeral: true
+                flags: 64
             });
         }
 

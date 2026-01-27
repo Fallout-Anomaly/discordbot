@@ -29,10 +29,10 @@ module.exports = new ApplicationCommand({
     run: async (client, interaction) => {
         const staffRoleId = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
         if (!interaction.member.roles.cache.has(staffRoleId)) {
-            return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
+            return interaction.reply({ content: '❌ You do not have permission to use this command.', flags: 64 });
         }
 
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: 64 });
 
         const mode = interaction.options.getString('mode') || 'add';
         const tierMapping = interaction.options.getString('tier-mapping');

@@ -11,7 +11,7 @@ module.exports = new Component({
         if (!draft) {
             return interaction.reply({ 
                 content: '❌ Session expired. Please run `/embed` again.', 
-                ephemeral: true 
+                flags: 64
             });
         }
 
@@ -31,7 +31,7 @@ module.exports = new Component({
         try {
             const channel = await client.channels.fetch(draft.channelId);
             if (!channel) {
-                 return interaction.reply({ content: '❌ Target channel not found.', ephemeral: true });
+                 return interaction.reply({ content: '❌ Target channel not found.', flags: 64 });
             }
 
             // Send the embed
@@ -40,7 +40,7 @@ module.exports = new Component({
             // Confirm to user
             await interaction.reply({ 
                 content: `✅ Embed sent to ${channel}!`, 
-                ephemeral: true 
+                flags: 64
             });
 
             // Cleanup
@@ -50,7 +50,7 @@ module.exports = new Component({
             console.error(err);
             await interaction.reply({ 
                 content: `❌ Failed to send embed: ${err.message}`, 
-                ephemeral: true 
+                flags: 64
             });
         }
     }

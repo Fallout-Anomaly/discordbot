@@ -85,10 +85,10 @@ module.exports = new ApplicationCommand({
 
                 const rowComponent = new ActionRowBuilder().addComponents(select);
 
-                const message = await interaction.reply({ 
+                const { message } = await interaction.reply({ 
                     embeds: [embed], 
                     components: [rowComponent], 
-                    fetchReply: true 
+                    withResponse: true 
                 });
 
                 // Create collector

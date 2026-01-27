@@ -32,7 +32,7 @@ module.exports = new Event({
 
         // Developer Check
         if (command.developer && !config.users.developers.includes(interaction.user.id)) {
-            return interaction.reply({ content: config.messages.NOT_BOT_DEVELOPER, ephemeral: true });
+            return interaction.reply({ content: config.messages.NOT_BOT_DEVELOPER, flags: 64 });
         }
 
         // Cooldown Check
@@ -52,7 +52,7 @@ module.exports = new Event({
             if (now < expirationTime) {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
                 const message = config.messages.GUILD_COOLDOWN.replace('%cooldown%', `<t:${expiredTimestamp}:R>`);
-                return interaction.reply({ content: message, ephemeral: true }).catch(() => {});
+                return interaction.reply({ content: message, flags: 64 }).catch(() => {});
             }
         }
 
@@ -70,7 +70,8 @@ module.exports = new Event({
             // instead of interaction.reply() to avoid "Interaction already acknowledged" error
             const shouldDefer = command.defer || command.command?.defer;
             if (shouldDefer) {
-                await interaction.deferReply({ ephemeral: shouldDefer === 'ephemeral' }).catch(() => {});
+                const flags = shouldDefer === 'ephemeral' ? 64 : undefined;
+                await interaction.deferReply(flags ? { flags } : {}).catch(() => {});
             }
 
             await command.run(client, interaction);
@@ -78,11 +79,11 @@ module.exports = new Event({
             error(err);
             const content = 'There was an error while executing this command!';
             if (interaction.replied) {
-                await interaction.followUp({ content, ephemeral: true }).catch(e => error(e));
+                await interaction.followUp({ content, flags: 64 }).catch(e => error(e));
             } else if (interaction.deferred) {
                 await interaction.editReply({ content }).catch(e => error(e));
             } else {
-                await interaction.reply({ content, ephemeral: true }).catch(e => error(e));
+                await interaction.reply({ content, flags: 64 }).catch(e => error(e));
             }
         }
     }

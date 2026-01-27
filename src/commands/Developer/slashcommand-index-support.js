@@ -9,7 +9,6 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'index-support',
         description: 'Scan the last 30 forum threads and respond to unanswered questions (Staff Only).',
-        defer: 'ephemeral',
         options: [
             {
                 name: 'limit',
@@ -23,7 +22,8 @@ module.exports = new ApplicationCommand({
         botOwner: true
     },
     run: async (client, interaction) => {
-        // Permission check handled by botOwner flag above
+        // Defer reply with ephemeral flag
+        await interaction.deferReply({ flags: 64 });
 
 
         const limit = interaction.options.getInteger('limit') || 30;

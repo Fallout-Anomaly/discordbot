@@ -50,7 +50,7 @@ module.exports = new ApplicationCommand({
                 .filter(thread => thread.name.toLowerCase().includes(focusedValue))
                 .slice(0, 25)
                 .map(thread => ({
-                    name: `${thread.name.slice(0, 80)} (${thread.archived ? 'Archived' : 'Active'})`,
+                    name: `${thread.name.slice(0, 75)}${thread.archived ? ' [A]' : ''}`.slice(0, 100),
                     value: thread.id
                 }));
             
@@ -68,7 +68,7 @@ module.exports = new ApplicationCommand({
         if (threadId === 'none' || threadId === 'error') {
             return interaction.reply({ 
                 content: '❌ Invalid thread selection. Please try again.', 
-                ephemeral: true 
+                flags: 64 
             });
         }
         
@@ -78,7 +78,7 @@ module.exports = new ApplicationCommand({
         if (!thread || !thread.isThread()) {
             return interaction.reply({ 
                 content: '❌ Could not find that thread. Please try again.', 
-                ephemeral: true 
+                flags: 64 
             });
         }
 
@@ -93,7 +93,7 @@ module.exports = new ApplicationCommand({
             if (!followupData) {
                 return interaction.reply({ 
                     content: `✅ **No follow-up tracking found** for <#${thread.id}>.\n\nThis thread is not currently marked for follow-up.`, 
-                    ephemeral: true 
+                    flags: 64 
                 });
             }
 
@@ -107,14 +107,14 @@ module.exports = new ApplicationCommand({
 
             return interaction.reply({ 
                 content: `✅ **Follow-up tracking cleared** for <#${thread.id}>.\n\n🔄 The thread will now be treated fresh.\n⏰ If it remains inactive for 7+ days, it may receive a new follow-up.`, 
-                ephemeral: true 
+                flags: 64 
             });
 
         } catch (err) {
             console.error('[RESET FOLLOWUP] Error:', err);
             return interaction.reply({ 
                 content: `❌ Error clearing follow-up tracking: ${err.message}`, 
-                ephemeral: true 
+                flags: 64 
             });
         }
     }

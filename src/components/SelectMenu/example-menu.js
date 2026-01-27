@@ -12,7 +12,7 @@ module.exports = new Component({
 
         await interaction.reply({
             content: 'Replied from a Select Menu interaction! (You selected **' + interaction.values[0] + '**).',
-            ephemeral: true
+            flags: 64
         });
 
     }

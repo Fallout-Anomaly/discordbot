@@ -8,13 +8,13 @@ module.exports = new Component({
     },
     run: async (client, interaction) => {
         const roleId = process.env.MEMBER_ROLE_ID;
-        if (!roleId) return interaction.reply({ content: '❌ Verification role is not configured.', ephemeral: true });
+        if (!roleId) return interaction.reply({ content: '❌ Verification role is not configured.', flags: 64 });
 
         const role = interaction.guild.roles.cache.get(roleId);
-        if (!role) return interaction.reply({ content: '❌ Verification role not found.', ephemeral: true });
+        if (!role) return interaction.reply({ content: '❌ Verification role not found.', flags: 64 });
 
         if (interaction.member.roles.cache.has(roleId)) {
-            return interaction.reply({ content: '✅ You are already verified!', ephemeral: true });
+            return interaction.reply({ content: '✅ You are already verified!', flags: 64 });
         }
 
         try {
