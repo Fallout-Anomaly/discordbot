@@ -6,7 +6,10 @@ module.exports = new Component({
     options: {
         public: true
     },
-    run: async (client, interaction) => {
+    async run(client, interaction) {
+        // ✅ FIX: Defer immediately so we can use editReply later
+        await interaction.deferReply({ flags: 64 });
+
         // Already deferred by interactionCreate.js - just use editReply()
         const roleId = process.env.MEMBER_ROLE_ID;
         if (!roleId) return interaction.editReply({ content: '❌ Verification role is not configured.' });
@@ -50,4 +53,4 @@ module.exports = new Component({
             interaction.editReply({ content: '❌ An error occurred during verification. Please contact staff.' });
         }
     }
-});
+}).toJSON();
