@@ -11,7 +11,7 @@ module.exports = new ApplicationCommand({
             .setTitle('☢️ Anomaly Support - Help')
             .setDescription('Welcome to the Anomaly Support system. Here are the available commands:')
             .addFields(
-                { name: '🔍 AI Knowledge', value: '`/ask` - AI Search\n(Or just type in the support channel!)', inline: false },
+                { name: '🔍 AI Knowledge', value: 'Just type your question in the support channel!', inline: false },
                 { name: '🛡️ Moderation', value: '`/kick`, `/ban`, `/timeout`, `/clear`, `/lock`, `/unlock`, `/setnick`, `/addrole`', inline: false },
                 { name: 'ℹ️ Information', value: '`/ping`, `/userinfo`, `/avatar`, `/banner`, `/serverinfo`', inline: false },
                 { name: '🚨 Reports & Feedback', value: '`/report` - Alert staff\n`/bf` - Bot feedback', inline: false }
