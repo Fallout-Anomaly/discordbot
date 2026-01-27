@@ -94,10 +94,10 @@ class CommandsHandler {
             // CAUTION: Since a Cloudflare Worker is active, these Slash Commands will NOT work unless the Worker proxies them.
             // However, we run this to ensure any STALE commands (like the broken /addrole) are removed if we deleted the file.
             if (development?.enabled) {
-                await rest.put(Routes.applicationGuildCommands(this.client.user.id, development.guildId), { body: this.client.rest_application_commands_array });
+                await rest.put(Routes.applicationGuildCommands(this.client.user.id.toString(), development.guildId.toString()), { body: this.client.rest_application_commands_array });
                 success(`Successfully updated ${this.client.rest_application_commands_array.length} local application commands.`);
             } else {
-                await rest.put(Routes.applicationCommands(this.client.user.id), { body: this.client.rest_application_commands_array });
+                await rest.put(Routes.applicationCommands(this.client.user.id.toString()), { body: this.client.rest_application_commands_array });
                 success(`Successfully updated ${this.client.rest_application_commands_array.length} global application commands.`);
             }
         } catch (err) {
