@@ -17,6 +17,9 @@ class CommandsHandler {
     }
 
     load = () => {
+        // Clear previous array to avoid duplicates during reload/re-init
+        this.client.rest_application_commands_array = [];
+
         for (const directory of readdirSync('./src/commands/')) {
             for (const file of readdirSync('./src/commands/' + directory).filter((f) => f.endsWith('.js'))) {
                 try {
