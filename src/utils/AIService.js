@@ -84,6 +84,59 @@ class AIService {
             return "I encountered an error while trying to generate the answer. Please try again later.";
         }
     }
+
+    async generateQuest(userParams) {
+        if (!this.openai) {
+             // Fallback quest if AI is offline
+             return {
+                 title: "Scavenge the Super Duper Mart",
+                 description: "We need supplies. Head to the old Super Duper Mart and clear out any ghouls you find.",
+                 objective: "Retrieve the supplies",
+                 difficulty: "Easy",
+                 flavor: "Don't get eaten."
+             };
+        }
+
+        const model = process.env.AI_MODEL_REFINE || 'llama-3.1-8b-instant'; 
+
+        try {
+            const response = await this.openai.chat.completions.create({
+                model: model,
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are the Overseer of a Fallout vault. Generate a short, interesting "Radiant Quest" for a wasteland explorer.
+Output MUST be valid JSON only. format:
+{
+  "title": "Quest Title",
+  "description": "Short flavor text describing the situation (max 2 sentences).",
+  "objective": "What needs to be done (e.g. Kill X, Find Y).",
+  "difficulty": "Easy" or "Medium" or "Hard",
+  "flavor": "A witty closing remark."
+}`
+                    },
+                    {
+                        role: 'user',
+                        content: `Generate a quest. User Level: ${userParams.level || 1}. Current Weapon: ${userParams.weapon || 'Pipe Pistol'}.`
+                    }
+                ],
+                response_format: { type: "json_object" },
+                max_tokens: 200
+            }, { timeout: 15000 });
+
+            const content = response.choices[0].message.content.trim();
+            return JSON.parse(content);
+        } catch (e) {
+            console.error("AI Quest Gen Error:", e.message);
+            return {
+                 title: "Patrol the Perimeter",
+                 description: "The sensors picked up movement. Go check it out.",
+                 objective: "Patrol for 10 minutes",
+                 difficulty: "Easy",
+                 flavor: "Probably just a mole rat."
+            };
+        }
+    }
 }
 
 module.exports = new AIService();
