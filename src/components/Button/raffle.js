@@ -182,4 +182,4 @@ module.exports = new Component({
             return interaction.editReply({ embeds: [embed] });
         }
     }
-});
+}).toJSON();
