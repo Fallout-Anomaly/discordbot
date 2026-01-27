@@ -19,7 +19,12 @@ class ComponentsHandler {
                     /**
                      * @type {Component['data'] | AutocompleteComponent['data']}
                      */
-                    const module = require('../../components/' + directory + '/' + file);
+                    let module = require('../../components/' + directory + '/' + file);
+
+                    // Unwrap class instance if needed
+                    if (module && module.data) {
+                        module = module.data;
+                    }
 
                     if (!module) continue;
 
