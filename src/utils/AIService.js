@@ -83,7 +83,7 @@ class AIService {
             const response = await this.openai.chat.completions.create({
                 model: model,
                 messages: messages,
-                maxTokens: maxTokens
+                max_tokens: maxTokens
             }, { timeout: 30000 }); // 30s timeout
 
             return response.choices[0].message.content.trim();
