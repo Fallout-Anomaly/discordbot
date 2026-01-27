@@ -26,7 +26,7 @@ module.exports = new ApplicationCommand({
             if (err || !rows) return interaction.respond([]);
             // Filter unique by ID just in case, though DB group should handle it or DISTINCT
             const unique = [...new Map(rows.map(item => [item.id, item])).values()];
-            interaction.respond(unique.map(row => ({ name: row.name, value: row.id })));
+            interaction.respond(unique.map(row => ({ name: row.name.slice(0, 100), value: row.id })));
         });
     },
     run: async (client, interaction) => {
@@ -37,14 +37,14 @@ module.exports = new ApplicationCommand({
 
         // Verify item ownership and type (then consume atomically)
         db.get(`SELECT inv.amount, i.name, i.effect_full, i.type, i.emoji FROM inventory inv JOIN items i ON inv.item_id = i.id WHERE inv.user_id = ? AND inv.item_id = ?`, [userId, itemId], (err, item) => {
-            if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+            if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
             
             if (!item || item.amount < 1) {
-                return interaction.reply({ content: '❌ You do not have this item!', ephemeral: true });
+                return interaction.reply({ content: '❌ You do not have this item!', flags: 64 });
             }
 
             if (item.type !== 'consumable' && item.type !== 'lootbox') {
-                return interaction.reply({ content: `❌ You cannot "use" a ${item.type}. Equip it or sell it instead!`, ephemeral: true });
+                return interaction.reply({ content: `❌ You cannot "use" a ${item.type}. Equip it or sell it instead!`, flags: 64 });
             }
 
             // Attempt to consume 1 item atomically
@@ -52,9 +52,9 @@ module.exports = new ApplicationCommand({
                 'UPDATE inventory SET amount = amount - 1 WHERE user_id = ? AND item_id = ? AND amount > 0',
                 [userId, itemId],
                 function (updErr) {
-                    if (updErr) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                    if (updErr) return interaction.reply({ content: '❌ Database error.', flags: 64 });
                     if (this.changes === 0) {
-                        return interaction.reply({ content: "❌ You don't have this item!", ephemeral: true });
+                        return interaction.reply({ content: "❌ You don't have this item!", flags: 64 });
                     }
 
                     // Apply Effects only after successful consumption

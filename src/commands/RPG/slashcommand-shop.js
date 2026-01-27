@@ -92,11 +92,11 @@ module.exports = new ApplicationCommand({
 
             db.all(query, params, (err, rows) => {
                 if (err) {
-                    return interaction.reply({ content: '❌ Database error fetching items.', ephemeral: true });
+                    return interaction.reply({ content: '❌ Database error fetching items.', flags: 64 });
                 }
                 
                 if (rows.length === 0) {
-                     return interaction.reply({ content: '🚫 No items found matching that filter.', ephemeral: true });
+                     return interaction.reply({ content: '🚫 No items found matching that filter.', flags: 64 });
                 }
 
                 const title = typeFilter 
@@ -144,13 +144,13 @@ module.exports = new ApplicationCommand({
             // Fetch exact item from DB
             db.get('SELECT * FROM items WHERE id = ?', [query], (err, item) => {
                 if (err || !item) {
-                     return interaction.reply({ content: '❌ Item not found. Please select from the list.', ephemeral: true });
+                     return interaction.reply({ content: '❌ Item not found. Please select from the list.', flags: 64 });
                 }
 
                 const totalCost = item.price * amount;
 
                 db.get('SELECT balance, stat_charisma FROM users WHERE id = ?', [userId], (err, userRow) => {
-                    if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                    if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
                     
 
 
@@ -173,7 +173,7 @@ module.exports = new ApplicationCommand({
                     const finalCost = Math.floor(totalCost * (1 - discountPercent));
 
                     if (balance < finalCost) {
-                        return interaction.reply({ content: `❌ You need **${finalCost} Caps** to buy this (Short by ${finalCost - balance}).`, ephemeral: true });
+                        return interaction.reply({ content: `❌ You need **${finalCost} Caps** to buy this (Short by ${finalCost - balance}).`, flags: 64 });
                     }
 
                     // Transaction
@@ -202,9 +202,9 @@ module.exports = new ApplicationCommand({
             const userId = interaction.user.id;
 
             db.get(`SELECT inv.amount, i.name, i.price, i.emoji FROM inventory inv JOIN items i ON inv.item_id = i.id WHERE inv.user_id = ? AND inv.item_id = ?`, [userId, itemId], (err, item) => {
-                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
                 if (!item || item.amount < amount) {
-                    return interaction.reply({ content: `❌ You don't have enough **${itemId}** to sell! (Have: ${item ? item.amount : 0})`, ephemeral: true });
+                    return interaction.reply({ content: `❌ You don't have enough **${itemId}** to sell! (Have: ${item ? item.amount : 0})`, flags: 64 });
                 }
 
                 // Sell logic: 50% of base price

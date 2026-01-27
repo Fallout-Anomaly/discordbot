@@ -100,7 +100,7 @@ module.exports = new ApplicationCommand({
                 });
 
                 collector.on('collect', async i => {
-                    if (i.user.id !== interaction.user.id) return i.reply({ content: 'Not your menu.', ephemeral: true });
+                    if (i.user.id !== interaction.user.id) return i.reply({ content: 'Not your menu.', flags: 64 });
 
                     const statColumn = i.values[0];
                     const statName = i.values[0].replace('stat_', '');
@@ -119,7 +119,7 @@ module.exports = new ApplicationCommand({
                             if (this.changes === 0) {
                                 return i.update({ content: '❌ Not enough points!', components: [] });
                             }
-                            i.reply({ content: `✅ Upgraded **${statName}**! Run /stats again to see changes.`, ephemeral: true });
+                            i.reply({ content: `✅ Upgraded **${statName}**! Run /stats again to see changes.`, flags: 64 });
                         }
                     );
                 });

@@ -159,6 +159,33 @@ module.exports = new Event({
                 }
             }
 
+            // Check if this is a new forum post (thread starter message)
+            let isNewThreadStarter = false;
+            if (isForumThread && message.channel.isThread()) {
+                try {
+                    const starterMessage = await message.channel.fetchStarterMessage().catch(() => null);
+                    if (starterMessage && starterMessage.id === message.id) {
+                        isNewThreadStarter = true;
+                    }
+                } catch (err) {
+                    // Ignore errors fetching starter message
+                }
+            }
+
+            // Add upload reminder for new support threads
+            if (isNewThreadStarter) {
+                const uploadReminder = `**📎 Please upload the following to help us assist you faster:**\n` +
+                    `• **Save files** (from your save folder)\n` +
+                    `• **Crash logs** (if applicable)\n` +
+                    `• **Screenshots** of the issue\n\n`;
+                
+                if (!replyContent) {
+                    replyContent = uploadReminder;
+                } else {
+                    replyContent = uploadReminder + replyContent;
+                }
+            }
+
             // Reply to message
             await message.reply({ content: replyContent, embeds: [embed] }).then(async (msg) => {
                 // Add feedback reactions

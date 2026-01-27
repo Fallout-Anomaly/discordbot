@@ -44,7 +44,7 @@ module.exports = new ApplicationCommand({
 
         // Verify bot permissions in target channel
         if (!channel.isTextBased()) {
-            return interaction.reply({ content: '❌ Target must be a text channel.', ephemeral: true });
+            return interaction.reply({ content: '❌ Target must be a text channel.', flags: 64 });
         }
         
         // Store the options for retrieval in the modal handler
