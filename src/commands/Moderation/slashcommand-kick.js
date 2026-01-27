@@ -5,6 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'kick',
         description: 'Kick a user from the server.',
+        defer: 'ephemeral',
         options: [
             {
                 name: 'user',
@@ -26,28 +27,27 @@ module.exports = new ApplicationCommand({
         const reason = interaction.options.getString('reason') || 'No reason provided';
         const member = interaction.guild.members.cache.get(user.id) || await interaction.guild.members.fetch(user.id).catch(() => null);
 
-        if (!member) return interaction.reply({ content: '❌ User not found in this server.', ephemeral: true });
+        if (!member) return interaction.editReply({ content: '❌ User not found in this server.' });
 
         // Role hierarchy checks to ensure executor outranks target (unless executor is server owner)
         if (member.id === interaction.guild.ownerId) {
-            return interaction.reply({ content: '❌ You cannot punish the server owner.', ephemeral: true });
+            return interaction.editReply({ content: '❌ You cannot punish the server owner.' });
         }
         if (interaction.user.id !== interaction.guild.ownerId &&
             interaction.member.roles.highest.position <= member.roles.highest.position) {
-            return interaction.reply({ 
-                content: '❌ You cannot punish a member with an equal or higher role than yourself.', 
-                ephemeral: true 
+            return interaction.editReply({ 
+                content: '❌ You cannot punish a member with an equal or higher role than yourself.' 
             });
         }
 
-        if (!member.kickable) return interaction.reply({ content: '❌ I cannot kick this user.', ephemeral: true });
+        if (!member.kickable) return interaction.editReply({ content: '❌ I cannot kick this user.' });
 
         try {
             await member.kick(reason);
-            await interaction.reply({ content: `✅ **${user.tag}** has been kicked. Reason: ${reason}` });
+            await interaction.editReply({ content: `✅ **${user.tag}** has been kicked. Reason: ${reason}` });
         } catch (err) {
             console.error(err);
-            await interaction.reply({ content: '❌ Failed to kick user.', ephemeral: true });
+            await interaction.editReply({ content: '❌ Failed to kick user.' });
         }
     }
 }).toJSON();

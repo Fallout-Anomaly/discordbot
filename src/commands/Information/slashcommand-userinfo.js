@@ -5,6 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'userinfo',
         description: 'Display information about a user.',
+        defer: 'ephemeral',
         options: [
             {
                 name: 'user',
@@ -35,6 +36,6 @@ module.exports = new ApplicationCommand({
             );
         }
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
     }
 }).toJSON();

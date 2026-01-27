@@ -4,7 +4,8 @@ const ApplicationCommand = require("../../structure/ApplicationCommand");
 module.exports = new ApplicationCommand({
     command: {
         name: 'serverinfo',
-        description: 'Display information about the server.'
+        description: 'Display information about the server.',
+        defer: 'ephemeral'
     },
     run: async (client, interaction) => {
         const { guild } = interaction;
@@ -23,6 +24,6 @@ module.exports = new ApplicationCommand({
             .setColor('#3498db')
             .setTimestamp();
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] });
     }
 }).toJSON();

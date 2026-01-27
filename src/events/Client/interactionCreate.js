@@ -9,6 +9,7 @@ module.exports = new Event({
     run: async (client, interaction) => {
         info(`[EVENT DEBUG] Received interaction: ${interaction.commandName || interaction.customId} (Type: ${interaction.type})`);
 
+        // AUTOCOMPLETE INTERACTIONS
         if (interaction.isAutocomplete()) {
             const command = client.collection.application_commands.get(interaction.commandName);
             if (!command) return;
@@ -21,6 +22,81 @@ module.exports = new Event({
             return;
         }
 
+        // COMPONENT INTERACTIONS (Buttons, Select Menus, Modals)
+        // These must be acknowledged immediately to prevent 10062 Unknown interaction timeout
+        const checkUserPermissions = async (component) => {
+            if (component.options?.public === false && interaction.user.id !== interaction.message.interaction?.user?.id) {
+                await interaction.reply({
+                    content: config.messages.COMPONENT_NOT_PUBLIC,
+                    ephemeral: true
+                });
+                return false;
+            }
+            return true;
+        }
+
+        try {
+            if (interaction.isButton()) {
+                const component = client.collection.components.buttons.get(interaction.customId);
+                if (!component) return;
+
+                if (!(await checkUserPermissions(component))) return;
+
+                try {
+                    // Auto-defer to prevent 3-second timeout (Unknown interaction 10062)
+                    if (!interaction.deferred && !interaction.replied) {
+                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                    }
+                    await component.run(client, interaction);
+                } catch (err) {
+                    error('[BUTTON]', err);
+                }
+                return;
+            }
+
+            if (interaction.isAnySelectMenu()) {
+                const component = client.collection.components.selects.get(interaction.customId);
+                if (!component) return;
+
+                if (!(await checkUserPermissions(component))) return;
+
+                try {
+                    // Auto-defer to prevent 3-second timeout (Unknown interaction 10062)
+                    if (!interaction.deferred && !interaction.replied) {
+                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                    }
+                    await component.run(client, interaction);
+                } catch (err) {
+                    error('[SELECT MENU]', err);
+                }
+                return;
+            }
+
+            if (interaction.isModalSubmit()) {
+                const component = client.collection.components.modals.get(interaction.customId);
+                if (!component) return;
+
+                try {
+                    // Auto-defer to prevent 3-second timeout (Unknown interaction 10062)
+                    if (!interaction.deferred && !interaction.replied) {
+                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                    }
+                    await component.run(client, interaction);
+                } catch (err) {
+                    error('[MODAL]', err);
+                }
+                return;
+            }
+        } catch (err) {
+            error('[COMPONENT HANDLER]', err);
+            // Try to reply with error if possible
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: 'An error occurred processing this interaction.', ephemeral: true }).catch(() => {});
+            }
+            return;
+        }
+
+        // CHAT INPUT AND CONTEXT MENU COMMANDS
         if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
 
         const command = client.collection.application_commands.get(interaction.commandName);
