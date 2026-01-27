@@ -12,6 +12,23 @@ module.exports = new Event({
         const askChannelId = process.env.ASK_CHANNEL_ID;
         if (!askChannelId || message.channel.id !== askChannelId) return;
 
+        // IGNORE LOGIC:
+        // 1. Ignore if it is a Reply to someone else (User-to-User conversation)
+        if (message.reference) {
+            const repliedMessage = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
+            // If replied message exists and Author is NOT the bot, ignore it.
+            if (repliedMessage && repliedMessage.author.id !== client.user.id) {
+                return; 
+            }
+        }
+
+        // 2. Ignore if it mentions another user (User-to-User conversation)
+        // We check if it mentions users, but we must exclude the bot itself from this count.
+        const mentionedUsers = message.mentions.users.filter(u => u.id !== client.user.id);
+        if (mentionedUsers.size > 0) {
+            return;
+        }
+
         // Visual feedback that the bot is "thinking"
         await message.channel.sendTyping();
 
