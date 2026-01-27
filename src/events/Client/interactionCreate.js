@@ -9,6 +9,18 @@ module.exports = new Event({
     run: async (client, interaction) => {
         info(`[EVENT DEBUG] Received interaction: ${interaction.commandName || interaction.customId} (Type: ${interaction.type})`);
 
+        if (interaction.isAutocomplete()) {
+            const command = client.collection.application_commands.get(interaction.commandName);
+            if (!command) return;
+
+            try {
+                if (command.autocomplete) await command.autocomplete(client, interaction);
+            } catch (err) {
+                error(err);
+            }
+            return;
+        }
+
         if (!interaction.isChatInputCommand() && !interaction.isContextMenuCommand()) return;
 
         const command = client.collection.application_commands.get(interaction.commandName);
