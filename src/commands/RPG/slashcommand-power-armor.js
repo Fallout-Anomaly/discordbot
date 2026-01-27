@@ -67,7 +67,7 @@ module.exports = new ApplicationCommand({
                 description: 'Which armor to equip',
                 type: ApplicationCommandOptionType.String,
                 choices: Object.entries(POWER_ARMOR_SETS).map(([key, data]) => ({
-                    name: `${data.emoji} ${data.name} (${data.cost}c)`,
+                    name: `${data.emoji} ${data.name}`.slice(0, 100),
                     value: key
                 })),
                 required: false
