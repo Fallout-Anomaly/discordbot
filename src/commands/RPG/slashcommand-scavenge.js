@@ -42,17 +42,23 @@ module.exports = new ApplicationCommand({
                     // Patron Benefits
                     let dailyLimit = 10;
                     let scavengeDuration = 15; // Minutes
-                    let isDonator = false;
+                    let statusMsg = '';
 
-                    const donatorRoles = config.users.donator_roles || [];
-                    if (interaction.member && interaction.member.roles.cache.hasAny(...donatorRoles)) {
-                        dailyLimit = 15; // +5 Scavenges
-                        scavengeDuration = 10; // -5 Minutes duration
-                        isDonator = true;
+                    const donatorRole = config.users.donator_role;
+                    const boosterRole = config.users.booster_role;
+
+                    if (interaction.member.roles.cache.has(donatorRole)) {
+                        dailyLimit = 20; // Legendary Tier
+                        scavengeDuration = 5; // Ultra Fast
+                        statusMsg = '🌟 **Donator Perks Active!** (Limit: 20 | Speed: Fast)\n';
+                    } else if (interaction.member.roles.cache.has(boosterRole)) {
+                        dailyLimit = 15; // Booster Tier
+                        scavengeDuration = 10; // Fast
+                        statusMsg = '🚀 **Booster Perks Active!** (Limit: 15 | Speed: Medium)\n';
                     }
 
                     if (count >= dailyLimit) {
-                         const limitMsg = isDonator ? `(Patron Limit: ${dailyLimit}/day)` : `(Limit: ${dailyLimit}/day. Patrons get 15!)`;
+                         const limitMsg = `(Limit: ${dailyLimit}/day)`;
                         return interaction.reply({ content: `🛑 **Daily Limit Reached**\nYou are too exhausted to scavenge more today. ${limitMsg}`, ephemeral: true });
                     }
 
@@ -62,8 +68,7 @@ module.exports = new ApplicationCommand({
                     // Increment count
                     db.run('UPDATE users SET daily_scavenge_count = daily_scavenge_count + 1 WHERE id = ?', [userId]);
 
-                    const patronMsg = isDonator ? '⚡ **Patron Speed Boost Active!**\n' : '';
-                    interaction.reply({ content: `🎒 You head out into the wasteland... (Attempt ${count + 1}/${dailyLimit})\n${patronMsg}Check back in **${scavengeDuration} minutes** to see what you found.` });
+                    interaction.reply({ content: `🎒 You head out into the wasteland... (Attempt ${count + 1}/${dailyLimit})\n${statusMsg}Check back in **${scavengeDuration} minutes** to see what you found.` });
                 });
             }
         });

@@ -161,10 +161,14 @@ module.exports = new ApplicationCommand({
                     // Charisma Discount
                     let discountPercent = Math.min(charisma * 0.01, 0.10); // Max 10% via stats
 
-                    // Donator Discount
-                    const donatorRoles = config.users.donator_roles || [];
-                    if (interaction.member && interaction.member.roles.cache.hasAny(...donatorRoles)) {
-                        discountPercent += 0.05; // +5% Flat Discount
+                    // Tiered Discounts
+                    const donatorRole = config.users.donator_role;
+                    const boosterRole = config.users.booster_role;
+
+                    if (interaction.member.roles.cache.has(donatorRole)) {
+                        discountPercent += 0.10; // +10% for Donators
+                    } else if (interaction.member.roles.cache.has(boosterRole)) {
+                        discountPercent += 0.05; // +5% for Boosters
                     }
 
                     const finalCost = Math.floor(totalCost * (1 - discountPercent));
