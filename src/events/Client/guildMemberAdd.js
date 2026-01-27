@@ -12,7 +12,13 @@ module.exports = new Event({
         }
 
         const verifyChannelId = process.env.VERIFY_CHANNEL_ID;
-        const verifyText = verifyChannelId ? `<#${verifyChannelId}>` : "**verification channel**";
+        // Defensive check: ensure it's a truthy value and NOT the literal string "undefined"
+        const isValidVerifyId = verifyChannelId && verifyChannelId !== 'undefined';
+        const verifyText = isValidVerifyId ? `<#${verifyChannelId}>` : "**verification channel**";
+
+        if (!isValidVerifyId) {
+            console.warn(`[WELCOME] VERIFY_CHANNEL_ID is missing or invalid: ${verifyChannelId}`);
+        }
 
         const welcomeChannel = client.channels.cache.get(welcomeChannelId);
         if (welcomeChannel) {
