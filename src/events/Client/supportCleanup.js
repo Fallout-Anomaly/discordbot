@@ -64,34 +64,58 @@ async function runCleanupCycle(client) {
                 stats.scanned++;
 
                 try {
-                    const messages = await thread.messages.fetch({ limit: 10 });
-                    if (messages.size === 0) continue;
-
-                    const lastMessage = messages.first();
-                    const timeSinceLastMessage = Date.now() - lastMessage.createdTimestamp;
-                    const daysSinceLastMessage = timeSinceLastMessage / (1000 * 60 * 60 * 24);
+                    // Fetch the last message to check activity time
+                    const lastMessageFetch = await thread.messages.fetch({ limit: 1 }).catch(() => null);
+                    
+                    let lastActiveTime = thread.createdTimestamp; // Fallback to thread creation time
+                    if (lastMessageFetch && lastMessageFetch.size > 0) {
+                        const lastMessage = lastMessageFetch.first();
+                        lastActiveTime = lastMessage.createdTimestamp;
+                    }
+                    
+                    const timeSinceLastActivity = Date.now() - lastActiveTime;
+                    const daysSinceLastActivity = timeSinceLastActivity / (1000 * 60 * 60 * 24);
 
                     const followupData = await getFollowupData(thread.id);
 
+                    // Step 0: Force-close threads that are extremely old (14+ days) regardless of follow-up status
+                    if (daysSinceLastActivity >= 14) {
+                        await closeThread(thread, true); // true = skip follow-up message
+                        if (followupData) await removeFollowup(thread.id);
+                        stats.closed++;
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        continue; // Skip to next thread
+                    }
+
                     // Step 1: Send follow-up for threads inactive 7+ days
-                    if (daysSinceLastMessage >= 7 && !followupData) {
+                    if (daysSinceLastActivity >= 7 && !followupData) {
                         await sendFollowupMessage(thread);
                         stats.followups++;
                         await new Promise(resolve => setTimeout(resolve, 2000));
                     }
 
                     // Step 2: Close threads 24h+ after follow-up with no user response
+                    // Need to fetch more messages to check for responses AFTER the follow-up
                     if (followupData) {
                         const timeSinceFollowup = Date.now() - followupData.followup_time;
                         const hoursSinceFollowup = timeSinceFollowup / (1000 * 60 * 60);
 
-                        const messagesAfterFollowup = messages.filter(m => m.createdTimestamp > followupData.followup_time);
-                        const userRespondedAfterFollowup = messagesAfterFollowup.some(m => !m.author.bot);
+                        if (hoursSinceFollowup >= 24) {
+                            // Fetch up to 20 messages to check for user responses after follow-up
+                            const recentMessages = await thread.messages.fetch({ limit: 20 }).catch(() => null);
+                            let userRespondedAfterFollowup = false;
+                            
+                            if (recentMessages && recentMessages.size > 0) {
+                                userRespondedAfterFollowup = recentMessages.some(m => 
+                                    m.createdTimestamp > followupData.followup_time && !m.author.bot
+                                );
+                            }
 
-                        if (hoursSinceFollowup >= 24 && !userRespondedAfterFollowup) {
-                            await closeThread(thread);
-                            stats.closed++;
-                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            if (!userRespondedAfterFollowup) {
+                                await closeThread(thread);
+                                stats.closed++;
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                            }
                         }
                     }
 
@@ -153,19 +177,22 @@ async function sendFollowupMessage(thread) {
     await recordFollowup(thread.id, msg.id);
 }
 
-async function closeThread(thread) {
-    const embed = new EmbedBuilder()
-        .setTitle('🔒 Thread Closed - Inactivity')
-        .setDescription(
-            `This support thread has been automatically closed due to **24 hours of inactivity** after our follow-up.\n\n` +
-            `✨ **Thank you for using Anomaly Support!**\n` +
-            `If you still need assistance, feel free to create a new post or contact staff directly.`
-        )
-        .setColor('#95a5a6')
-        .setFooter({ text: 'Anomaly Support System • Auto-Close' })
-        .setTimestamp();
+async function closeThread(thread, skipMessage = false) {
+    if (!skipMessage) {
+        const embed = new EmbedBuilder()
+            .setTitle('🔒 Thread Closed - Inactivity')
+            .setDescription(
+                `This support thread has been automatically closed due to **24 hours of inactivity** after our follow-up.\n\n` +
+                `✨ **Thank you for using Anomaly Support!**\n` +
+                `If you still need assistance, feel free to create a new post or contact staff directly.`
+            )
+            .setColor('#95a5a6')
+            .setFooter({ text: 'Anomaly Support System • Auto-Close' })
+            .setTimestamp();
 
-    await thread.send({ embeds: [embed] });
+        await thread.send({ embeds: [embed] });
+    }
+    
     await removeFollowup(thread.id);
     
     // Lock and archive the thread

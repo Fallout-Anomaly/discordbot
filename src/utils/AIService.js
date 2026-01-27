@@ -68,6 +68,7 @@ class AIService {
 - If the Context has the answer, use it exclusively.
 - **Controller/Gamepad Support**: If asked about controllers, ALWAYS check the context for "Steam Input" links (steam://controllerconfig/...) or specific keybinds (e.g. "Select" for Pipboy). Remind users to reset in-game keybinds to default if mentioned in context.
 - If the Context is missing specific details, you MAY use your general knowledge about Fallout 4 modding to help, but explicitly state that this is "general advice" and might differ in the modpack.
+- **Escalation**: If you cannot adequately answer the question (no relevant context, issue is too complex, requires file access, or needs manual intervention), end your response with the exact phrase "[ESCALATE_TO_STAFF]" on a new line.
 - Be concise and friendly.
 - Do NOT mention filenames or say "Based on the context".`
             }
@@ -89,10 +90,24 @@ class AIService {
                 max_tokens: maxTokens
             }, { timeout: 30000 }); // 30s timeout
 
-            return response.choices[0].message.content.trim();
+            const content = response.choices[0].message.content.trim();
+            
+            // Check if AI requested escalation
+            const needsEscalation = content.includes('[ESCALATE_TO_STAFF]');
+            const cleanedContent = content.replace('[ESCALATE_TO_STAFF]', '').trim();
+            
+            return {
+                answer: cleanedContent,
+                needsEscalation: needsEscalation,
+                contextQuality: contextItems.length > 0 ? 'good' : 'poor'
+            };
         } catch (e) {
             console.error("AI Generate Error:", e.message);
-            return "I encountered an error while trying to generate the answer. Please try again later.";
+            return {
+                answer: "I encountered an error while trying to generate the answer. Please try again later.",
+                needsEscalation: true,
+                contextQuality: 'error'
+            };
         }
     }
 
@@ -135,7 +150,13 @@ Output MUST be valid JSON only. format:
                 max_tokens: 200
             }, { timeout: 15000 });
 
-            const content = response.choices[0].message.content.trim();
+            let content = response.choices[0].message.content.trim();
+            
+            // Sanitize: Remove markdown code blocks if present
+            if (content.startsWith('```')) {
+                content = content.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/```\s*$/m, '').trim();
+            }
+            
             return JSON.parse(content);
         } catch (e) {
             console.error("AI Quest Gen Error:", e.message);

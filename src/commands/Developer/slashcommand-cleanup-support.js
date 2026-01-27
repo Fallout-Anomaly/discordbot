@@ -70,18 +70,31 @@ module.exports = new ApplicationCommand({
                     stats.scanned++;
 
                     try {
-                        // Fetch recent messages
-                        const messages = await thread.messages.fetch({ limit: 10 });
-                        if (messages.size === 0) continue;
-
-                        const lastMessage = messages.first();
-                        const timeSinceLastMessage = Date.now() - lastMessage.createdTimestamp;
-                        const daysSinceLastMessage = timeSinceLastMessage / (1000 * 60 * 60 * 24);
+                        // Fetch only the last message to check activity time
+                        const lastMessageFetch = await thread.messages.fetch({ limit: 1 }).catch(() => null);
+                        
+                        let lastActiveTime = thread.createdTimestamp; // Fallback to thread creation time
+                        if (lastMessageFetch && lastMessageFetch.size > 0) {
+                            const lastMessage = lastMessageFetch.first();
+                            lastActiveTime = lastMessage.createdTimestamp;
+                        }
+                        
+                        const timeSinceLastActivity = Date.now() - lastActiveTime;
+                        const daysSinceLastActivity = timeSinceLastActivity / (1000 * 60 * 60 * 24);
 
                         // Check if we've already sent a follow-up
                         const followupData = await getFollowupData(thread.id);
 
-                        if ((action === 'followup' || action === 'both') && daysSinceLastMessage >= 7 && !followupData) {
+                        // Force-close threads 14+ days old
+                        if ((action === 'close' || action === 'both') && daysSinceLastActivity >= 14) {
+                            await closeThread(thread, true);
+                            if (followupData) await removeFollowup(thread.id);
+                            stats.closed++;
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            continue;
+                        }
+
+                        if ((action === 'followup' || action === 'both') && daysSinceLastActivity >= 7 && !followupData) {
                             // Send follow-up for threads inactive for 7+ days
                             await sendFollowupMessage(thread);
                             await recordFollowup(thread.id);
@@ -95,18 +108,26 @@ module.exports = new ApplicationCommand({
                             const timeSinceFollowup = Date.now() - followupData.followup_time;
                             const hoursSinceFollowup = timeSinceFollowup / (1000 * 60 * 60);
 
-                            // Check if there's been any activity since the follow-up
-                            const messagesAfterFollowup = messages.filter(m => m.createdTimestamp > followupData.followup_time);
-                            const userRespondedAfterFollowup = messagesAfterFollowup.some(m => !m.author.bot);
-
-                            if (hoursSinceFollowup >= 24 && !userRespondedAfterFollowup) {
-                                // Close thread (lock and archive)
-                                await closeThread(thread);
-                                await removeFollowup(thread.id);
-                                stats.closed++;
+                            if (hoursSinceFollowup >= 24) {
+                                // Fetch up to 20 messages to check for user responses after follow-up
+                                const recentMessages = await thread.messages.fetch({ limit: 20 }).catch(() => null);
+                                let userRespondedAfterFollowup = false;
                                 
-                                // Rate limit delay
-                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                if (recentMessages && recentMessages.size > 0) {
+                                    userRespondedAfterFollowup = recentMessages.some(m => 
+                                        m.createdTimestamp > followupData.followup_time && !m.author.bot
+                                    );
+                                }
+
+                                if (!userRespondedAfterFollowup) {
+                                    // Close thread (lock and archive)
+                                    await closeThread(thread);
+                                    await removeFollowup(thread.id);
+                                    stats.closed++;
+                                    
+                                    // Rate limit delay
+                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                }
                             }
                         }
 
@@ -196,18 +217,20 @@ async function sendFollowupMessage(thread) {
     await recordFollowup(thread.id, msg.id);
 }
 
-async function closeThread(thread) {
-    const embed = new EmbedBuilder()
-        .setTitle('🔒 Thread Closed - Inactivity')
-        .setDescription(
-            `This support thread has been automatically closed due to **24 hours of inactivity** after our follow-up.\n\n` +
-            `If you still need assistance, feel free to create a new post or contact staff directly.`
-        )
-        .setColor('#95a5a6')
-        .setFooter({ text: 'Anomaly Support System' })
-        .setTimestamp();
+async function closeThread(thread, skipMessage = false) {
+    if (!skipMessage) {
+        const embed = new EmbedBuilder()
+            .setTitle('🔒 Thread Closed - Inactivity')
+            .setDescription(
+                `This support thread has been automatically closed due to **24 hours of inactivity** after our follow-up.\n\n` +
+                `If you still need assistance, feel free to create a new post or contact staff directly.`
+            )
+            .setColor('#95a5a6')
+            .setFooter({ text: 'Anomaly Support System' })
+            .setTimestamp();
 
-    await thread.send({ embeds: [embed] });
+        await thread.send({ embeds: [embed] });
+    }
     
     // Lock and archive the thread
     await thread.setLocked(true);

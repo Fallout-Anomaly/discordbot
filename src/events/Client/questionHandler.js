@@ -106,17 +106,30 @@ module.exports = new Event({
             const contextItems = client.knowledge.search(question.toLowerCase());
 
             // 2. Generate Answer via AI
-            const answer = await AIService.generateAnswer(question, contextItems, history);
+            const result = await AIService.generateAnswer(question, contextItems, history);
+            
+            // Handle both old string format and new object format for backwards compatibility
+            const answer = typeof result === 'string' ? result : result.answer;
+            const needsEscalation = typeof result === 'object' && result.needsEscalation;
 
             const embed = new EmbedBuilder()
                 .setTitle('☢️ Anomaly AI Assistant')
                 .setDescription(answer.substring(0, 4096))
-                .setColor('#3498db')
+                .setColor(needsEscalation ? '#e67e22' : '#3498db')
                 .setFooter({ text: `React 👍 or 👎 to provide feedback • Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'}` })
                 .setTimestamp();
 
+            // Add escalation notice if needed
+            let replyContent = null;
+            if (needsEscalation) {
+                const staffRole = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
+                if (staffRole) {
+                    replyContent = `<@&${staffRole}> This question may require staff assistance.`;
+                }
+            }
+
             // Reply to message
-            await message.reply({ embeds: [embed] }).then(async (msg) => {
+            await message.reply({ content: replyContent, embeds: [embed] }).then(async (msg) => {
                 // Add feedback reactions
                 await msg.react('👍').catch(() => {}); 
                 await msg.react('👎').catch(() => {});

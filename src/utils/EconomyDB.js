@@ -102,8 +102,13 @@ db.serialize(() => {
         user_id TEXT,
         item_id TEXT,
         amount INTEGER,
+        PRIMARY KEY (user_id, item_id),
         FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
+    )`, (err) => {
+        if (err) {
+            console.error('Failed to create inventory table:', err.message);
+        }
+    });
 
     // Active Quests Table
     db.run(`CREATE TABLE IF NOT EXISTS active_quests (
