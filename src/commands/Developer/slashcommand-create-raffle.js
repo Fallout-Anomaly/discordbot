@@ -497,7 +497,6 @@ module.exports = new ApplicationCommand({
         }
     }
 }).toJSON();
-            {
                 name: 'action',
                 description: 'Raffle action',
                 type: ApplicationCommandOptionType.String,
