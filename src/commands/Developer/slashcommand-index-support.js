@@ -83,7 +83,7 @@ module.exports = new ApplicationCommand({
                         .setTitle('☢️ Anomaly Support - Archivist Handled')
                         .setDescription(answer.substring(0, 4000))
                         .setColor('#3498db')
-                        .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'}` })
+                        .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'} • React 👍/👎 for feedback • Install: https://fallout-anomaly.github.io/websitedev/` })
                         .setTimestamp();
 
                     await starterMessage.reply({ embeds: [embed] }).then(async (msg) => {

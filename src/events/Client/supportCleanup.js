@@ -167,10 +167,11 @@ async function sendFollowupMessage(thread) {
             `Hey there! We noticed this thread has been inactive for **7+ days**.\n\n` +
             `✅ **If your issue is resolved**, please let us know or close this thread.\n` +
             `❓ **If you still need help**, reply with more details and we'll assist you.\n\n` +
-            `⚠️ **This thread will be automatically closed in 24 hours if there's no response.**`
+            `⚠️ **This thread will be automatically closed in 24 hours if there's no response.**\n\n` +
+            `📖 **Need setup help?** Check out our [Install Guide](https://fallout-anomaly.github.io/websitedev/)`
         )
         .setColor('#f39c12')
-        .setFooter({ text: 'Anomaly Support System • Auto-Follow-up' })
+        .setFooter({ text: 'Anomaly Support System • React 👍/👎 for feedback • Install: https://fallout-anomaly.github.io/websitedev/' })
         .setTimestamp();
 
     const msg = await thread.send({ embeds: [embed] });
