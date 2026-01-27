@@ -22,7 +22,14 @@ const logOutput = (type, colorMethod, messages) => {
     
     // Choose console method
     const consoleMethod = (type === 'Error') ? console.error : (type === 'Warning') ? console.warn : console.log;
-    consoleMethod(`[${time}]`.gray, logLabel, msgString);
+    
+    // Check if any message is an Error object and log it nicely
+    const hasError = messages.some(m => m instanceof Error);
+    if (hasError) {
+         consoleMethod(`[${time}]`.gray, logLabel, ...messages);
+    } else {
+         consoleMethod(`[${time}]`.gray, logLabel, msgString);
+    }
 
     // File output (Async, non-blocking)
     // Strip ansi codes for file
