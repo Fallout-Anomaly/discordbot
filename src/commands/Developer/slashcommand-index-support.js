@@ -9,6 +9,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'index-support',
         description: 'Scan the last 30 forum threads and respond to unanswered questions (Staff Only).',
+        defer: 'ephemeral',
         options: [
             {
                 name: 'limit',
@@ -24,7 +25,6 @@ module.exports = new ApplicationCommand({
             return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
         }
 
-        await interaction.deferReply({ ephemeral: true });
 
         const limit = interaction.options.getInteger('limit') || 30;
         const scanLimit = Math.min(limit, 50);
