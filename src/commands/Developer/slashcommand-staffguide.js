@@ -68,11 +68,11 @@ module.exports = new ApplicationCommand({
         const row = new ActionRowBuilder().addComponents(selectMenu);
 
         // 3. Send Initial Message
-        const { message } = await interaction.reply({ 
+        const message = await interaction.reply({ 
             embeds: [embed], 
             components: [row],
             flags: 64,
-            withResponse: true
+            fetchReply: true
         });
 
         // 4. Create Collector

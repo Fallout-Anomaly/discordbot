@@ -1,4 +1,4 @@
-const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const { ApplicationCommandOptionType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const DonorSystem = require('../../utils/DonorSystem');
 const config = require('../../config');
@@ -7,6 +7,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'donor-manage',
         description: 'Admin: Manage donor/supporter status',
+        defaultMemberPermissions: PermissionFlagsBits.Administrator.toString(),
         options: [
             {
                 name: 'add',
