@@ -31,9 +31,9 @@ module.exports = new ApplicationCommand({
     options: {
         botOwner: true
     },
+    defer: 'ephemeral',
     run: async (client, interaction) => {
-        // Defer reply immediately to prevent timeout
-        await interaction.deferReply({ flags: 64 });
+        // Interaction is auto-deferred via defer property in handler
 
         const action = interaction.options.getString('action');
         const limit = interaction.options.getInteger('limit') || 50;
