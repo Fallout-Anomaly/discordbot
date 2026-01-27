@@ -32,6 +32,10 @@ class ComponentsListener {
                     if (!(await checkUserPermissions(component))) return;
 
                     try {
+                        // Auto-defer to prevent 3-second timeout on Unknown interaction (10062)
+                        if (!interaction.deferred && !interaction.replied) {
+                            await interaction.deferReply({ ephemeral: true }).catch(() => {});
+                        }
                         component.run(client, interaction);
                     } catch (err) {
                         error(err);

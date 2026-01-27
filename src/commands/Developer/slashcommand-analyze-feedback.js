@@ -1,14 +1,14 @@
-const { EmbedBuilder, ApplicationCommandOptionType, PermissionFlagsBits, ChannelType } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType, ChannelType } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
 const AIService = require('../../utils/AIService');
 const { error } = require('../../utils/Console');
+const config = require('../../config');
 
 module.exports = new ApplicationCommand({
     command: {
         name: 'analyze-feedback',
         description: 'Scan and analyze player feedback from the feedback channel',
-        defaultMemberPermissions: PermissionFlagsBits.Administrator.toString(),
         options: [
             {
                 name: 'action',
@@ -38,6 +38,11 @@ module.exports = new ApplicationCommand({
         ]
     },
     run: async (client, interaction) => {
+        // Owner-only check
+        if (interaction.user.id !== config.users.ownerId) {
+            return interaction.reply({ content: config.messages.NOT_BOT_OWNER, flags: 64 });
+        }
+
         const action = interaction.options.getString('action');
         const limit = interaction.options.getInteger('limit') || 50;
 
@@ -61,6 +66,14 @@ module.exports = new ApplicationCommand({
                 const messages = await feedbackChannel.messages.fetch({ limit });
                 let scanned = 0;
                 let stored = 0;
+
+                // Show the channel being scanned
+                const scanInfo = new EmbedBuilder()
+                    .setTitle('📡 Scanning Feedback Channel')
+                    .setDescription(`Channel: <#${feedbackChannel.id}>\nLimit: ${limit} messages`)
+                    .setColor('#3498DB');
+
+                await interaction.editReply({ embeds: [scanInfo] });
 
                 for (const [, message] of messages) {
                     if (message.author.bot || !message.content) continue;
@@ -130,7 +143,7 @@ module.exports = new ApplicationCommand({
 
                 const embed = new EmbedBuilder()
                     .setTitle('📊 Feedback Scan Complete')
-                    .setDescription(`Scanned **${scanned}** messages and stored **${stored}** new feedback entries.`)
+                    .setDescription(`**Channel:** <#${feedbackChannel.id}>\n\nScanned **${scanned}** messages and stored **${stored}** new feedback entries.`)
                     .setColor('#3498DB')
                     .setFooter({ text: 'Use /analyze-feedback summary to view results' });
 
