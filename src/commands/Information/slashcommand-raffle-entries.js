@@ -1,3 +1,4 @@
+const { ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const DonorSystem = require('../../utils/DonorSystem');
 const config = require('../../config');
