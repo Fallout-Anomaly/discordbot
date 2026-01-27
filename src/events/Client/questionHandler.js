@@ -1,4 +1,4 @@
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const Event = require('../../structure/Event');
 const AIService = require('../../utils/AIService');
 const AutoResponder = require('../../utils/AutoResponder');
@@ -67,7 +67,7 @@ module.exports = new Event({
             
             if (isAskChannel || isForumThread) {
                 try {
-                    const historyMessages = await message.channel.messages.fetch({ limit: 15 }).catch(() => null);
+                    const historyMessages = await message.channel.messages.fetch({ limit: 20 }).catch(() => null);
                     if (historyMessages) {
                         // Check if a staff member has already provided a response
                         hasStaffResponse = historyMessages.some(m => {
@@ -85,13 +85,15 @@ module.exports = new Event({
                                 // Exclude the current message
                                 if (m.id === message.id) return false;
                                 
-                                // Include user's own messages
+                                // ALWAYS include user's own messages
                                 if (m.author.id === message.author.id) return true;
                                 
-                                // Include bot messages ONLY if they are replies to this user's messages
-                                if (m.author.id === client.user.id) {
-                                    return m.reference && m.reference.messageId && 
-                                           historyMessages.some(hm => hm.id === m.reference.messageId && hm.author.id === message.author.id);
+                                // ALWAYS include bot's recent messages (to remember context)
+                                if (m.author.id === client.user.id) return true;
+                                
+                                // Include staff responses for context
+                                if (m.member && m.member.roles.cache.has(staffRoleId)) {
+                                    return true;
                                 }
                                 
                                 return false;
@@ -101,7 +103,8 @@ module.exports = new Event({
                                 const role = m.author.id === client.user.id ? 'assistant' : 'user';
                                 let content = m.content;
                                 if (!content && m.embeds && m.embeds.length > 0) {
-                                    content = m.embeds[0].description;
+                                    // Extract description from embed
+                                    content = m.embeds[0].description || m.embeds[0].title || '[Embed]';
                                 }
                                 return { role, content: content || '[Attachment/Embed]' };
                             });
@@ -155,9 +158,22 @@ module.exports = new Event({
             if (needsEscalation) {
                 const staffRole = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
                 if (staffRole) {
-                    replyContent = `<@&${staffRole}> This question may require staff assistance.`;
+                    replyContent = `<@&${staffRole}> This question requires staff assistance.`;
                 }
             }
+
+            // Create feedback buttons
+            const feedbackRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`feedback_worked_${message.id}`)
+                        .setLabel('✅ That Worked!')
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId(`feedback_failed_${message.id}`)
+                        .setLabel('❌ That Didn\'t Work')
+                        .setStyle(ButtonStyle.Danger)
+                );
 
             // Check if this is a new forum post (thread starter message)
             let isNewThreadStarter = false;
@@ -187,14 +203,14 @@ module.exports = new Event({
             }
 
             // Reply to message
-            await message.reply({ content: replyContent, embeds: [embed] }).then(async (msg) => {
-                // Add feedback reactions
+            await message.reply({ content: replyContent, embeds: [embed], components: [feedbackRow] }).then(async (msg) => {
+                // Reactions deprecated in favor of buttons, but keep for legacy support
                 await msg.react('👍').catch(() => {}); 
                 await msg.react('👎').catch(() => {});
             }).catch(err => {
                 error('[QUESTION HANDLER] Reply Error:', err);
                 // Fallback to sending in channel if reply fails (e.g. message deleted)
-                message.channel.send({ embeds: [embed] }).catch(() => {});
+                message.channel.send({ embeds: [embed], components: [feedbackRow] }).catch(() => {});
             });
 
         } catch (err) {

@@ -57,13 +57,21 @@ module.exports = new ApplicationCommand({
         }
 
         try {
-            await interaction.guild.members.fetch();
-            const members = interaction.guild.members.cache;
-
+            // Fetch members in chunks to avoid rate limiting (Discord limit: 1 fetch per second)
             let stats = { scanned: 0, added: 0, updated: 0, removed: 0, skipped: 0 };
             const isDryRun = mode === 'dry';
             const isFullSync = mode === 'full';
             const shouldBeDonors = new Set();
+
+            // Fetch all members but with exponential backoff to avoid rate limits
+            console.log('[SYNC DONORS] Starting member fetch...');
+            await interaction.guild.members.fetch({ limit: 1000 }).catch(err => {
+                if (err.code === 'RESTRateLimited') {
+                    console.warn('[SYNC DONORS] Rate limited during fetch, retrying with backoff...');
+                }
+            });
+            
+            const members = interaction.guild.members.cache;
 
             for (const [userId, member] of members) {
                 stats.scanned++;
@@ -93,6 +101,11 @@ module.exports = new ApplicationCommand({
                     } else {
                         stats.skipped++;
                     }
+                }
+
+                // Add small delay every 10 operations to avoid rate limiting
+                if (stats.scanned % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
 

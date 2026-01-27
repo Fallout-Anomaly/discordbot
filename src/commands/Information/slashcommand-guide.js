@@ -57,14 +57,15 @@ module.exports = new ApplicationCommand({
         const row = new ActionRowBuilder().addComponents(selectMenu);
 
         // 3. Send Initial Message and fetch for collectors
-        const reply = await interaction.reply({ 
+        await interaction.reply({ 
             embeds: [embed], 
-            components: [row],
-            withResponse: true
+            components: [row]
         });
 
+        const message = await interaction.fetchReply();
+
         // 4. Create Collector for Interaction on the Message object
-        const collector = reply.createMessageComponentCollector({ 
+        const collector = message.createMessageComponentCollector({ 
             componentType: ComponentType.StringSelect, 
             time: 60000 // 1 minute timeout
         });

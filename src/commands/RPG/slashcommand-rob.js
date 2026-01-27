@@ -36,16 +36,23 @@ module.exports = new ApplicationCommand({
             });
         }
 
-        // Get both players' data
+        // Get both players' data including protection
         const robberData = await new Promise((resolve) => {
-            db.get('SELECT balance FROM users WHERE id = ?', [robber.id], (err, row) => {
-                resolve(row || { balance: 0 });
+            db.get('SELECT balance, stat_strength, stat_agility FROM users WHERE id = ?', [robber.id], (err, row) => {
+                resolve(row || { balance: 0, stat_strength: 1, stat_agility: 1 });
             });
         });
 
         const targetData = await new Promise((resolve) => {
-            db.get('SELECT balance FROM users WHERE id = ?', [target.id], (err, row) => {
-                resolve(row || { balance: 0 });
+            db.get('SELECT balance, stat_strength, stat_agility, protection_expires, insurance_level FROM users WHERE id = ?', [target.id], (err, row) => {
+                resolve(row || { balance: 0, stat_strength: 1, stat_agility: 1, protection_expires: 0, insurance_level: 0 });
+            });
+        });
+
+        // Get target's stash (if any)
+        const targetStash = await new Promise((resolve) => {
+            db.get('SELECT amount FROM stash WHERE user_id = ?', [target.id], (err, row) => {
+                resolve(row || { amount: 0 });
             });
         });
 
@@ -61,6 +68,10 @@ module.exports = new ApplicationCommand({
         const robberWealth = robberData.balance;
         const targetWealth = targetData.balance;
         
+        // Check if target has active bodyguard protection
+        const now = Date.now();
+        const hasBodyguards = targetData.protection_expires && targetData.protection_expires > now;
+        
         // Lower balance = better chance to rob (desperate times)
         // Higher balance = lower chance (can afford protection)
         let baseSuccessChance = 0.45; // 45% base success
@@ -75,6 +86,11 @@ module.exports = new ApplicationCommand({
             baseSuccessChance -= 0.10; // -10% if much wealthier
         }
 
+        // Bodyguard penalty: -30% success chance
+        if (hasBodyguards) {
+            baseSuccessChance -= 0.30;
+        }
+
         const successChance = Math.max(0.1, Math.min(0.85, baseSuccessChance)); // Clamp 10%-85%
         const robSucceeds = Math.random() < successChance;
 
@@ -82,30 +98,75 @@ module.exports = new ApplicationCommand({
             // Calculate robbery amount: 20-40% of target's balance
             const minSteal = Math.floor(targetWealth * 0.2);
             const maxSteal = Math.floor(targetWealth * 0.4);
-            const stolenAmount = Math.floor(Math.random() * (maxSteal - minSteal + 1)) + minSteal;
+            let stolenAmount = Math.floor(Math.random() * (maxSteal - minSteal + 1)) + minSteal;
+
+            // Apply insurance protection: returns a % of stolen caps to target
+            const insuranceLevel = targetData.insurance_level || 0;
+            const insuranceProtection = [0, 10, 25, 40]; // % returned
+            const insuranceRefund = Math.floor(stolenAmount * (insuranceProtection[insuranceLevel] / 100));
+            
+            const actualLost = stolenAmount - insuranceRefund;
+
+            // Attempt to raid stash (30% chance if stash exists)
+            let stashRaidAmount = 0;
+            let stashWasRaided = false;
+            if (targetStash.amount > 0 && Math.random() < 0.3) {
+                // Steal 10-20% of stash
+                stashWasRaided = true;
+                const minStashRaid = Math.floor(targetStash.amount * 0.1);
+                const maxStashRaid = Math.floor(targetStash.amount * 0.2);
+                stashRaidAmount = Math.floor(Math.random() * (maxStashRaid - minStashRaid + 1)) + minStashRaid;
+
+                // Update stash
+                await new Promise((resolve) => {
+                    db.run('UPDATE stash SET amount = amount - ? WHERE user_id = ?',
+                        [stashRaidAmount, target.id], () => resolve());
+                });
+            }
+
+            const totalStealing = stolenAmount + stashRaidAmount;
 
             // Update both players
             await new Promise((resolve) => {
                 db.run('UPDATE users SET balance = balance + ? WHERE id = ?', 
-                    [stolenAmount, robber.id], () => resolve());
+                    [totalStealing, robber.id], () => resolve());
             });
 
             await new Promise((resolve) => {
                 db.run('UPDATE users SET balance = MAX(0, balance - ?) WHERE id = ?', 
-                    [stolenAmount, target.id], () => resolve());
+                    [actualLost, target.id], () => resolve());
             });
 
             const embed = new EmbedBuilder()
                 .setTitle('💰 ROBBERY SUCCESSFUL!')
                 .setDescription(`${robber.username} successfully robbed ${target.username}!`)
                 .addFields(
-                    { name: '💵 Stolen Amount', value: `**${stolenAmount} Caps**`, inline: true },
-                    { name: '🎯 Success Chance', value: `${(successChance * 100).toFixed(1)}%`, inline: true },
-                    { name: '👤 Robber New Balance', value: `**${robberData.balance + stolenAmount} Caps**`, inline: false },
-                    { name: '👤 Target New Balance', value: `**${Math.max(0, targetData.balance - stolenAmount)} Caps**`, inline: false }
-                )
-                .setColor('#FFD700')
-                .setFooter({ text: 'Vault-Tec: "War never changes..."' });
+                    { name: '💵 Main Balance Stolen', value: `**${stolenAmount} Caps**`, inline: true },
+                    { name: '🎯 Success Chance', value: `${(successChance * 100).toFixed(1)}%`, inline: true }
+                );
+
+            // Add insurance refund field if applicable
+            if (insuranceRefund > 0) {
+                embed.addField('🛡️ Insurance Refund', `**${insuranceRefund} Caps** returned`, true);
+            }
+
+            // Add stash raid if it happened
+            if (stashWasRaided) {
+                embed.addField('💼 Stash Raided!', `**${stashRaidAmount} Caps** from hidden stash stolen`, true);
+            }
+
+            // Add bodyguard mention if they were active
+            if (hasBodyguards) {
+                const protectionRemaining = Math.ceil((targetData.protection_expires - now) / 3600000);
+                embed.addField('💂 Bodyguards', `Present but couldn't stop this robbery (${protectionRemaining}h left)`, true);
+            }
+
+            embed.addFields(
+                { name: '👤 Robber New Balance', value: `**${robberData.balance + totalStealing} Caps**`, inline: false },
+                { name: '👤 Target New Balance', value: `**${Math.max(0, targetWealth - actualLost)} Caps**`, inline: false }
+            )
+            .setColor('#FFD700')
+            .setFooter({ text: 'Tip: Use /protection & /stash to defend your wealth!' });
 
             return interaction.reply({ embeds: [embed] });
         } else {
@@ -129,12 +190,20 @@ module.exports = new ApplicationCommand({
                 .setDescription(`${robber.username} was caught by ${target.username}!`)
                 .addFields(
                     { name: '❌ You Got Caught!', value: `Paid **${finAmount} Caps** fine`, inline: true },
-                    { name: '🎯 Success Chance Was', value: `${(successChance * 100).toFixed(1)}%`, inline: true },
-                    { name: '💸 Your Fine', value: `**${finAmount} Caps**`, inline: false },
-                    { name: '🏆 Their Reward', value: `**${rewardAmount} Caps**`, inline: false }
-                )
-                .setColor('#FF4444')
-                .setFooter({ text: 'Better luck next time, vault dweller!' });
+                    { name: '🎯 Success Chance Was', value: `${(successChance * 100).toFixed(1)}%`, inline: true }
+                );
+
+            // Show why it failed
+            if (hasBodyguards) {
+                embed.addField('💂 Bodyguards', `**Stopped the robbery!** Provided -30% success bonus`, true);
+            }
+
+            embed.addFields(
+                { name: '💸 Your Fine', value: `**${finAmount} Caps**`, inline: false },
+                { name: '🏆 Their Reward', value: `**${rewardAmount} Caps**`, inline: false }
+            )
+            .setColor('#FF4444')
+            .setFooter({ text: 'Better luck next time, vault dweller!' });
 
             return interaction.reply({ embeds: [embed] });
         }

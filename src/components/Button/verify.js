@@ -7,9 +7,7 @@ module.exports = new Component({
         public: true
     },
     run: async (client, interaction) => {
-        // Defer immediately to prevent timeout
-        await interaction.deferReply({ flags: 64 });
-
+        // Already deferred by interactionCreate.js - just use editReply()
         const roleId = process.env.MEMBER_ROLE_ID;
         if (!roleId) return interaction.editReply({ content: '❌ Verification role is not configured.' });
 

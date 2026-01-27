@@ -42,7 +42,9 @@ db.serialize(() => {
         "ALTER TABLE users ADD COLUMN daily_scavenge_count INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN last_scavenge_reset INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN radiation INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN power_armor TEXT DEFAULT NULL"
+        "ALTER TABLE users ADD COLUMN power_armor TEXT DEFAULT NULL",
+        "ALTER TABLE users ADD COLUMN protection_expires INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN insurance_level INTEGER DEFAULT 0"
     ];
 
     // XP Cooldowns table for persistence across restarts
@@ -150,6 +152,16 @@ db.serialize(() => {
         user_id TEXT,
         entries INTEGER,
         month_year TEXT
+    )`);
+
+    // Stash System (NPC-managed savings with interest)
+    db.run(`CREATE TABLE IF NOT EXISTS stash (
+        user_id TEXT PRIMARY KEY,
+        amount INTEGER DEFAULT 0,
+        last_fee_paid INTEGER DEFAULT 0,
+        interest_earned INTEGER DEFAULT 0,
+        interest_claimed INTEGER DEFAULT 0,
+        FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
 });
 
