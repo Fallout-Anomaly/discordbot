@@ -1,4 +1,4 @@
-const { ApplicationCommandOptionType, ChannelType } = require('discord.js');
+const { ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const db = require("../../utils/EconomyDB");
 const config = require('../../config');
@@ -26,37 +26,51 @@ module.exports = new ApplicationCommand({
         
         let allThreads = [];
         
-        // Fetch threads from all support forums
-        for (const forumId of forumChannels) {
-            const forum = await client.channels.fetch(forumId).catch(() => null);
-            if (!forum || !forum.isThreadOnly()) continue;
-            
-            try {
-                const activeThreads = await forum.threads.fetchActive();
-                const archivedThreads = await forum.threads.fetchArchived({ limit: 25 });
+        try {
+            // Fetch threads from all support forums
+            for (const forumId of forumChannels) {
+                const forum = await client.channels.fetch(forumId).catch(() => null);
+                if (!forum || !forum.isThreadOnly()) continue;
                 
-                allThreads = allThreads.concat(
-                    [...activeThreads.threads.values()],
-                    [...archivedThreads.threads.values()]
-                );
-            } catch (err) {
-                console.error('[RESET FOLLOWUP] Error fetching threads:', err);
+                try {
+                    const activeThreads = await forum.threads.fetchActive();
+                    const archivedThreads = await forum.threads.fetchArchived({ limit: 25 });
+                    
+                    allThreads = allThreads.concat(
+                        [...activeThreads.threads.values()],
+                        [...archivedThreads.threads.values()]
+                    );
+                } catch (err) {
+                    console.error('[RESET FOLLOWUP] Error fetching threads:', err);
+                }
             }
+            
+            // Filter by search term
+            const filtered = allThreads
+                .filter(thread => thread.name.toLowerCase().includes(focusedValue))
+                .slice(0, 25)
+                .map(thread => ({
+                    name: `${thread.name.slice(0, 80)} (${thread.archived ? 'Archived' : 'Active'})`,
+                    value: thread.id
+                }));
+            
+            await interaction.respond(filtered.length > 0 ? filtered : [
+                { name: 'No support threads found', value: 'none' }
+            ]);
+        } catch (err) {
+            console.error('[RESET FOLLOWUP AUTOCOMPLETE] Error:', err);
+            await interaction.respond([{ name: 'Error loading threads', value: 'error' }]);
         }
-        
-        // Filter by search term
-        const filtered = allThreads
-            .filter(thread => thread.name.toLowerCase().includes(focusedValue))
-            .slice(0, 25)
-            .map(thread => ({
-                name: `${thread.name} (${thread.archived ? 'Archived' : 'Active'})`,
-                value: thread.id
-            }));
-        
-        await interaction.respond(filtered);
     },
     run: async (client, interaction) => {
         const threadId = interaction.options.getString('thread');
+        
+        if (threadId === 'none' || threadId === 'error') {
+            return interaction.reply({ 
+                content: '❌ Invalid thread selection. Please try again.', 
+                ephemeral: true 
+            });
+        }
         
         // Fetch the thread
         const thread = await client.channels.fetch(threadId).catch(() => null);

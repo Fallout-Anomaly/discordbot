@@ -1,19 +1,20 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const Command = require('../../structure/MessageCommand');
+const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const ApplicationCommand = require('../../structure/ApplicationCommand');
 const DonorSystem = require('../../utils/DonorSystem');
 
-module.exports = new Command({
-    data: new SlashCommandBuilder()
-        .setName('donor-leaderboard')
-        .setDescription('View the supporter leaderboard')
-        .addIntegerOption(opt => opt
-            .setName('page')
-            .setDescription('Page number (default: 1)')
-            .setMinValue(1)
-            .setMaxValue(10)
-        ),
-    
-    async run(interaction) {
+module.exports = new ApplicationCommand({
+    command: {
+        name: 'donor-leaderboard',
+        description: 'View the supporter leaderboard',
+        options: [{
+            name: 'page',
+            description: 'Page number (default: 1)',
+            type: ApplicationCommandOptionType.Integer,
+            min_value: 1,
+            max_value: 10
+        }]
+    },
+    run: async (client, interaction) => {
         const page = interaction.options.getInteger('page') || 1;
         const perPage = 10;
         const offset = (page - 1) * perPage;
@@ -52,4 +53,4 @@ module.exports = new Command({
 
         return interaction.reply({ embeds: [embed] });
     }
-});
+}).toJSON();
