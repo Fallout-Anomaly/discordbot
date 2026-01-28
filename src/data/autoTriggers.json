@@ -36,7 +36,7 @@
         "response": "**Anomaly Hotkey Reference**:\n\n**Combat**: G (VAFs) | Z (Criticals) | Q/E (Lean) | Alt (Bash/Grenades) | Spacebar (Jump)\n**Utilities**: H (Radial Menu) | Shift+K (Wipe Mask) | Shift+U (Night Vision) | F2 (HUD Toggle)\n**UI**: I (Inventory) | M (Map) | \\ (Mod Explorer) | Home (Workshop) | End/Delete (ENB)\n**Movement**: C/Caps (Walk/Run) | Ctrl (Sneak) | N (Dodge) | Tab (Flashlight)\n**Anomaly Specific**: Y (Armor Plates) | K (Examine Prey)\n\n*Most controls are remappable in MCM. Check your MCM for mod-specific keybinds!*"
     },
     {
-        "keywords": ["modlist size", "gigabyte", "download size", "how big", "how many mods"],
+        "keywords": ["modlist", "size", "gigabyte", "download", "mods", "wabbajack"],
         "response": "**Check Wabbajack Directly!** 📦\n\nYou can see the current download size and exact number of mods listed on the **Wabbajack application** itself - it shows this information before and during installation.\n\n**To Save Space:**\n1. After installation completes, you can safely **delete the entire `downloads` folder**.\n2. The mods are already extracted to your modlist, so the downloads folder is just temporary staging space.\n3. Deleting it will free up significant disk space without affecting your installation.\n\nFor the exact current specs, check the official Wabbajack page for Anomaly!"
     },
     {

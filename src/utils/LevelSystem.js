@@ -43,7 +43,8 @@ function getLevelProgress(totalXp) {
         return { current: 0, next: 0, progress: 'MAX', percentage: 100 };
     }
     
-    const xpForCurrentLevel = currentLevel * 500;
+    // For level 1, start from 0 XP
+    const xpForCurrentLevel = currentLevel === 1 ? 0 : currentLevel * 500;
     const xpForNextLevel = (currentLevel + 1) * 500;
     
     const current = totalXp - xpForCurrentLevel;
@@ -53,9 +54,28 @@ function getLevelProgress(totalXp) {
     return { current, next, progress: `${current}/${next}`, percentage };
 }
 
+/**
+ * Check if a user leveled up
+ * @param {number} oldXp - XP before the action
+ * @param {number} newXp - XP after the action
+ * @returns {object} { leveledUp: boolean, oldLevel: number, newLevel: number, levelsGained: number }
+ */
+function checkLevelUp(oldXp, newXp) {
+    const oldLevel = calculateLevel(oldXp);
+    const newLevel = calculateLevel(newXp);
+    
+    return {
+        leveledUp: newLevel > oldLevel,
+        oldLevel,
+        newLevel,
+        levelsGained: Math.max(0, newLevel - oldLevel)
+    };
+}
+
 module.exports = {
     calculateLevel,
     getXpToNextLevel,
     getLevelProgress,
+    checkLevelUp,
     MAX_LEVEL
 };

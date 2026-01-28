@@ -109,10 +109,10 @@ module.exports = new ApplicationCommand({
                 });
 
                 collector.on('collect', async i => {
-                    if (i.user.id !== interaction.user.id) return i.reply({ content: 'Not your menu.', flags: 64 });
-
                     // Fix: Defer immediately to prevent timeout
                     await i.deferReply({ flags: 64 });
+
+                    if (i.user.id !== interaction.user.id) return i.editReply({ content: 'Not your menu.' });
 
                     const statColumn = i.values[0];
                     const statName = i.values[0].replace('stat_', '');
