@@ -217,7 +217,7 @@ module.exports = new ApplicationCommand({
 
                         // Grant Rewards with stat points for level up
                         db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, daily_quest_count = daily_quest_count + 1, stat_points = stat_points + ? WHERE id = ?', 
-                            [quest.reward_caps, quest.reward_xp, levelCheck.levelsGained, userId]);
+                            [quest.reward_caps, quest.reward_xp, levelCheck.leveledUp ? 1 : 0, userId]);
 
                         // Grant Item if exists
                         if (quest.reward_item) {
@@ -247,8 +247,7 @@ module.exports = new ApplicationCommand({
 
                         // Add level up announcement if applicable
                         if (levelCheck.leveledUp) {
-                            const pointsText = levelCheck.levelsGained > 1 ? `+${levelCheck.levelsGained} SPECIAL Points` : '+1 SPECIAL Point';
-                            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n${pointsText} earned!`, inline: false });
+                            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n+1 SPECIAL Point earned!`, inline: false });
                             embed.setColor('#FFD700');
                         }
 

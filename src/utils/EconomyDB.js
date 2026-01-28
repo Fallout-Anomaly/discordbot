@@ -85,6 +85,12 @@ db.serialize(() => {
         cooldown_expiry INTEGER NOT NULL
     )`);
 
+    // Rob cooldown table
+    db.run(`CREATE TABLE IF NOT EXISTS rob_cooldown (
+        user_id TEXT PRIMARY KEY,
+        cooldown_expiry INTEGER NOT NULL
+    )`);
+
     // Scavenge Timer Table
     db.run(`CREATE TABLE IF NOT EXISTS scavenge (
         user_id TEXT PRIMARY KEY,
@@ -185,6 +191,7 @@ db.serialize(() => {
         "CREATE INDEX IF NOT EXISTS idx_inventory_user ON inventory(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_hunt_cooldown_user ON hunt_cooldown(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_fish_cooldown_user ON fish_cooldown(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_rob_cooldown_user ON rob_cooldown(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_quest_history_user ON quest_history(user_id)"
     ];
 
