@@ -95,7 +95,7 @@ module.exports = new ApplicationCommand({
 
                 const rowComponent = new ActionRowBuilder().addComponents(select);
 
-                await interaction.reply({ 
+                await interaction.editReply({ 
                     embeds: [embed], 
                     components: [rowComponent]
                 });

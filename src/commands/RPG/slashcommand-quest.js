@@ -21,18 +21,23 @@ module.exports = new ApplicationCommand({
         description: 'View and manage your quest journal.',
         options: [
             {
+                name: 'status',
+                description: 'Check your current active quest and journal stats.',
+                type: ApplicationCommandOptionType.Subcommand
+            },
+            {
                 name: 'generate',
                 description: 'Generate a new radiant quest.',
                 type: ApplicationCommandOptionType.Subcommand
             },
             {
-                name: 'status',
-                description: 'Check your current active quest.',
+                name: 'complete',
+                description: 'Complete your current quest to claim rewards.',
                 type: ApplicationCommandOptionType.Subcommand
             },
             {
-                name: 'complete',
-                description: 'Complete your current quest to claim rewards.',
+                name: 'stats',
+                description: 'View detailed quest completion statistics.',
                 type: ApplicationCommandOptionType.Subcommand
             }
         ]
@@ -211,6 +216,44 @@ module.exports = new ApplicationCommand({
 
                     interaction.editReply({ embeds: [embed] });
                 });
+            });
+        }
+
+        // --- STATS ---
+        else if (subcommand === 'stats') {
+            db.all('SELECT * FROM quest_history WHERE user_id = ?', [userId], (err, rows) => {
+                const stats = {
+                    total: rows ? rows.length : 0,
+                    easy: 0, medium: 0, hard: 0,
+                    totalCaps: 0, totalXP: 0
+                };
+
+                if (rows) {
+                    rows.forEach(q => {
+                        if (q.difficulty === 'Easy') stats.easy++;
+                        else if (q.difficulty === 'Medium') stats.medium++;
+                        else if (q.difficulty === 'Hard') stats.hard++;
+                        stats.totalCaps += q.reward_caps;
+                        stats.totalXP += q.reward_xp;
+                    });
+                }
+
+                const embed = new EmbedBuilder()
+                    .setTitle('📊 Quest Statistics')
+                    .setDescription('Your quest completion history and achievements.')
+                    .addFields(
+                        { name: '📈 Total Quests Completed', value: `${stats.total}`, inline: true },
+                        { name: '🟢 Easy Quests', value: `${stats.easy}`, inline: true },
+                        { name: '🟡 Medium Quests', value: `${stats.medium}`, inline: true },
+                        { name: '🔴 Hard Quests', value: `${stats.hard}`, inline: true },
+                        { name: '💰 Total Caps Earned', value: `${stats.totalCaps}`, inline: true },
+                        { name: '✨ Total XP Earned', value: `${stats.totalXP}`, inline: true },
+                        { name: '⚡ Average per Quest', value: stats.total > 0 ? `${Math.round(stats.totalCaps / stats.total)} Caps | ${Math.round(stats.totalXP / stats.total)} XP` : 'N/A', inline: false }
+                    )
+                    .setColor('#F39C12')
+                    .setFooter({ text: 'Keep completing quests to build your legend!' });
+
+                interaction.editReply({ embeds: [embed] });
             });
         }
     }
