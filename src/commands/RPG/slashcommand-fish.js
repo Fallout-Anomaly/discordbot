@@ -100,7 +100,7 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
         await new Promise((resolve) => {
             db.run(
                 'UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?',
-                [caught.caps, caught.xp, levelCheck.levelsGained, userId],
+                [caught.caps, caught.xp, levelCheck.leveledUp ? 1 : 0, userId],
                 () => resolve()
             );
         });
@@ -130,8 +130,7 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
 
         // Add level up announcement if applicable
         if (levelCheck.leveledUp) {
-            const pointsText = levelCheck.levelsGained > 1 ? `+${levelCheck.levelsGained} SPECIAL Points` : '+1 SPECIAL Point';
-            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n${pointsText} earned!`, inline: false });
+            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n+1 SPECIAL Point earned!`, inline: false });
             embed.setColor('#FFD700');
         } else {
             embed.setColor(caught.rarity === 'Legendary' ? '#FFD700' : caught.rarity === 'Epic' ? '#9B59B6' : caught.rarity === 'Rare' ? '#3498DB' : '#2ECC71');

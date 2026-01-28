@@ -17,11 +17,29 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
-    cooldown: 30,
     run: async (client, interaction) => {
         await interaction.deferReply();
         const target = interaction.options.getUser('target');
         const robber = interaction.user;
+        const now = Date.now();
+        const ROB_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours
+
+        // Check cooldown
+        const hasCooldown = await new Promise((resolve) => {
+            db.get('SELECT cooldown_expiry FROM rob_cooldown WHERE user_id = ?', [robber.id], (err, row) => {
+                if (row && now < row.cooldown_expiry) {
+                    const remaining = row.cooldown_expiry - now;
+                    const minutes = Math.ceil(remaining / 60000);
+                    interaction.editReply({ 
+                        content: `⏳ You need to lay low after that robbery. Wait **${minutes} minute${minutes > 1 ? 's' : ''}** before robbing again.` 
+                    });
+                    return resolve(true);
+                }
+                resolve(false);
+            });
+        });
+
+        if (hasCooldown) return;
 
         // Prevent self-robbery
         if (target.id === robber.id) {
@@ -155,6 +173,12 @@ module.exports = new ApplicationCommand({
                 return interaction.editReply({ content: '❌ Transaction failed during robbery.' });
             });
 
+            // Set robbery cooldown
+            const cooldownEnd = now + ROB_COOLDOWN;
+            await new Promise((resolve) => {
+                db.run('INSERT OR REPLACE INTO rob_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [robber.id, cooldownEnd], () => resolve());
+            });
+
             const embed = new EmbedBuilder()
                 .setTitle('💰 ROBBERY SUCCESSFUL!')
                 .setDescription(`${robber.username} successfully robbed ${target.username}!`)
@@ -208,6 +232,12 @@ module.exports = new ApplicationCommand({
             }).catch(err => {
                 error('[ROB] Fail transaction failed:', err);
                 return interaction.editReply({ content: '❌ Database error during failed robbery processing.' });
+            });
+
+            // Set robbery cooldown even on failure
+            const cooldownEnd = now + ROB_COOLDOWN;
+            await new Promise((resolve) => {
+                db.run('INSERT OR REPLACE INTO rob_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [robber.id, cooldownEnd], () => resolve());
             });
 
             const embed = new EmbedBuilder()
