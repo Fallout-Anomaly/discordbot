@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const db = require("./EconomyDB");
-const config = require("../../config");
+const config = require("../config");
 const { error, info } = require("./Console");
 
 /**
