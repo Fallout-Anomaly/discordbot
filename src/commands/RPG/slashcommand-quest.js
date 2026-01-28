@@ -35,9 +35,9 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
+    defer: 'ephemeral', // Auto-defer by handler to prevent timeout
     run: async (client, interaction) => {
-        // FIX: Defer immediately. AI generation is slow.
-        await interaction.deferReply({ flags: 64 });
+        // Handler auto-defers with ephemeral flag before calling this function
 
         const subcommand = interaction.options.getSubcommand();
         const userId = interaction.user.id;
