@@ -161,17 +161,19 @@ module.exports = new ApplicationCommand({
                 { name: '✨ XP Gained', value: `+${encounter.xp}`, inline: true },
                 { name: 'Success Chance', value: `${successChance.toFixed(1)}%`, inline: true },
                 { name: 'New Balance', value: `${newBalance} Caps`, inline: true }
-            );
+            )
+            .setFooter({ text: 'Higher Perception, Agility, and Luck improve hunt success!' })
+            .setTimestamp();
 
         // Add level up announcement if applicable
         if (levelCheck.leveledUp) {
             embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉`, inline: false });
             embed.setColor('#FFD700');
+        } else {
+            embed.setColor(encounter.difficulty === 'Legendary' ? '#FFD700' : encounter.difficulty === 'Epic' ? '#9B59B6' : encounter.difficulty === 'Hard' ? '#E74C3C' : '#2ECC71');
         }
-            )
-            .setColor(encounter.difficulty === 'Legendary' ? '#FFD700' : encounter.difficulty === 'Epic' ? '#9B59B6' : encounter.difficulty === 'Hard' ? '#E74C3C' : '#2ECC71')
-            .setFooter({ text: 'Higher Perception, Agility, and Luck improve hunt success!' })
-            .setTimestamp();
+
+        return interaction.editReply({ embeds: [embed] });
 
         return interaction.editReply({ embeds: [embed] });
     }
