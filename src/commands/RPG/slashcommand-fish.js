@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
+const { checkLevelUp } = require('../../utils/LevelSystem');
 
 const FISH_TYPES = [
     { name: 'Radiated Catfish', caps: 25, xp: 10, chance: 35, emoji: '🐟', rarity: 'Common' },
@@ -88,6 +89,9 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
         }
 
         // Success! Give rewards
+        const oldXp = userData.xp || 0;
+        const newXp = oldXp + caught.xp;
+        
         await new Promise((resolve) => {
             db.run(
                 'UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?',
@@ -103,11 +107,13 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
         });
 
         // Get new balance
-        const userData = await new Promise((resolve) => {
-            db.get('SELECT balance, xp FROM users WHERE id = ?', [userId], (err, row) => {
-                resolve(row || { balance: caught.caps, xp: caught.xp });
+        const userData2 = await new Promise((resolve) => {
+            db.get('SELECT balance FROM users WHERE id = ?', [userId], (err, row) => {
+                resolve(row || { balance: caught.caps });
             });
         });
+
+        const levelCheck = checkLevelUp(oldXp, newXp);
 
         const embed = new EmbedBuilder()
             .setTitle(`${caught.emoji} Fishing Success!`)
@@ -116,10 +122,18 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
                 { name: 'Rarity', value: caught.rarity, inline: true },
                 { name: '💰 Caps Earned', value: `+${caught.caps}`, inline: true },
                 { name: '✨ XP Gained', value: `+${caught.xp}`, inline: true },
-                { name: 'New Balance', value: `${userData.balance} Caps`, inline: false }
-            )
-            .setColor(caught.rarity === 'Legendary' ? '#FFD700' : caught.rarity === 'Epic' ? '#9B59B6' : caught.rarity === 'Rare' ? '#3498DB' : '#2ECC71')
-            .setFooter({ text: 'The waters of the wasteland are full of surprises!' })
+                { name: 'New Balance', value: `${userData2.balance} Caps`, inline: false }
+            );
+
+        // Add level up announcement if applicable
+        if (levelCheck.leveledUp) {
+            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉`, inline: false });
+            embed.setColor('#FFD700');
+        } else {
+            embed.setColor(caught.rarity === 'Legendary' ? '#FFD700' : caught.rarity === 'Epic' ? '#9B59B6' : caught.rarity === 'Rare' ? '#3498DB' : '#2ECC71');
+        }
+        
+        embed.setFooter({ text: 'The waters of the wasteland are full of surprises!' })
             .setTimestamp();
 
         return interaction.reply({ embeds: [embed] });

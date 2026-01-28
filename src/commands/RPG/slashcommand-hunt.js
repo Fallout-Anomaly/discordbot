@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
+const { checkLevelUp, calculateLevel } = require('../../utils/LevelSystem');
 
 const HUNT_ENCOUNTERS = [
     { name: 'Radroach', caps: 15, xp: 8, chance: 30, emoji: '🪳', difficulty: 'Easy', danger: 5 },
@@ -148,6 +149,8 @@ module.exports = new ApplicationCommand({
         });
 
         const newBalance = userData.balance + encounter.caps;
+        const newXp = userData.xp + encounter.xp;
+        const levelCheck = checkLevelUp(userData.xp, newXp);
 
         const embed = new EmbedBuilder()
             .setTitle(`${encounter.emoji} Successful Hunt!`)
@@ -158,6 +161,13 @@ module.exports = new ApplicationCommand({
                 { name: '✨ XP Gained', value: `+${encounter.xp}`, inline: true },
                 { name: 'Success Chance', value: `${successChance.toFixed(1)}%`, inline: true },
                 { name: 'New Balance', value: `${newBalance} Caps`, inline: true }
+            );
+
+        // Add level up announcement if applicable
+        if (levelCheck.leveledUp) {
+            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉`, inline: false });
+            embed.setColor('#FFD700');
+        }
             )
             .setColor(encounter.difficulty === 'Legendary' ? '#FFD700' : encounter.difficulty === 'Epic' ? '#9B59B6' : encounter.difficulty === 'Hard' ? '#E74C3C' : '#2ECC71')
             .setFooter({ text: 'Higher Perception, Agility, and Luck improve hunt success!' })

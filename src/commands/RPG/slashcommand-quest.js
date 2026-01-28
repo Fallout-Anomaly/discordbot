@@ -2,6 +2,7 @@ const db = require('../../utils/EconomyDB');
 const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const AIService = require('../../utils/AIService');
+const { checkLevelUp } = require('../../utils/LevelSystem');
 
 // Quest templates for variety (fallback if AI is down)
 const QUEST_TEMPLATES = [
@@ -172,49 +173,63 @@ module.exports = new ApplicationCommand({
 
         // --- COMPLETE ---
         else if (subcommand === 'complete') {
-            // First fetch the quest to know rewards
+            // First fetch the quest and user XP to know rewards
             db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], (err, quest) => {
                 if (!quest) return interaction.editReply({ content: '❌ You do not have an active quest to complete.' });
 
-                // Safe Deletion: Only reward if we successfully delete
-                db.run('DELETE FROM active_quests WHERE user_id = ?', [userId], function (delErr) {
-                    if (delErr) return interaction.editReply({ content: '❌ Database error completing quest.' });
-                    
-                    if (this.changes === 0) {
-                        return interaction.editReply({ content: '❌ Quest already completed or invalid.' });
-                    }
+                // Get current XP for level check
+                db.get('SELECT xp FROM users WHERE id = ?', [userId], (xerr, user) => {
+                    const oldXp = user?.xp || 0;
+                    const newXp = oldXp + quest.reward_xp;
 
-                    // Grant Rewards
-                    db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, daily_quest_count = daily_quest_count + 1 WHERE id = ?', 
-                        [quest.reward_caps, quest.reward_xp, userId]);
-
-                    // Grant Item if exists
-                    if (quest.reward_item) {
-                        // Using UPSERT logic for items
-                        db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1', [userId, quest.reward_item], (upErr) => {
-                            if (upErr) {
-                                // Fallback for older sqlite
-                                db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item], (e, row) => {
-                                    if (row) db.run('UPDATE inventory SET amount = amount + 1 WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item]);
-                                    else db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1)', [userId, quest.reward_item]);
-                                });
-                            }
-                        });
-                    }
-
-                    // Archive to history (for stats)
-                    db.run('INSERT INTO quest_history (user_id, difficulty, reward_caps, reward_xp, timestamp) VALUES (?, ?, ?, ?, ?)',
-                        [userId, quest.difficulty, quest.reward_caps, quest.reward_xp, Date.now()], (_histErr) => {
-                            // ignore errors, just stats
+                    // Safe Deletion: Only reward if we successfully delete
+                    db.run('DELETE FROM active_quests WHERE user_id = ?', [userId], function (delErr) {
+                        if (delErr) return interaction.editReply({ content: '❌ Database error completing quest.' });
+                        
+                        if (this.changes === 0) {
+                            return interaction.editReply({ content: '❌ Quest already completed or invalid.' });
                         }
-                    );
 
-                    const embed = new EmbedBuilder()
-                        .setTitle('🎉 Quest Complete!')
-                        .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
-                        .setColor('#f1c40f');
+                        // Grant Rewards
+                        db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, daily_quest_count = daily_quest_count + 1 WHERE id = ?', 
+                            [quest.reward_caps, quest.reward_xp, userId]);
 
-                    interaction.editReply({ embeds: [embed] });
+                        // Grant Item if exists
+                        if (quest.reward_item) {
+                            // Using UPSERT logic for items
+                            db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1', [userId, quest.reward_item], (upErr) => {
+                                if (upErr) {
+                                    // Fallback for older sqlite
+                                    db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item], (e, row) => {
+                                        if (row) db.run('UPDATE inventory SET amount = amount + 1 WHERE user_id = ? AND item_id = ?', [userId, quest.reward_item]);
+                                        else db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1)', [userId, quest.reward_item]);
+                                    });
+                                }
+                            });
+                        }
+
+                        // Archive to history (for stats)
+                        db.run('INSERT INTO quest_history (user_id, difficulty, reward_caps, reward_xp, timestamp) VALUES (?, ?, ?, ?, ?)',
+                            [userId, quest.difficulty, quest.reward_caps, quest.reward_xp, Date.now()], (_histErr) => {
+                                // ignore errors, just stats
+                            }
+                        );
+
+                        const levelCheck = checkLevelUp(oldXp, newXp);
+
+                        const embed = new EmbedBuilder()
+                            .setTitle('🎉 Quest Complete!')
+                            .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
+                            .setColor('#f1c40f');
+
+                        // Add level up announcement if applicable
+                        if (levelCheck.leveledUp) {
+                            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉`, inline: false });
+                            embed.setColor('#FFD700');
+                        }
+
+                        interaction.editReply({ embeds: [embed] });
+                    });
                 });
             });
         }
