@@ -1,11 +1,6 @@
-/**
- * Level System for AnomalyBot
- * Level 1 = 500 XP
- * Level 100 = 50,000 XP (max level)
- * Each level requires an additional 500 XP (500 XP per level)
- */
-
-const MAX_LEVEL = 100;
+const { LEVEL_SYSTEM } = require('./Constants');
+const MAX_LEVEL = LEVEL_SYSTEM.MAX_LEVEL;
+const XP_PER_LEVEL = LEVEL_SYSTEM.XP_PER_LEVEL;
 
 /**
  * Calculate level from total XP
@@ -13,8 +8,8 @@ const MAX_LEVEL = 100;
  * @returns {number} Current level (capped at 100)
  */
 function calculateLevel(totalXp) {
-    if (totalXp < 500) return 1;
-    return Math.min(MAX_LEVEL, Math.floor(totalXp / 500));
+    if (totalXp < XP_PER_LEVEL) return 1;
+    return Math.min(MAX_LEVEL, Math.floor(totalXp / XP_PER_LEVEL));
 }
 
 /**
@@ -26,7 +21,7 @@ function getXpToNextLevel(totalXp) {
     const currentLevel = calculateLevel(totalXp);
     if (currentLevel >= MAX_LEVEL) return 0;
     
-    const xpForNextLevel = (currentLevel + 1) * 500;
+    const xpForNextLevel = (currentLevel + 1) * XP_PER_LEVEL;
     return Math.max(0, xpForNextLevel - totalXp);
 }
 
@@ -44,8 +39,8 @@ function getLevelProgress(totalXp) {
     }
     
     // For level 1, start from 0 XP
-    const xpForCurrentLevel = currentLevel === 1 ? 0 : currentLevel * 500;
-    const xpForNextLevel = (currentLevel + 1) * 500;
+    const xpForCurrentLevel = currentLevel === 1 ? 0 : currentLevel * XP_PER_LEVEL;
+    const xpForNextLevel = (currentLevel + 1) * XP_PER_LEVEL;
     
     const current = totalXp - xpForCurrentLevel;
     const next = xpForNextLevel - xpForCurrentLevel;

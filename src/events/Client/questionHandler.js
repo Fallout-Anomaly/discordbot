@@ -5,6 +5,10 @@ const AutoResponder = require('../../utils/AutoResponder');
 const config = require('../../config');
 const { info, error } = require('../../utils/Console');
 
+// User rate limits for AI questions (to prevent API cost spikes)
+const userCooldowns = new Map();
+const AI_COOLDOWN = 30000; // 30 seconds between AI questions
+
 module.exports = new Event({
     event: Events.MessageCreate,
     once: false,
@@ -25,6 +29,14 @@ module.exports = new Event({
         const isMentioned = message.mentions.has(client.user.id) && !message.mentions.everyone;
 
         if (!isAskChannel && !isForumThread && !isMentioned) return;
+        
+        // Rate limit check for AI
+        const lastAsk = userCooldowns.get(message.author.id);
+        if (lastAsk && Date.now() - lastAsk < AI_COOLDOWN) {
+            const remaining = Math.ceil((AI_COOLDOWN - (Date.now() - lastAsk)) / 1000);
+            return message.reply(`⏳ Please wait **${remaining}s** before asking another question.`).then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
+        }
+        userCooldowns.set(message.author.id, Date.now());
 
         // info(`[DEBUG] Handling message: "${message.content}" in channel ${message.channel.id} (Ask: ${isAskChannel}, Forum: ${isForumThread}, Mention: ${isMentioned})`);
 
@@ -178,8 +190,8 @@ module.exports = new Event({
             // Add escalation notice if needed
             let replyContent = null;
             if (needsEscalation) {
-                // Never mention staff in this channel ID
-                const noStaffMentionChannels = ['1464778551093100616'];
+                // Never mention staff in restricted channels
+                const noStaffMentionChannels = config.channels.no_staff_mention || [];
                 
                 const staffRole = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
                 if (staffRole && !noStaffMentionChannels.includes(message.channelId)) {

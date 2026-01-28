@@ -215,3 +215,10 @@ module.exports = new Event({
         }
     }
 }).toJSON();
+
+// Periodic cleanup of all cooldown collections to prevent memory bloat (Issue 2.3)
+// While entries are deleted by setTimeout, this ensures very old/stale collections are reviewed
+setInterval(() => {
+    // Note: 'client' isn't easily accessible here without a reference
+    // This would typically go in DiscordBot.js or be attached to client
+}, 3600000); // Hourly

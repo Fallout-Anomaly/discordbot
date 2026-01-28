@@ -110,6 +110,32 @@ class DonorSystem {
     }
 
     /**
+     * Batch add raffle entries for many users (Efficiency fix for 6.1)
+     * @param {Array} entryArray - Array of {userId, count} objects
+     */
+    static batchAddRaffleEntries(entryArray) {
+        if (!entryArray || entryArray.length === 0) return Promise.resolve();
+        
+        return new Promise((resolve, reject) => {
+            const monthYear = new Date().toISOString().slice(0, 7);
+            db.serialize(() => {
+                db.run('BEGIN TRANSACTION');
+                const stmt = db.prepare(`INSERT INTO raffle_pool (user_id, entries, month_year) VALUES (?, ?, ?)`);
+                entryArray.forEach(item => {
+                    stmt.run(item.userId, item.count, monthYear);
+                });
+                stmt.finalize();
+                db.run('COMMIT', (err) => {
+                    if (err) {
+                        db.run('ROLLBACK');
+                        reject(err);
+                    } else resolve();
+                });
+            });
+        });
+    }
+
+    /**
      * Get raffle entries for current month
      */
     static getRaffleEntries(userId) {

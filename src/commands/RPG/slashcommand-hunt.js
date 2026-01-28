@@ -135,10 +135,13 @@ module.exports = new ApplicationCommand({
             return interaction.editReply({ embeds: [embed] });
         }
 
+        const newXp = userData.xp + encounter.xp;
+        const levelCheck = checkLevelUp(userData.xp, newXp);
+
         await new Promise((resolve) => {
             db.run(
-                'UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?',
-                [encounter.caps, encounter.xp, userId],
+                'UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?',
+                [encounter.caps, encounter.xp, levelCheck.levelsGained, userId],
                 () => resolve()
             );
         });
@@ -149,8 +152,6 @@ module.exports = new ApplicationCommand({
         });
 
         const newBalance = userData.balance + encounter.caps;
-        const newXp = userData.xp + encounter.xp;
-        const levelCheck = checkLevelUp(userData.xp, newXp);
 
         const embed = new EmbedBuilder()
             .setTitle(`${encounter.emoji} Successful Hunt!`)
@@ -167,7 +168,8 @@ module.exports = new ApplicationCommand({
 
         // Add level up announcement if applicable
         if (levelCheck.leveledUp) {
-            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉`, inline: false });
+            const pointsText = levelCheck.levelsGained > 1 ? `+${levelCheck.levelsGained} SPECIAL Points` : '+1 SPECIAL Point';
+            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n${pointsText} earned!`, inline: false });
             embed.setColor('#FFD700');
         } else {
             embed.setColor(encounter.difficulty === 'Legendary' ? '#FFD700' : encounter.difficulty === 'Epic' ? '#9B59B6' : encounter.difficulty === 'Hard' ? '#E74C3C' : '#2ECC71');

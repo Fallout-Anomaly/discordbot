@@ -107,7 +107,7 @@ module.exports = new ApplicationCommand({
         }
 
         if (action === 'deposit') {
-            if (!amount) return interaction.editReply({ content: '❌ Please specify an amount to deposit.' });
+            if (!amount || amount <= 0) return interaction.editReply({ content: '❌ Please specify a valid amount to deposit.' });
             if (amount > userData.balance) {
                 return interaction.editReply({ 
                     content: `❌ You don't have ${amount} caps. You only have ${userData.balance} caps.` 
@@ -158,7 +158,7 @@ module.exports = new ApplicationCommand({
         }
 
         if (action === 'withdraw') {
-            if (!amount) return interaction.editReply({ content: '❌ Please specify an amount to withdraw.' });
+            if (!amount || amount <= 0) return interaction.editReply({ content: '❌ Please specify a valid amount to withdraw.' });
             if (amount > stashData.amount) {
                 return interaction.editReply({ 
                     content: `❌ You don't have ${amount} caps in your stash. You have ${stashData.amount} caps.` 

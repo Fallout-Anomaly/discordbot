@@ -22,24 +22,26 @@ module.exports = new Event({
 
                 // Get all donors
                 const donors = await DonorSystem.getTopDonors(10000);
-                let awarded = 0;
+                const entriesToAward = [];
 
                 for (const donor of donors) {
                     const tierInfo = DonorSystem.TIERS[donor.tier];
-                    const entries = tierInfo.raffle_entries_per_month;
-
-                    try {
-                        await DonorSystem.addRaffleEntries(donor.user_id, entries);
-                        awarded++;
-                    } catch (err) {
-                        console.error(`[RAFFLE] Failed to award entries to ${donor.user_id}:`, err);
+                    if (tierInfo && tierInfo.raffle_entries_per_month) {
+                        entriesToAward.push({ 
+                            userId: donor.user_id, 
+                            count: tierInfo.raffle_entries_per_month 
+                        });
                     }
+                }
+
+                if (entriesToAward.length > 0) {
+                    await DonorSystem.batchAddRaffleEntries(entriesToAward);
                 }
 
                 // Clear expired raffle data (older than 3 months)
                 await DonorSystem.clearExpiredRaffles();
 
-                console.log(`[RAFFLE] Monthly cycle complete: ${awarded} donors awarded raffle entries`);
+                console.log(`[RAFFLE] Monthly cycle complete: ${entriesToAward.length} donors awarded raffle entries`);
             } catch (err) {
                 console.error('[RAFFLE] Error in monthly cycle:', err);
             }
