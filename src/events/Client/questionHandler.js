@@ -178,8 +178,11 @@ module.exports = new Event({
             // Add escalation notice if needed
             let replyContent = null;
             if (needsEscalation) {
+                // Never mention staff in this channel ID
+                const noStaffMentionChannels = ['1464778551093100616'];
+                
                 const staffRole = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
-                if (staffRole) {
+                if (staffRole && !noStaffMentionChannels.includes(message.channelId)) {
                     replyContent = `<@&${staffRole}> This question requires staff assistance.`;
                 }
             }

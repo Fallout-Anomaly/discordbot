@@ -37,15 +37,33 @@ db.serialize(() => {
 
     // Migration for existing tables
     const columnsToAdd = [
-        "ALTER TABLE users ADD COLUMN daily_quest_count INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN last_quest_reset INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN daily_scavenge_count INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN last_scavenge_reset INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN radiation INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN power_armor TEXT DEFAULT NULL",
-        "ALTER TABLE users ADD COLUMN protection_expires INTEGER DEFAULT 0",
-        "ALTER TABLE users ADD COLUMN insurance_level INTEGER DEFAULT 0"
+        "daily_quest_count INTEGER DEFAULT 0",
+        "last_quest_reset INTEGER DEFAULT 0",
+        "daily_scavenge_count INTEGER DEFAULT 0",
+        "last_scavenge_reset INTEGER DEFAULT 0",
+        "radiation INTEGER DEFAULT 0",
+        "power_armor TEXT DEFAULT NULL",
+        "protection_expires INTEGER DEFAULT 0",
+        "insurance_level INTEGER DEFAULT 0",
+        "xp INTEGER DEFAULT 0",
+        "health INTEGER DEFAULT 100",
+        "max_health INTEGER DEFAULT 100",
+        "rads INTEGER DEFAULT 0",
+        "stat_strength INTEGER DEFAULT 1",
+        "stat_perception INTEGER DEFAULT 1",
+        "stat_endurance INTEGER DEFAULT 1",
+        "stat_charisma INTEGER DEFAULT 1",
+        "stat_intelligence INTEGER DEFAULT 1",
+        "stat_agility INTEGER DEFAULT 1",
+        "stat_luck INTEGER DEFAULT 1",
+        "stat_points INTEGER DEFAULT 5"
     ];
+
+    columnsToAdd.forEach(col => {
+        db.run(`ALTER TABLE users ADD COLUMN ${col}`, () => {
+            // Error is expected if column already exists, safe to ignore
+        });
+    });
 
     // XP Cooldowns table for persistence across restarts
     db.run(`CREATE TABLE IF NOT EXISTS xp_cooldowns (
@@ -64,34 +82,6 @@ db.serialize(() => {
         user_id TEXT PRIMARY KEY,
         cooldown_expiry INTEGER NOT NULL
     )`);
-
-    columnsToAdd.forEach(sql => {
-        db.run(sql, () => {
-            // Ignore error if column already exists
-        });
-    });
-
-    // Schema Migration: Add columns if they don't exist (for existing users.db)
-    const columns = [
-        "xp INTEGER DEFAULT 0",
-        "health INTEGER DEFAULT 100",
-        "max_health INTEGER DEFAULT 100",
-        "rads INTEGER DEFAULT 0",
-        "stat_strength INTEGER DEFAULT 1",
-        "stat_perception INTEGER DEFAULT 1",
-        "stat_endurance INTEGER DEFAULT 1",
-        "stat_charisma INTEGER DEFAULT 1",
-        "stat_intelligence INTEGER DEFAULT 1",
-        "stat_agility INTEGER DEFAULT 1",
-        "stat_luck INTEGER DEFAULT 1",
-        "stat_points INTEGER DEFAULT 5"
-    ];
-
-    columns.forEach(col => {
-        db.run(`ALTER TABLE users ADD COLUMN ${col}`, () => {
-            // Error is expected if column already exists, safe to ignore
-        });
-    });
 
     // Scavenge Timer Table
     db.run(`CREATE TABLE IF NOT EXISTS scavenge (
@@ -173,6 +163,17 @@ db.serialize(() => {
         last_fee_paid INTEGER DEFAULT 0,
         interest_earned INTEGER DEFAULT 0,
         interest_claimed INTEGER DEFAULT 0,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )`);
+
+    // Quest History (Track completed quests for stats)
+    db.run(`CREATE TABLE IF NOT EXISTS quest_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        difficulty TEXT,
+        reward_caps INTEGER,
+        reward_xp INTEGER,
+        timestamp INTEGER,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
 });
