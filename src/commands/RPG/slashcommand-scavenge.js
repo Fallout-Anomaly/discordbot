@@ -108,7 +108,7 @@ function processScavengeResult(client, interaction) {
         let itemMsg = '';
         if (Math.random() < (0.1 + (perception * 0.05))) { // Perception increases item chance
             itemMsg = '\n📦 You found a **Stimpak**! (Added to inventory)';
-            db.run("INSERT INTO inventory (user_id, item_id, amount) VALUES (?, 'stimpak', 1)", [userId]);
+            db.run("INSERT INTO inventory (user_id, item_id, amount) VALUES (?, 'stimpak', 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1", [userId]);
         }
 
         // Risks

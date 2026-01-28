@@ -31,6 +31,9 @@ module.exports = new ApplicationCommand({
         const now = Date.now();
         const HUNT_COOLDOWN = 10 * 60 * 1000; // 10 minutes
 
+        // Defer reply to allow time for DB queries
+        await interaction.deferReply({ flags: 64 });
+
         // Check cooldown
         const hasCooldown = await new Promise((resolve) => {
             db.get('SELECT cooldown_expiry FROM hunt_cooldown WHERE user_id = ?', [userId], (err, row) => {

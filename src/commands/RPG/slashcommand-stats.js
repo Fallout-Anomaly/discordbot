@@ -1,6 +1,7 @@
 const db = require('../../utils/EconomyDB');
 const { ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const { calculateLevel, getLevelProgress } = require('../../utils/LevelSystem');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -50,14 +51,20 @@ module.exports = new ApplicationCommand({
                 max_health: row.max_health || 100,
                 radiation: row.radiation || 0,
                 xp: row.xp || 0,
+                level: calculateLevel(row.xp || 0),
                 power_armor: row.power_armor || null
             };
+
+            const levelProgress = getLevelProgress(stats.xp);
 
             const embed = new EmbedBuilder()
                 .setTitle(`📝 S.P.E.C.I.A.L. - ${target.username}`)
                 .setColor('#2ecc71')
                 .setDescription(isSelf && stats.points > 0 ? `You have **${stats.points}** points available to spend!` : 'Status Overview')
                 .addFields(
+                    { name: '⭐ Level', value: `${stats.level}`, inline: true },
+                    { name: '✨ XP Progress', value: `${levelProgress.progress} (${levelProgress.percentage}%)`, inline: true },
+                    { name: '📊 Total XP', value: `${stats.xp}`, inline: true },
                     { name: '💪 Strength', value: `${stats.strength}`, inline: true },
                     { name: '👀 Perception', value: `${stats.perception}`, inline: true },
                     { name: '🛡️ Endurance', value: `${stats.endurance}`, inline: true },
@@ -68,7 +75,6 @@ module.exports = new ApplicationCommand({
                     { name: '\u200B', value: '\u200B', inline: true }, // Spacer
                     { name: '❤️ Health', value: `${stats.health}/${stats.max_health}`, inline: true },
                     { name: '☢️ Radiation', value: `${stats.radiation}%`, inline: true },
-                    { name: '✨ XP', value: `${stats.xp}`, inline: true },
                     { name: '🤖 Power Armor', value: stats.power_armor ? `**Equipped**` : '❌ None', inline: true }
                 );
 
