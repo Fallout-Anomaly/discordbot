@@ -178,6 +178,21 @@ db.serialize(() => {
         timestamp INTEGER,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
+
+    // Indexes for Performance
+    const indexes = [
+        "CREATE INDEX IF NOT EXISTS idx_active_quests_user ON active_quests(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_inventory_user ON inventory(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_hunt_cooldown_user ON hunt_cooldown(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_fish_cooldown_user ON fish_cooldown(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_quest_history_user ON quest_history(user_id)"
+    ];
+
+    indexes.forEach(idx => {
+        db.run(idx, (err) => {
+            if (err) console.error("Index Error:", err.message);
+        });
+    });
 });
 
 module.exports = db;

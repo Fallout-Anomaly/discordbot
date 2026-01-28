@@ -3,18 +3,10 @@ const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const AIService = require('../../utils/AIService');
 const { checkLevelUp } = require('../../utils/LevelSystem');
+const { QUEST_TEMPLATES } = require('../../utils/Constants');
 
 // Quest templates for variety (fallback if AI is down)
-const QUEST_TEMPLATES = [
-    { title: "Clear the Dunwich Borers", description: "Radroach infestation spreading. We need that cleaned out.", objective: "Exterminate the infestation", difficulty: "Easy" },
-    { title: "Retrieve Pre-War Tech", description: "An old robotics facility still has valuable tech. Go salvage what you can.", objective: "Collect pre-war artifacts", difficulty: "Medium" },
-    { title: "Eliminate Raider Gang", description: "Slavers have been terrorizing settlements. Deal with them.", objective: "Neutralize the raider threat", difficulty: "Hard" },
-    { title: "Investigate Missing Supplies", description: "Our supply caravan never returned. Find out what happened.", objective: "Track down the caravan", difficulty: "Medium" },
-    { title: "Secure Water Purification", description: "The water pump is failing. We need parts to repair it.", objective: "Gather pump components", difficulty: "Easy" },
-    { title: "Scout New Territory", description: "We're expanding. Check out that unexplored sector for threats.", objective: "Survey the area safely", difficulty: "Medium" },
-    { title: "Destroy Synth Nest", description: "Institute infiltrators have been spotted. Take them out before they replace us.", objective: "Destroy all Synths", difficulty: "Hard" },
-    { title: "Escort the Brahmin", description: "A trader needs help moving stock through super mutant territory.", objective: "Protect the caravan", difficulty: "Medium" }
-];
+// Imported from Constants.js
 
 module.exports = new ApplicationCommand({
     command: {
@@ -94,6 +86,19 @@ module.exports = new ApplicationCommand({
                     return;
                 }
 
+                // Check if quest timer has finished
+                const now = Date.now();
+                const endTime = quest.start_time + quest.duration;
+                const timeRemaining = endTime - now;
+                
+                let timeStatus = '';
+                if (timeRemaining > 0) {
+                    const minutesLeft = Math.ceil(timeRemaining / 60000);
+                    timeStatus = `⏳ Time Remaining: **${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}**`;
+                } else {
+                    timeStatus = '✅ Quest Ready to Complete!';
+                }
+
                 const embed = new EmbedBuilder()
                     .setTitle(`📜 Active Quest: ${quest.title}`)
                     .setDescription(quest.description)
@@ -101,10 +106,11 @@ module.exports = new ApplicationCommand({
                         { name: 'Objective', value: quest.objective, inline: false },
                         { name: 'Difficulty', value: quest.difficulty, inline: true },
                         { name: 'Priority', value: quest.difficulty === 'Hard' ? '🔴 Critical' : quest.difficulty === 'Medium' ? '🟡 Important' : '🟢 Routine', inline: true },
+                        { name: 'Status', value: timeStatus, inline: false },
                         { name: 'Rewards', value: `💰 ${quest.reward_caps} Caps | ✨ ${quest.reward_xp} XP` + (quest.reward_item ? ` | 🎁 ${quest.reward_item}` : ''), inline: false }
                     )
-                    .setColor('#f1c40f')
-                    .setFooter({ text: 'Use /questjournal complete when finished.' });
+                    .setColor(timeRemaining > 0 ? '#3498db' : '#2ecc71')
+                    .setFooter({ text: timeRemaining > 0 ? 'Come back when the timer expires!' : 'Use /questjournal complete to claim rewards.' });
 
                 interaction.editReply({ embeds: [embed] });
             });
@@ -149,9 +155,14 @@ module.exports = new ApplicationCommand({
                     return interaction.editReply({ content: '❌ Failed to generate quest docket. The terminal is glitching.' });
                 }
 
-                // Insert into DB
-                db.run(`INSERT INTO active_quests (user_id, title, description, objective, difficulty, reward_caps, reward_xp, reward_item) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [userId, newQuest.title, newQuest.description, newQuest.objective, newQuest.difficulty, newQuest.reward_caps, newQuest.reward_xp, newQuest.reward_item || null],
+                // Calculate quest duration based on difficulty
+                const questDuration = newQuest.difficulty === 'Hard' ? 30 : newQuest.difficulty === 'Medium' ? 20 : 15; // minutes
+                const durationMs = questDuration * 60 * 1000;
+                const startTime = Date.now();
+
+                // Insert into DB with start time and duration
+                db.run(`INSERT INTO active_quests (user_id, title, description, objective, difficulty, reward_caps, reward_xp, reward_item, start_time, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [userId, newQuest.title, newQuest.description, newQuest.objective, newQuest.difficulty, newQuest.reward_caps, newQuest.reward_xp, newQuest.reward_item || null, startTime, durationMs],
                     (err) => {
                         if (err) return interaction.editReply({ content: '❌ Failed to save quest to Pip-Boy database.' });
 
@@ -161,7 +172,8 @@ module.exports = new ApplicationCommand({
                             .addFields(
                                 { name: 'Objective', value: newQuest.objective, inline: true },
                                 { name: 'Difficulty', value: newQuest.difficulty, inline: true },
-                                { name: 'Rewards', value: `💰 ${newQuest.reward_caps} Caps\n✨ ${newQuest.reward_xp} XP` + (newQuest.reward_item ? `\n🎁 ${newQuest.reward_item}` : '') }
+                                { name: 'Rewards', value: `💰 ${newQuest.reward_caps} Caps\n✨ ${newQuest.reward_xp} XP` + (newQuest.reward_item ? `\n🎁 ${newQuest.reward_item}` : '') },
+                                { name: '⏱️ Estimated Time', value: `${questDuration} minutes`, inline: false }
                             )
                             .setColor('#2ecc71');
 
@@ -177,6 +189,16 @@ module.exports = new ApplicationCommand({
             db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], (err, quest) => {
                 if (!quest) return interaction.editReply({ content: '❌ You do not have an active quest to complete.' });
 
+                // Check if quest timer has finished
+                const now = Date.now();
+                const endTime = quest.start_time + quest.duration;
+                
+                if (now < endTime) {
+                    const remaining = endTime - now;
+                    const minutes = Math.ceil(remaining / 60000);
+                    return interaction.editReply({ content: `⏳ Your quest is still in progress! You need to wait **${minutes} more minute${minutes !== 1 ? 's' : ''}** before completing it.\n\n*Tip: Use \`/questjournal status\` to check your progress.*` });
+                }
+
                 // Get current XP for level check
                 db.get('SELECT xp FROM users WHERE id = ?', [userId], (xerr, user) => {
                     const oldXp = user?.xp || 0;
@@ -190,9 +212,12 @@ module.exports = new ApplicationCommand({
                             return interaction.editReply({ content: '❌ Quest already completed or invalid.' });
                         }
 
-                        // Grant Rewards
-                        db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, daily_quest_count = daily_quest_count + 1 WHERE id = ?', 
-                            [quest.reward_caps, quest.reward_xp, userId]);
+
+                        const levelCheck = checkLevelUp(oldXp, newXp);
+
+                        // Grant Rewards with stat points for level up
+                        db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, daily_quest_count = daily_quest_count + 1, stat_points = stat_points + ? WHERE id = ?', 
+                            [quest.reward_caps, quest.reward_xp, levelCheck.levelsGained, userId]);
 
                         // Grant Item if exists
                         if (quest.reward_item) {
@@ -215,8 +240,6 @@ module.exports = new ApplicationCommand({
                             }
                         );
 
-                        const levelCheck = checkLevelUp(oldXp, newXp);
-
                         const embed = new EmbedBuilder()
                             .setTitle('🎉 Quest Complete!')
                             .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
@@ -224,7 +247,8 @@ module.exports = new ApplicationCommand({
 
                         // Add level up announcement if applicable
                         if (levelCheck.leveledUp) {
-                            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉`, inline: false });
+                            const pointsText = levelCheck.levelsGained > 1 ? `+${levelCheck.levelsGained} SPECIAL Points` : '+1 SPECIAL Point';
+                            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n${pointsText} earned!`, inline: false });
                             embed.setColor('#FFD700');
                         }
 

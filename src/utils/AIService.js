@@ -1,7 +1,15 @@
 const { OpenAI } = require('openai');
 require('dotenv').config();
+const { QUEST_TEMPLATES } = require('./Constants');
 
+/**
+ * Service for interacting with AI models (Groq/OpenAI compatible)
+ * Handles question refinement, answer generation, and quest creation.
+ */
 class AIService {
+    /**
+     * Initializes the AIService and OpenAI client if API key is present.
+     */
     constructor() {
         this.openai = null;
         if (process.env.GROQ_API_KEY) {
@@ -14,10 +22,32 @@ class AIService {
         }
     }
 
-    async refineQuestion(userQuestion) {
-        if (!this.openai) return userQuestion;
+    /**
+     * Sanitizes user input to prevent prompt injection and remove problematic patterns.
+     * @param {string} input - Raw user input
+     * @returns {string} Sanitized input
+     */
+    sanitizeInput(input) {
+        if (!input) return "";
+        return input.toString()
+            .replace(/ignore previous instructions/gi, "[REDACTED]")
+            .replace(/forget everything/gi, "[REDACTED]")
+            .replace(/system: /gi, "[REDACTED]")
+            .replace(/assistant: /gi, "[REDACTED]")
+            .replace(/user: /gi, "[REDACTED]")
+            .trim();
+    }
 
-        const model = 'llama-3.1-8b-instant'; // Forced to 8B
+    /**
+     * Refines a raw question into a set of search keywords.
+     * @param {string} userQuestion - Original user question
+     * @returns {string} Comma-separated search keywords
+     */
+    async refineQuestion(userQuestion) {
+        if (!this.openai) return this.sanitizeInput(userQuestion);
+
+        const model = 'llama-3.1-8b-instant';
+        const sanitized = this.sanitizeInput(userQuestion);
 
         try {
             const response = await this.openai.chat.completions.create({
@@ -27,22 +57,31 @@ class AIService {
                         role: 'system', 
                         content: 'You are a Fallout Anomaly assistant. Analyze the user question and output 3-6 search keywords/phrases that would find relevant Anomaly modpack documentation. Keywords should target: specific systems (MCM, UI, Economy), features (perks, traits, power armor, radiation), troubleshooting (crashes, F4SE, version issues), or controls. Do NOT output anything else - only keywords separated by commas.' 
                     },
-                    { role: 'user', content: userQuestion }
+                    { role: 'user', content: sanitized }
                 ],
                 max_tokens: 30
-            }, { timeout: 10000 }); // 10s timeout
+            }, { timeout: 10000 });
             return response.choices[0].message.content.trim();
         } catch (e) {
-            console.error("AI Refine Error:", e.message);
-            return userQuestion;
+            console.error("AI Refine Error:", e);
+            return sanitized;
         }
     }
 
+    /**
+     * Generates a detailed answer based on documentation context and conversation history.
+     * @param {string} userQuestion - Current user question
+     * @param {Array} contextItems - Relevant documentation snippets
+     * @param {Array} history - Previous messages in the thread
+     * @returns {Object} { answer: string, needsEscalation: boolean, contextQuality: string }
+     */
     async generateAnswer(userQuestion, contextItems, history = []) {
         if (!Array.isArray(contextItems)) {
             console.error("AI Generate Error: Invalid context items format.");
-            return "I encountered an internal error (invalid context).";
+            return { answer: "I encountered an internal error (invalid context).", needsEscalation: true, contextQuality: 'error' };
         }
+
+        const sanitizedQuestion = this.sanitizeInput(userQuestion);
 
         // Prepare context
         const contextString = contextItems.map(item => {
@@ -121,7 +160,7 @@ ${hasStaffResponse ? '- **⚠️ Staff has already responded here** - Do NOT rep
         // Add current context and question
         messages.push({
             role: 'user',
-            content: `Context:\n${contextString}\n\nQuestion: ${userQuestion}`
+            content: `Context:\n${contextString}\n\nQuestion: ${sanitizedQuestion}`
         });
 
         try {
@@ -143,7 +182,7 @@ ${hasStaffResponse ? '- **⚠️ Staff has already responded here** - Do NOT rep
                 contextQuality: contextItems.length > 0 ? 'good' : 'poor'
             };
         } catch (e) {
-            console.error("AI Generate Error:", e.message);
+            console.error("AI Generate Error:", e);
             return {
                 answer: "I encountered an error while trying to generate the answer. Please try again later.",
                 needsEscalation: true,
@@ -152,15 +191,18 @@ ${hasStaffResponse ? '- **⚠️ Staff has already responded here** - Do NOT rep
         }
     }
 
+    /**
+     * Generates a Radiant Quest JSON object using AI.
+     * @param {Object} userParams - Parameters like level and weapon
+     * @returns {Object} JSON quest object
+     */
     async generateQuest(userParams) {
         if (!this.openai) {
              // Fallback quest if AI is offline
+             const template = QUEST_TEMPLATES[Math.floor(Math.random() * QUEST_TEMPLATES.length)];
              return {
-                 title: "Scavenge the Super Duper Mart",
-                 description: "We need supplies. Head to the old Super Duper Mart and clear out any ghouls you find.",
-                 objective: "Retrieve the supplies",
-                 difficulty: "Easy",
-                 flavor: "Don't get eaten."
+                 ...template,
+                 flavor: "Communications array offline. Using pre-war protocols."
              };
         }
 
@@ -200,13 +242,11 @@ Output MUST be valid JSON only. format:
             
             return JSON.parse(content);
         } catch (e) {
-            console.error("AI Quest Gen Error:", e.message);
+            console.error("AI Quest Gen Error:", e);
+            const template = QUEST_TEMPLATES[Math.floor(Math.random() * QUEST_TEMPLATES.length)];
             return {
-                 title: "Patrol the Perimeter",
-                 description: "The sensors picked up movement. Go check it out.",
-                 objective: "Patrol for 10 minutes",
-                 difficulty: "Easy",
-                 flavor: "Probably just a mole rat."
+                 ...template,
+                 flavor: "Data corrupted. Fallback instructions loaded."
             };
         }
     }

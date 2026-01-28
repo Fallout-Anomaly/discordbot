@@ -1,6 +1,8 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
+const { ROBBERY_MODIFIERS } = require('../../utils/Constants');
+const { error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -36,29 +38,42 @@ module.exports = new ApplicationCommand({
         }
 
         // Get both players' data including protection
-        const robberData = await new Promise((resolve) => {
+        const robberData = await new Promise((resolve, reject) => {
             db.get('SELECT balance, stat_strength, stat_agility FROM users WHERE id = ?', [robber.id], (err, row) => {
+                if (err) reject(err);
                 resolve(row || { balance: 0, stat_strength: 1, stat_agility: 1 });
             });
+        }).catch(err => {
+            error('[ROB] DB Error fetching robber:', err);
+            return null;
         });
 
-        const targetData = await new Promise((resolve) => {
+        if (!robberData) return interaction.editReply({ content: '❌ Database error fetching your data.' });
+
+        const targetData = await new Promise((resolve, reject) => {
             db.get('SELECT balance, stat_strength, stat_agility, protection_expires, insurance_level FROM users WHERE id = ?', [target.id], (err, row) => {
+                if (err) reject(err);
                 resolve(row || { balance: 0, stat_strength: 1, stat_agility: 1, protection_expires: 0, insurance_level: 0 });
             });
+        }).catch(err => {
+            error('[ROB] DB Error fetching target:', err);
+            return null;
         });
+
+        if (!targetData) return interaction.editReply({ content: '❌ Database error fetching target data.' });
 
         // Get target's stash (if any)
-        const targetStash = await new Promise((resolve) => {
+        const targetStash = await new Promise((resolve, reject) => {
             db.get('SELECT amount FROM stash WHERE user_id = ?', [target.id], (err, row) => {
+                if (err) reject(err);
                 resolve(row || { amount: 0 });
             });
-        });
+        }).catch(() => ({ amount: 0 }));
 
         // Check if target has caps to rob
-        if (targetData.balance < 100) {
+        if (targetData.balance < ROBBERY_MODIFIERS.MIN_BALANCE_REQUIRED) {
             return interaction.editReply({ 
-                content: `😂 **${target.username}** doesn't have enough caps to rob (needs at least 100). Try someone wealthier!` 
+                content: `😂 **${target.username}** doesn't have enough caps to rob (needs at least ${ROBBERY_MODIFIERS.MIN_BALANCE_REQUIRED}). Try someone wealthier!` 
             });
         }
 
@@ -70,26 +85,23 @@ module.exports = new ApplicationCommand({
         const now = Date.now();
         const hasBodyguards = targetData.protection_expires && targetData.protection_expires > now;
         
-        // Lower balance = better chance to rob (desperate times)
-        // Higher balance = lower chance (can afford protection)
-        let baseSuccessChance = 0.45; // 45% base success
+        let baseSuccessChance = ROBBERY_MODIFIERS.BASE_SUCCESS_CHANCE;
         
-        // Wealth modifier: if robber is poorer, they have better odds
+        // Wealth modifier
         if (robberWealth < targetWealth / 2) {
-            baseSuccessChance += 0.15; // +15% if significantly poorer
+            baseSuccessChance += ROBBERY_MODIFIERS.POVERTY_BONUS;
         }
         
-        // If robber is much wealthier, lower success (risky move)
         if (robberWealth > targetWealth * 2) {
-            baseSuccessChance -= 0.10; // -10% if much wealthier
+            baseSuccessChance -= ROBBERY_MODIFIERS.WEALTH_PENALTY;
         }
 
-        // Bodyguard penalty: -30% success chance
+        // Bodyguard penalty
         if (hasBodyguards) {
-            baseSuccessChance -= 0.30;
+            baseSuccessChance -= ROBBERY_MODIFIERS.BODYGUARD_PENALTY;
         }
 
-        const successChance = Math.max(0.1, Math.min(0.85, baseSuccessChance)); // Clamp 10%-85%
+        const successChance = Math.max(ROBBERY_MODIFIERS.MIN_SUCCESS, Math.min(ROBBERY_MODIFIERS.MAX_SUCCESS, baseSuccessChance));
         const robSucceeds = Math.random() < successChance;
 
         if (robSucceeds) {
@@ -114,25 +126,33 @@ module.exports = new ApplicationCommand({
                 const minStashRaid = Math.floor(targetStash.amount * 0.1);
                 const maxStashRaid = Math.floor(targetStash.amount * 0.2);
                 stashRaidAmount = Math.floor(Math.random() * (maxStashRaid - minStashRaid + 1)) + minStashRaid;
-
-                // Update stash
-                await new Promise((resolve) => {
-                    db.run('UPDATE stash SET amount = amount - ? WHERE user_id = ?',
-                        [stashRaidAmount, target.id], () => resolve());
-                });
             }
-
             const totalStealing = stolenAmount + stashRaidAmount;
 
-            // Update both players
-            await new Promise((resolve) => {
-                db.run('UPDATE users SET balance = balance + ? WHERE id = ?', 
-                    [totalStealing, robber.id], () => resolve());
-            });
+            // Perform Transaction
+            await new Promise((resolve, reject) => {
+                db.serialize(() => {
+                    db.run('BEGIN TRANSACTION');
 
-            await new Promise((resolve) => {
-                db.run('UPDATE users SET balance = MAX(0, balance - ?) WHERE id = ?', 
-                    [actualLost, target.id], () => resolve());
+                    if (stashWasRaided) {
+                        db.run('UPDATE stash SET amount = amount - ? WHERE user_id = ?', [stashRaidAmount, target.id]);
+                    }
+
+                    db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [totalStealing, robber.id]);
+                    db.run('UPDATE users SET balance = MAX(0, balance - ?) WHERE id = ?', [actualLost, target.id]);
+
+                    db.run('COMMIT', (err) => {
+                        if (err) {
+                            db.run('ROLLBACK');
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            }).catch(err => {
+                error('[ROB] Transaction failed:', err);
+                return interaction.editReply({ content: '❌ Transaction failed during robbery.' });
             });
 
             const embed = new EmbedBuilder()
@@ -143,18 +163,14 @@ module.exports = new ApplicationCommand({
                     { name: '🎯 Success Chance', value: `${(successChance * 100).toFixed(1)}%`, inline: true }
                 );
 
-            // Add insurance refund field if applicable
-            // Add insurance refund field if applicable
             if (insuranceRefund > 0) {
                 embed.addFields({ name: '🛡️ Insurance Refund', value: `**${insuranceRefund} Caps** returned`, inline: true });
             }
 
-            // Add stash raid if it happened
             if (stashWasRaided) {
                 embed.addFields({ name: '💼 Stash Raided!', value: `**${stashRaidAmount} Caps** from hidden stash stolen`, inline: true });
             }
 
-            // Add bodyguard mention if they were active
             if (hasBodyguards) {
                 const protectionRemaining = Math.ceil((targetData.protection_expires - now) / 3600000);
                 embed.addFields({ name: '💂 Bodyguards', value: `Present but couldn't stop this robbery (${protectionRemaining}h left)`, inline: true });
@@ -170,36 +186,45 @@ module.exports = new ApplicationCommand({
             return interaction.editReply({ embeds: [embed] });
         } else {
             // Failed robbery - lose a small amount as fine
-            const finAmount = Math.floor(targetWealth * 0.05); // 5% fine
+            const fineAmount = Math.floor(targetWealth * 0.05); // 5% fine
+            const rewardToTarget = Math.floor(fineAmount * ROBBERY_MODIFIERS.VICTIM_REWARD_PERCENT); // % of fine
             
-            await new Promise((resolve) => {
-                db.run('UPDATE users SET balance = MAX(0, balance - ?) WHERE id = ?', 
-                    [finAmount, robber.id], () => resolve());
-            });
+            await new Promise((resolve, reject) => {
+                db.serialize(() => {
+                    db.run('BEGIN TRANSACTION');
+                    
+                    db.run('UPDATE users SET balance = MAX(0, balance - ?) WHERE id = ?', [fineAmount, robber.id]);
+                    db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [rewardToTarget, target.id]);
 
-            // Target gains a small reward for catching the robber
-            const rewardAmount = Math.floor(finAmount * 0.5);
-            await new Promise((resolve) => {
-                db.run('UPDATE users SET balance = balance + ? WHERE id = ?', 
-                    [rewardAmount, target.id], () => resolve());
+                    db.run('COMMIT', (err) => {
+                        if (err) {
+                            db.run('ROLLBACK');
+                            reject(err);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            }).catch(err => {
+                error('[ROB] Fail transaction failed:', err);
+                return interaction.editReply({ content: '❌ Database error during failed robbery processing.' });
             });
 
             const embed = new EmbedBuilder()
                 .setTitle('🚨 ROBBERY FAILED!')
                 .setDescription(`${robber.username} was caught by ${target.username}!`)
                 .addFields(
-                    { name: '❌ You Got Caught!', value: `Paid **${finAmount} Caps** fine`, inline: true },
+                    { name: '❌ You Got Caught!', value: `Paid **${fineAmount} Caps** fine`, inline: true },
                     { name: '🎯 Success Chance Was', value: `${(successChance * 100).toFixed(1)}%`, inline: true }
                 );
 
-            // Show why it failed
             if (hasBodyguards) {
                 embed.addFields({ name: '💂 Bodyguards', value: `**Stopped the robbery!** Provided -30% success bonus`, inline: true });
             }
 
             embed.addFields(
-                { name: '💸 Your Fine', value: `**${finAmount} Caps**`, inline: false },
-                { name: '🏆 Their Reward', value: `**${rewardAmount} Caps**`, inline: false }
+                { name: '💸 Your Fine', value: `**${fineAmount} Caps**`, inline: false },
+                { name: '🏆 Their Reward', value: `**${rewardToTarget} Caps**`, inline: false }
             )
             .setColor('#FF4444')
             .setFooter({ text: 'Better luck next time, vault dweller!' });

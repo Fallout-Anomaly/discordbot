@@ -81,6 +81,8 @@ module.exports = new Event({
             if (blacklistCache === null) {
                 await loadBlacklist();
             }
+            // Fallback: if still null (timeout or error), use empty array to prevent blocking
+            if (blacklistCache === null) blacklistCache = [];
         }
         
         // Treat empty cache as "pass"

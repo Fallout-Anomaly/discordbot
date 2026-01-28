@@ -89,13 +89,18 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
         }
 
         // Success! Give rewards
+        const userData = await new Promise((resolve) => {
+            db.get('SELECT xp FROM users WHERE id = ?', [userId], (err, row) => resolve(row || { xp: 0 }));
+        });
+
         const oldXp = userData.xp || 0;
         const newXp = oldXp + caught.xp;
+        const levelCheck = checkLevelUp(oldXp, newXp);
         
         await new Promise((resolve) => {
             db.run(
-                'UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?',
-                [caught.caps, caught.xp, userId],
+                'UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?',
+                [caught.caps, caught.xp, levelCheck.levelsGained, userId],
                 () => resolve()
             );
         });
@@ -113,8 +118,6 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
             });
         });
 
-        const levelCheck = checkLevelUp(oldXp, newXp);
-
         const embed = new EmbedBuilder()
             .setTitle(`${caught.emoji} Fishing Success!`)
             .setDescription(`You caught a **${caught.name}**!`)
@@ -127,7 +130,8 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
 
         // Add level up announcement if applicable
         if (levelCheck.leveledUp) {
-            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉`, inline: false });
+            const pointsText = levelCheck.levelsGained > 1 ? `+${levelCheck.levelsGained} SPECIAL Points` : '+1 SPECIAL Point';
+            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n${pointsText} earned!`, inline: false });
             embed.setColor('#FFD700');
         } else {
             embed.setColor(caught.rarity === 'Legendary' ? '#FFD700' : caught.rarity === 'Epic' ? '#9B59B6' : caught.rarity === 'Rare' ? '#3498DB' : '#2ECC71');
