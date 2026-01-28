@@ -45,7 +45,7 @@ module.exports = new ApplicationCommand({
                     .setEmoji('✅')
             );
 
-        await interaction.reply({ content: `✅ Verification setup sent.${successMsg ? ' Custom success message saved.' : ''}`, ephemeral: true });
+        await interaction.reply({ content: `✅ Verification setup sent.${successMsg ? ' Custom success message saved.' : ''}`, flags: 64 });
         await interaction.channel.send({ embeds: [embed], components: [row] });
     }
 }).toJSON();

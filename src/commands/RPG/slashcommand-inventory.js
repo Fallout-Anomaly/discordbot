@@ -23,7 +23,7 @@ module.exports = new ApplicationCommand({
         db.all(query, [userId], (err, rows) => {
             if (err) {
                 console.error(err);
-                return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                return interaction.reply({ content: '❌ Database error.', flags: 64 });
             }
 
             if (!rows || rows.length === 0) {

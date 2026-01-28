@@ -114,8 +114,21 @@ module.exports = new Event({
                 }
             }
 
-            // 1. Search Knowledge Base
-            const contextItems = client.knowledge.search(question.toLowerCase());
+            // 1. Refine the question to better search keywords
+            // This converts "My F4SE is out of date" into "F4SE version compatibility" for better searches
+            const refinedQuestion = await AIService.refineQuestion(question);
+            
+            // Search Knowledge Base with both original and refined questions
+            let contextItems = client.knowledge.search(question.toLowerCase());
+            
+            // If original search yielded poor results, try refined keywords
+            if (contextItems.length < 2) {
+                const refinedContext = client.knowledge.search(refinedQuestion.toLowerCase());
+                contextItems = [...contextItems, ...refinedContext].slice(0, 5);
+            }
+            
+            // Deduplicate by fullName
+            contextItems = Array.from(new Map(contextItems.map(item => [item.fullName, item])).values()).slice(0, 3);
 
             // If staff already provided a detailed answer, only respond if this is a NEW clarifying question
             // Check if the current message is just repeating the original problem (not asking for clarification)
@@ -145,12 +158,21 @@ module.exports = new Event({
             // Handle both old string format and new object format for backwards compatibility
             const answer = typeof result === 'string' ? result : result.answer;
             const needsEscalation = typeof result === 'object' && result.needsEscalation;
+            const contextQuality = typeof result === 'object' ? result.contextQuality : 'unknown';
+
+            // Build context sources string
+            let contextSource = '';
+            if (contextItems.length > 0) {
+                contextSource = contextItems.map(i => `**${i.fullName}**`).join(', ');
+            } else {
+                contextSource = 'General Anomaly Knowledge';
+            }
 
             const embed = new EmbedBuilder()
                 .setTitle('☢️ Anomaly AI Assistant')
                 .setDescription(answer.substring(0, 4096))
-                .setColor(needsEscalation ? '#e67e22' : '#3498db')
-                .setFooter({ text: `Sources: ${contextItems.map(i => i.fullName).join(', ') || 'General Knowledge'} • Use buttons below for feedback • Install: https://fallout-anomaly.github.io/websitedev/` })
+                .setColor(needsEscalation ? '#e67e22' : (contextQuality === 'good' ? '#2ecc71' : '#3498db'))
+                .setFooter({ text: `📚 Sources: ${contextSource} | Use buttons below for feedback | Install: https://fallout-anomaly.github.io/` })
                 .setTimestamp();
 
             // Add escalation notice if needed

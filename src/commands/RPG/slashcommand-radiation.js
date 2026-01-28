@@ -22,6 +22,7 @@ module.exports = new ApplicationCommand({
     },
     cooldown: 5,
     run: async (client, interaction) => {
+        await interaction.deferReply({ flags: 64 });
         const userId = interaction.user.id;
         const action = interaction.options.getString('action');
 
@@ -74,7 +75,7 @@ module.exports = new ApplicationCommand({
                 );
             }
 
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         // Heal actions
@@ -96,9 +97,8 @@ module.exports = new ApplicationCommand({
         }
 
         if (currentRadiation <= 0) {
-            return interaction.reply({ 
-                content: '✅ You are not irradiated. No need to use ' + itemName, 
-                flags: 64 
+            return interaction.editReply({ 
+                content: '✅ You are not irradiated. No need to use ' + itemName 
             });
         }
 
@@ -112,9 +112,8 @@ module.exports = new ApplicationCommand({
         });
 
         if (invData.amount <= 0) {
-            return interaction.reply({ 
-                content: `❌ You don't have **${itemName}** in your inventory!\nVisit \`/shop view consumable\` to purchase one.`, 
-                flags: 64 
+            return interaction.editReply({ 
+                content: `❌ You don't have **${itemName}** in your inventory!\nVisit \`/shop view consumable\` to purchase one.` 
             });
         }
 
@@ -148,6 +147,6 @@ module.exports = new ApplicationCommand({
             .setColor('#00FF00')
             .setFooter({ text: 'Stay safe in the Wasteland!' });
 
-        return interaction.reply({ embeds: [embed] });
+        return interaction.editReply({ embeds: [embed] });
     }
 }).toJSON();

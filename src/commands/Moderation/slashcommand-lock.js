@@ -15,7 +15,7 @@ module.exports = new ApplicationCommand({
             await interaction.reply({ content: '🔒 Channel has been locked.' });
         } catch (err) {
             console.error(err);
-            await interaction.reply({ content: '❌ Failed to lock channel.', ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to lock channel.', flags: 64 });
         }
     }
 }).toJSON();

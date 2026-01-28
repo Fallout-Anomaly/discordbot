@@ -20,7 +20,7 @@ module.exports = new ApplicationCommand({
     run: async (client, interaction) => {
         const amount = interaction.options.getInteger('amount');
 
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: 64 });
 
         try {
             const deleted = await interaction.channel.bulkDelete(amount, true);
