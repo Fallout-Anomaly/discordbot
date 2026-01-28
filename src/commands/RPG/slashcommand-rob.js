@@ -17,22 +17,21 @@ module.exports = new ApplicationCommand({
     },
     cooldown: 30,
     run: async (client, interaction) => {
+        await interaction.deferReply();
         const target = interaction.options.getUser('target');
         const robber = interaction.user;
 
         // Prevent self-robbery
         if (target.id === robber.id) {
-            return interaction.reply({ 
-                content: '❌ You cannot rob yourself, vault dweller!', 
-                flags: 64 
+            return interaction.editReply({ 
+                content: '❌ You cannot rob yourself, vault dweller!' 
             });
         }
 
         // Prevent bot robbery
         if (target.bot) {
-            return interaction.reply({ 
-                content: '❌ You cannot rob a bot!', 
-                flags: 64 
+            return interaction.editReply({ 
+                content: '❌ You cannot rob a bot!' 
             });
         }
 
@@ -58,9 +57,8 @@ module.exports = new ApplicationCommand({
 
         // Check if target has caps to rob
         if (targetData.balance < 100) {
-            return interaction.reply({ 
-                content: `😂 **${target.username}** doesn't have enough caps to rob (needs at least 100). Try someone wealthier!`, 
-                flags: 64 
+            return interaction.editReply({ 
+                content: `😂 **${target.username}** doesn't have enough caps to rob (needs at least 100). Try someone wealthier!` 
             });
         }
 
@@ -169,7 +167,7 @@ module.exports = new ApplicationCommand({
             .setColor('#FFD700')
             .setFooter({ text: 'Tip: Use /protection & /stash to defend your wealth!' });
 
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         } else {
             // Failed robbery - lose a small amount as fine
             const finAmount = Math.floor(targetWealth * 0.05); // 5% fine
@@ -206,7 +204,7 @@ module.exports = new ApplicationCommand({
             .setColor('#FF4444')
             .setFooter({ text: 'Better luck next time, vault dweller!' });
 
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
     }
 }).toJSON();

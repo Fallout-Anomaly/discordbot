@@ -63,7 +63,6 @@ module.exports = new Component({
 
             // Format countdown
             const now = Date.now();
-            const timeRemaining = raffle.end_time - now;
             let countdownText = 'No time limit';
             if (raffle.end_time && raffle.end_time > now) {
                 countdownText = `<t:${Math.floor(raffle.end_time / 1000)}:R>`;

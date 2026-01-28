@@ -26,9 +26,27 @@ module.exports = new ApplicationCommand({
         name: 'hunt',
         description: 'Hunt dangerous creatures in the wasteland',
     },
-    cooldown: 360, // 6 minutes (more dangerous than fishing)
     run: async (client, interaction) => {
         const userId = interaction.user.id;
+        const now = Date.now();
+        const HUNT_COOLDOWN = 10 * 60 * 1000; // 10 minutes
+
+        // Check cooldown
+        const hasCooldown = await new Promise((resolve) => {
+            db.get('SELECT cooldown_expiry FROM hunt_cooldown WHERE user_id = ?', [userId], (err, row) => {
+                if (row && now < row.cooldown_expiry) {
+                    const remaining = row.cooldown_expiry - now;
+                    const minutes = Math.ceil(remaining / 60000);
+                    interaction.editReply({ 
+                        content: `⏳ You need to rest after that hunt. Return in **${minutes} minute${minutes > 1 ? 's' : ''}**.` 
+                    });
+                    return resolve(true);
+                }
+                resolve(false);
+            });
+        });
+
+        if (hasCooldown) return;
 
         // Get user stats
         const userData = await new Promise((resolve) => {
@@ -37,13 +55,11 @@ module.exports = new ApplicationCommand({
             });
         });
 
-        // Calculate success modifier based on SPECIAL stats
         const perception = userData.stat_perception || 1;
         const agility = userData.stat_agility || 1;
         const luck = userData.stat_luck || 1;
-        const successBonus = (perception + agility + luck) / 3; // Average of relevant stats
+        const successBonus = (perception + agility + luck) / 3;
 
-        // Roll for encounter
         const roll = Math.random() * 100;
         let cumulativeChance = 0;
         let encounter = null;
@@ -64,24 +80,25 @@ module.exports = new ApplicationCommand({
                 db.run('UPDATE users SET balance = MAX(0, balance - ?) WHERE id = ?', [lostCaps, userId], () => resolve());
             });
 
+            const cooldownEnd = now + HUNT_COOLDOWN;
+            await new Promise((resolve) => {
+                db.run('INSERT OR REPLACE INTO hunt_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [userId, cooldownEnd], () => resolve());
+            });
+
             const embed = new EmbedBuilder()
                 .setTitle('💥 Hunt Failed')
                 .setDescription(failMsg)
-                .addFields(
-                    { name: '💸 Caps Lost', value: `-${lostCaps}`, inline: true }
-                )
+                .addFields({ name: '💸 Caps Lost', value: `-${lostCaps}`, inline: true })
                 .setColor('#E74C3C')
                 .setFooter({ text: 'The wasteland is unforgiving...' });
 
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
 
-        // Determine if hunt is successful based on creature danger and player stats
         const successChance = Math.max(20, 100 - encounter.danger + (successBonus * 5));
         const huntRoll = Math.random() * 100;
 
         if (huntRoll > successChance) {
-            // Failed hunt - take damage as radiation
             const radiationGain = Math.floor(encounter.danger / 2);
             const lostCaps = Math.floor(encounter.caps * 0.3);
 
@@ -91,6 +108,11 @@ module.exports = new ApplicationCommand({
                     [radiationGain, lostCaps, userId],
                     () => resolve()
                 );
+            });
+
+            const cooldownEnd = now + HUNT_COOLDOWN;
+            await new Promise((resolve) => {
+                db.run('INSERT OR REPLACE INTO hunt_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [userId, cooldownEnd], () => resolve());
             });
 
             const embed = new EmbedBuilder()
@@ -106,16 +128,20 @@ module.exports = new ApplicationCommand({
                 .setFooter({ text: 'Use RadAway to heal radiation!' })
                 .setTimestamp();
 
-            return interaction.reply({ embeds: [embed] });
+            return interaction.editReply({ embeds: [embed] });
         }
 
-        // Successful hunt!
         await new Promise((resolve) => {
             db.run(
                 'UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?',
                 [encounter.caps, encounter.xp, userId],
                 () => resolve()
             );
+        });
+
+        const cooldownEnd = now + HUNT_COOLDOWN;
+        await new Promise((resolve) => {
+            db.run('INSERT OR REPLACE INTO hunt_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [userId, cooldownEnd], () => resolve());
         });
 
         const newBalance = userData.balance + encounter.caps;
@@ -134,6 +160,6 @@ module.exports = new ApplicationCommand({
             .setFooter({ text: 'Higher Perception, Agility, and Luck improve hunt success!' })
             .setTimestamp();
 
-        return interaction.reply({ embeds: [embed] });
+        return interaction.editReply({ embeds: [embed] });
     }
 }).toJSON();

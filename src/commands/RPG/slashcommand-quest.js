@@ -32,12 +32,12 @@ module.exports = new ApplicationCommand({
         // --- STATUS ---
         if (subcommand === 'status') {
             db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], (err, quest) => {
-                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
                 
                 if (!quest) {
                     return interaction.reply({ 
                         content: 'You have no active quest. Use `/quest generate` to find one!', 
-                        ephemeral: true 
+                        flags: 64 
                     });
                 }
 
@@ -153,7 +153,7 @@ module.exports = new ApplicationCommand({
         else if (subcommand === 'complete') {
              db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], (err, quest) => {
                 if (err || !quest) {
-                    return interaction.reply({ content: '❌ You have no active quest.', ephemeral: true });
+                    return interaction.reply({ content: '❌ You have no active quest.', flags: 64 });
                 }
 
                 const now = Date.now();
@@ -165,10 +165,10 @@ module.exports = new ApplicationCommand({
                     [userId, quest.start_time, now],
                     function (delErr) {
                         if (delErr) {
-                            return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                            return interaction.reply({ content: '❌ Database error.', flags: 64 });
                         }
                         if (this.changes === 0) {
-                            return interaction.reply({ content: `⏳ Your quest is not done yet or already claimed. Return <t:${Math.floor(endTime/1000)}:R>.`, ephemeral: true });
+                            return interaction.reply({ content: `⏳ Your quest is not done yet or already claimed. Return <t:${Math.floor(endTime/1000)}:R>.`, flags: 64 });
                         }
 
                         // Deletion succeeded, grant rewards exactly once

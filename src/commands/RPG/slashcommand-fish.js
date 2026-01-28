@@ -25,9 +25,35 @@ module.exports = new ApplicationCommand({
         name: 'fish',
         description: 'Fish in the irradiated waters of the wasteland',
     },
-    cooldown: 300, // 5 minutes
     run: async (client, interaction) => {
         const userId = interaction.user.id;
+        const now = Date.now();
+        const FISH_COOLDOWN = 5 * 60 * 1000; // 5 minutes
+
+        // Check cooldown
+        const hasCooldown = await new Promise((resolve) => {
+            db.get('SELECT cooldown_expiry FROM fish_cooldown WHERE user_id = ?', [userId], (err, row) => {
+                if (row && now < row.cooldown_expiry) {
+                    const remaining = row.cooldown_expiry - now;
+                    const minutes = Math.ceil(remaining / 60000);
+                    interaction.reply({ 
+                        content: `⏳ Your fishing line is still in the water. Return in **${minutes} minute${minutes > 1 ? 's' : ''}**.`, 
+                        flags: 64 
+                    });
+                    return resolve(true); // Cooldown active
+                }
+                resolve(false); // No cooldown
+            });
+        });
+
+        if (hasCooldown) return;
+
+        // Proceed with fishing
+        executeFish(client, interaction, userId, FISH_COOLDOWN);
+    }
+}).toJSON();
+
+async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
 
         // Roll for catch
         const roll = Math.random() * 100;
@@ -45,6 +71,13 @@ module.exports = new ApplicationCommand({
         if (!caught) {
             // Failed to catch anything
             const failMsg = FAILURE_MESSAGES[Math.floor(Math.random() * FAILURE_MESSAGES.length)];
+            
+            // Set cooldown
+            const cooldownEnd = Date.now() + FISH_COOLDOWN;
+            await new Promise((resolve) => {
+                db.run('INSERT OR REPLACE INTO fish_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [userId, cooldownEnd], () => resolve());
+            });
+            
             const embed = new EmbedBuilder()
                 .setTitle('🎣 Fishing Failed')
                 .setDescription(failMsg)
@@ -61,6 +94,12 @@ module.exports = new ApplicationCommand({
                 [caught.caps, caught.xp, userId],
                 () => resolve()
             );
+        });
+
+        // Set cooldown
+        const cooldownEnd = Date.now() + FISH_COOLDOWN;
+        await new Promise((resolve) => {
+            db.run('INSERT OR REPLACE INTO fish_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [userId, cooldownEnd], () => resolve());
         });
 
         // Get new balance
@@ -85,4 +124,3 @@ module.exports = new ApplicationCommand({
 
         return interaction.reply({ embeds: [embed] });
     }
-}).toJSON();

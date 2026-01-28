@@ -16,11 +16,13 @@ module.exports = new ApplicationCommand({
         ]
     },
     run: async (client, interaction) => {
+        await interaction.deferReply();
+        
         const target = interaction.options.getUser('user') || interaction.user;
         const isSelf = target.id === interaction.user.id;
 
         db.get(`SELECT * FROM users WHERE id = ?`, [target.id], async (err, row) => {
-            if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+            if (err) return interaction.editReply({ content: '❌ Database error.' });
 
             if (!row) {
                 // Initialize if not exists
@@ -129,7 +131,7 @@ module.exports = new ApplicationCommand({
                 });
 
             } else {
-                interaction.reply({ embeds: [embed] });
+                interaction.editReply({ embeds: [embed] });
             }
         });
     }

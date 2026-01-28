@@ -29,11 +29,11 @@ module.exports = new ApplicationCommand({
         const targetId = target.id;
 
         if (senderId === targetId) {
-            return interaction.reply({ content: '❌ You cannot pay yourself.', ephemeral: true });
+            return interaction.reply({ content: '❌ You cannot pay yourself.', flags: 64 });
         }
 
         if (amount <= 0) {
-            return interaction.reply({ content: '❌ Amount must be greater than 0.', ephemeral: true });
+            return interaction.reply({ content: '❌ Amount must be greater than 0.', flags: 64 });
         }
 
         // ATOMIC DEDUCTION: Check balance and deduct in a single operation
@@ -42,7 +42,7 @@ module.exports = new ApplicationCommand({
             'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
             [amount, senderId, amount],
             function (err) {
-                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
 
                 // If this.changes is 0, the WHERE clause failed (insufficient funds)
                 if (this.changes === 0) {

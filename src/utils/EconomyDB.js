@@ -53,6 +53,18 @@ db.serialize(() => {
         cooldown_expiry INTEGER NOT NULL
     )`);
 
+    // Hunt cooldown table
+    db.run(`CREATE TABLE IF NOT EXISTS hunt_cooldown (
+        user_id TEXT PRIMARY KEY,
+        cooldown_expiry INTEGER NOT NULL
+    )`);
+
+    // Fish cooldown table
+    db.run(`CREATE TABLE IF NOT EXISTS fish_cooldown (
+        user_id TEXT PRIMARY KEY,
+        cooldown_expiry INTEGER NOT NULL
+    )`);
+
     columnsToAdd.forEach(sql => {
         db.run(sql, () => {
             // Ignore error if column already exists

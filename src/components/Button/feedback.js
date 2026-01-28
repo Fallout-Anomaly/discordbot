@@ -28,7 +28,7 @@ module.exports = new Component({
                 // but we want to tell the clicked user "No" without ruining the interface.
                 return interaction.followUp({ 
                     content: '❌ Only the user who asked the question can provide feedback.',
-                    ephemeral: true
+                    flags: 64
                 });
             }
 

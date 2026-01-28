@@ -20,18 +20,18 @@ module.exports = new ApplicationCommand({
                 if (now < endTime) {
                     const remaining = endTime - now;
                     const minutes = Math.ceil(remaining / 60000);
-                    return interaction.reply({ content: `⏳ You are currently scavenging! Return in **${minutes} minutes**.`, ephemeral: true });
+                    return interaction.reply({ content: `⏳ You are currently scavenging! Return in **${minutes} minutes**.`, flags: 64 });
                 } else {
                     // Attempt atomic completion: delete only if end time passed
                     db.run(
                         'DELETE FROM scavenge WHERE user_id = ? AND ? >= (start_time + duration)',
                         [userId, now],
                         function (err) {
-                            if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                            if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
                             if (this.changes === 0) {
                                 // Either already claimed or timer not finished (race)
                                 const minutes = Math.ceil((endTime - now) / 60000);
-                                return interaction.reply({ content: `⏳ Scavenging not finished or already claimed. Try again in **${Math.max(0, minutes)} minutes**.`, ephemeral: true });
+                                return interaction.reply({ content: `⏳ Scavenging not finished or already claimed. Try again in **${Math.max(0, minutes)} minutes**.`, flags: 64 });
                             }
                             return processScavengeResult(client, interaction);
                         }
@@ -70,11 +70,11 @@ module.exports = new ApplicationCommand({
 
                     if (count >= dailyLimit) {
                          const limitMsg = `(Limit: ${dailyLimit}/day)`;
-                        return interaction.reply({ content: `🛑 **Daily Limit Reached**\nYou are too exhausted to scavenge more today. ${limitMsg}`, ephemeral: true });
+                        return interaction.reply({ content: `🛑 **Daily Limit Reached**\nYou are too exhausted to scavenge more today. ${limitMsg}`, flags: 64 });
                     }
 
                     const durationMs = scavengeDuration * 60 * 1000;
-                    db.run('INSERT OR REPLACE INTO scavenge (user_id, start_time, duration) VALUES (?, ?, ?)', [userId, now, durationMs]);
+                    db.run('INSERT OR IGNORE INTO scavenge (user_id, start_time, duration) VALUES (?, ?, ?)', [userId, now, durationMs]);
                     
                     // Increment count
                     db.run('UPDATE users SET daily_scavenge_count = daily_scavenge_count + 1 WHERE id = ?', [userId]);

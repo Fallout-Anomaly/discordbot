@@ -627,7 +627,6 @@ module.exports = new ApplicationCommand({
             }
 
             if (newDuration) {
-                const timeRemaining = updatedRaffle.end_time - Date.now();
                 embed.addFields({ name: '⏰ New Deadline', value: `<t:${Math.floor(updatedRaffle.end_time / 1000)}:R>`, inline: true });
             }
 

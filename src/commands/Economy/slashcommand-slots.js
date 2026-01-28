@@ -21,7 +21,7 @@ module.exports = new ApplicationCommand({
         const userId = interaction.user.id;
 
         if (amount <= 0) {
-            return interaction.reply({ content: '❌ Bet amount must be greater than 0.', ephemeral: true });
+            return interaction.reply({ content: '❌ Bet amount must be greater than 0.', flags: 64 });
         }
 
         const items = ['🍒', '🍋', '🍇', '🍉', '🔔', '💎', '7️⃣'];
@@ -37,7 +37,7 @@ module.exports = new ApplicationCommand({
             'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
             [amount, userId, amount],
             function (err) {
-                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
 
                 // If this.changes is 0, the WHERE clause failed (insufficient funds)
                 if (this.changes === 0) {
@@ -45,7 +45,7 @@ module.exports = new ApplicationCommand({
                         const currentBalance = row ? row.balance : 0;
                         return interaction.reply({ 
                             content: `❌ You entered the casino with empty pockets. You have **${currentBalance}** Caps.`, 
-                            ephemeral: true 
+                            flags: 64 
                         });
                     });
                     return;
