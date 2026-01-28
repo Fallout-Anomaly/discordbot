@@ -1,5 +1,41 @@
 [
     {
+        "keywords": ["bless", "world", "better place", "philosophy", "meaning", "life", "spiritual", "purpose"],
+        "response": "This is a great philosophical question, but I'm an **Anomaly Modpack Support Bot** specialized in technical help for Fallout 4 with the Anomaly modpack. 😊\n\nFor game-related questions about gameplay, mechanics, or troubleshooting, I'm your bot! For broader life questions, you might want to chat with the community or ask a staff member."
+    },
+    {
+        "keywords": ["relationship", "dating", "girlfriend", "boyfriend", "wife", "husband", "crush", "love"],
+        "response": "I appreciate the trust, but I'm an **Anomaly Modpack Support Bot** designed for technical gaming help, not relationship advice! 💔\n\nFor personal matters, I'd recommend talking to friends, family, or a counselor. But if you need help with Fallout 4 or the Anomaly modpack, I'm here for that!"
+    },
+    {
+        "keywords": ["homework", "essay", "exam", "study", "math", "science", "history"],
+        "response": "I'm an **Anomaly Modpack Support Bot** for Fallout 4, not a homework helper! 📚\n\nFor academic questions, try checking your textbooks, asking your teacher, or using educational resources. I'm only useful for Anomaly modpack support!"
+    },
+    {
+        "keywords": ["therapy", "depression", "anxiety", "mental health", "suicidal", "help me"],
+        "response": "If you're experiencing mental health struggles, **please reach out to a professional**:\n- **National Suicide Prevention Lifeline**: 988 (US)\n- **Crisis Text Line**: Text HOME to 741741\n- **International Association for Suicide Prevention**: https://www.iasp.info/resources/Crisis_Centres/\n\nI'm just a support bot for a Fallout modpack, not equipped to help with serious personal issues. Take care of yourself! ❤️"
+    },
+    {
+        "keywords": ["advice", "what should i do", "how should i", "what would you", "should i break up"],
+        "response": "I'm an **Anomaly Modpack Support Bot**, not a life coach! 🤖\n\nFor personal advice, it's best to talk to friends, family, or professionals. I'm only good at helping with Fallout 4 and the Anomaly modpack. Need help with that instead?"
+    },
+    {
+        "keywords": ["bitcoin", "cryptocurrency", "forex", "stock market", "money"],
+        "response": "I'm an **Anomaly Modpack Support Bot** for Fallout 4, not a financial advisor! 💰\n\nFor investing and financial questions, consult with a licensed financial professional. I can only help with Anomaly modpack issues!"
+    },
+    {
+        "keywords": ["politics", "election", "vote", "government", "controversial", "debate"],
+        "response": "I'm an **Anomaly Modpack Support Bot** and don't engage in political discussions. 🗳️\n\nThis is a gaming support community, not a place for political debate. Keep discussions focused on Fallout 4 and the Anomaly modpack! If you need help with the game, I'm here for it."
+    },
+    {
+        "keywords": ["why are you", "what are you", "who are you", "can you", "do you have"],
+        "response": "I'm the **Anomaly AI Assistant Bot**! I exist to help with:\n- **Fallout 4 Anomaly Modpack** gameplay, mechanics, and troubleshooting\n- **Installation issues** and setup problems\n- **Game system explanations** (radiation, healing, combat, etc.)\n- **Quest guidance** and content questions\n\nI'm not a general-purpose AI, so off-topic questions won't get good answers. Ask me about Anomaly instead! 🎮"
+    },
+    {
+        "keywords": ["hotkey", "keybind", "key bind", "what key", "default key", "vafs", "default hotkey"],
+        "response": "**Anomaly Hotkey Reference**:\n\n**Combat**: G (VAFs) | Z (Criticals) | Q/E (Lean) | Alt (Bash/Grenades) | Spacebar (Jump)\n**Utilities**: H (Radial Menu) | Shift+K (Wipe Mask) | Shift+U (Night Vision) | F2 (HUD Toggle)\n**UI**: I (Inventory) | M (Map) | \\ (Mod Explorer) | Home (Workshop) | End/Delete (ENB)\n**Movement**: C/Caps (Walk/Run) | Ctrl (Sneak) | N (Dodge) | Tab (Flashlight)\n**Anomaly Specific**: Y (Armor Plates) | K (Examine Prey)\n\n*Most controls are remappable in MCM. Check your MCM for mod-specific keybinds!*"
+    },
+    {
         "keywords": ["screen", "tiny", "corner", "upper left", "small box"],
         "response": "**Fix for Small/Corner Screen Issue**:\n1. Open your MO2 folder.\n2. Run `BethINI.exe` as Administrator.\n3. Verify your resolution is correct.\n4. Check `Fallout4Prefs.ini` in MO2: ensure `bFullscreen=1` OR `bBorderless=1`, but not both.\n5. (Nvidia) Go to Control Panel -> Adjust Desktop Size -> Scaling -> Full Screen."
     },

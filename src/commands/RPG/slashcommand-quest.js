@@ -17,8 +17,8 @@ const QUEST_TEMPLATES = [
 
 module.exports = new ApplicationCommand({
     command: {
-        name: 'quests',
-        description: 'Manage your wasteland quests.',
+        name: 'questjournal',
+        description: 'View and manage your quest journal.',
         options: [
             {
                 name: 'generate',
@@ -34,11 +34,6 @@ module.exports = new ApplicationCommand({
                 name: 'complete',
                 description: 'Complete your current quest to claim rewards.',
                 type: ApplicationCommandOptionType.Subcommand
-            },
-            {
-                name: 'stats',
-                description: 'View your quest completion stats.',
-                type: ApplicationCommandOptionType.Subcommand
             }
         ]
     },
@@ -49,25 +44,61 @@ module.exports = new ApplicationCommand({
         const subcommand = interaction.options.getSubcommand();
         const userId = interaction.user.id;
 
-        // --- STATUS ---
+        // --- STATUS (DEFAULT/MAIN) ---
         if (subcommand === 'status') {
             db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], (err, quest) => {
                 if (err) return interaction.editReply({ content: '❌ Database error.' });
                 
                 if (!quest) {
-                    return interaction.editReply({ content: '📜 You have no active quest. Use `/quests generate` to find work.' });
+                    // Show journal summary if no active quest
+                    db.all('SELECT * FROM quest_history WHERE user_id = ?', [userId], (histErr, rows) => {
+                        const stats = {
+                            total: rows ? rows.length : 0,
+                            easy: 0, medium: 0, hard: 0,
+                            totalCaps: 0, totalXP: 0
+                        };
+
+                        if (rows) {
+                            rows.forEach(q => {
+                                if (q.difficulty === 'Easy') stats.easy++;
+                                else if (q.difficulty === 'Medium') stats.medium++;
+                                else if (q.difficulty === 'Hard') stats.hard++;
+                                stats.totalCaps += q.reward_caps;
+                                stats.totalXP += q.reward_xp;
+                            });
+                        }
+
+                        const embed = new EmbedBuilder()
+                            .setTitle('📓 Quest Journal')
+                            .setDescription('No active quest. Your journal is empty, wasteland warrior.')
+                            .addFields(
+                                { name: '📈 Quests Completed', value: `${stats.total}`, inline: true },
+                                { name: '🟢 Easy', value: `${stats.easy}`, inline: true },
+                                { name: '🟡 Medium', value: `${stats.medium}`, inline: true },
+                                { name: '🔴 Hard', value: `${stats.hard}`, inline: true },
+                                { name: '💰 Total Caps', value: `${stats.totalCaps}`, inline: true },
+                                { name: '✨ Total XP', value: `${stats.totalXP}`, inline: true },
+                                { name: '⚡ Average Reward', value: stats.total > 0 ? `${Math.round(stats.totalCaps / stats.total)} Caps | ${Math.round(stats.totalXP / stats.total)} XP` : 'N/A', inline: false }
+                            )
+                            .setColor('#34495E')
+                            .setFooter({ text: 'Use /questjournal generate to find work.' });
+
+                        interaction.editReply({ embeds: [embed] });
+                    });
+                    return;
                 }
 
                 const embed = new EmbedBuilder()
                     .setTitle(`📜 Active Quest: ${quest.title}`)
                     .setDescription(quest.description)
                     .addFields(
-                        { name: 'Objective', value: quest.objective, inline: true },
+                        { name: 'Objective', value: quest.objective, inline: false },
                         { name: 'Difficulty', value: quest.difficulty, inline: true },
-                        { name: 'Rewards', value: `💰 ${quest.reward_caps} Caps | ✨ ${quest.reward_xp} XP` + (quest.reward_item ? ` | 🎁 ${quest.reward_item}` : '') }
+                        { name: 'Priority', value: quest.difficulty === 'Hard' ? '🔴 Critical' : quest.difficulty === 'Medium' ? '🟡 Important' : '🟢 Routine', inline: true },
+                        { name: 'Rewards', value: `💰 ${quest.reward_caps} Caps | ✨ ${quest.reward_xp} XP` + (quest.reward_item ? ` | 🎁 ${quest.reward_item}` : ''), inline: false }
                     )
                     .setColor('#f1c40f')
-                    .setFooter({ text: 'Use /quests complete when finished.' });
+                    .setFooter({ text: 'Use /questjournal complete when finished.' });
 
                 interaction.editReply({ embeds: [embed] });
             });
@@ -180,41 +211,6 @@ module.exports = new ApplicationCommand({
 
                     interaction.editReply({ embeds: [embed] });
                 });
-            });
-        }
-
-        // --- STATS ---
-        else if (subcommand === 'stats') {
-            db.all('SELECT * FROM quest_history WHERE user_id = ?', [userId], (err, rows) => {
-                const stats = {
-                    total: rows ? rows.length : 0,
-                    easy: 0, medium: 0, hard: 0,
-                    totalCaps: 0, totalXP: 0
-                };
-
-                if (rows) {
-                    rows.forEach(q => {
-                        if (q.difficulty === 'Easy') stats.easy++;
-                        else if (q.difficulty === 'Medium') stats.medium++;
-                        else if (q.difficulty === 'Hard') stats.hard++;
-                        stats.totalCaps += q.reward_caps;
-                        stats.totalXP += q.reward_xp;
-                    });
-                }
-
-                const embed = new EmbedBuilder()
-                    .setTitle('📊 Your Quest Statistics')
-                    .addFields(
-                        { name: '📈 Quests Completed', value: `${stats.total}`, inline: true },
-                        { name: '🟢 Easy Quests', value: `${stats.easy}`, inline: true },
-                        { name: '🟡 Medium Quests', value: `${stats.medium}`, inline: true },
-                        { name: '🔴 Hard Quests', value: `${stats.hard}`, inline: true },
-                        { name: '💰 Total Caps Earned', value: `${stats.totalCaps}`, inline: true },
-                        { name: '✨ Total XP Earned', value: `${stats.totalXP}`, inline: true }
-                    )
-                    .setColor('#F39C12');
-
-                interaction.editReply({ embeds: [embed] });
             });
         }
     }
