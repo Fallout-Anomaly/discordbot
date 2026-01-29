@@ -44,7 +44,7 @@ module.exports = new ApplicationCommand({
 
         // --- STATUS (DEFAULT/MAIN) ---
         if (subcommand === 'status') {
-            db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], (err, quest) => {
+            db.get('SELECT * FROM quest_journal WHERE user_id = ?', [userId], (err, quest) => {
                 if (err) return interaction.editReply({ content: '❌ Database error.' });
                 
                 if (!quest) {
@@ -119,7 +119,7 @@ module.exports = new ApplicationCommand({
         // --- GENERATE ---
         else if (subcommand === 'generate') {
             // Check cooldown or existing quest
-            db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], async (err, existingQuest) => {
+            db.get('SELECT * FROM quest_journal WHERE user_id = ?', [userId], async (err, existingQuest) => {
                 if (existingQuest) {
                     return interaction.editReply({ content: `❌ You already have an active quest: **${existingQuest.title}**. Finish it first!` });
                 }
@@ -161,7 +161,7 @@ module.exports = new ApplicationCommand({
                 const startTime = Date.now();
 
                 // Insert into DB with start time and duration
-                db.run(`INSERT INTO active_quests (user_id, title, description, objective, difficulty, reward_caps, reward_xp, reward_item, start_time, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                db.run(`INSERT INTO quest_journal (user_id, title, description, objective, difficulty, reward_caps, reward_xp, reward_item, start_time, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [userId, newQuest.title, newQuest.description, newQuest.objective, newQuest.difficulty, newQuest.reward_caps, newQuest.reward_xp, newQuest.reward_item || null, startTime, durationMs],
                     (err) => {
                         if (err) return interaction.editReply({ content: '❌ Failed to save quest to Pip-Boy database.' });
@@ -186,7 +186,7 @@ module.exports = new ApplicationCommand({
         // --- COMPLETE ---
         else if (subcommand === 'complete') {
             // First fetch the quest and user XP to know rewards
-            db.get('SELECT * FROM active_quests WHERE user_id = ?', [userId], (err, quest) => {
+            db.get('SELECT * FROM quest_journal WHERE user_id = ?', [userId], (err, quest) => {
                 if (!quest) return interaction.editReply({ content: '❌ You do not have an active quest to complete.' });
 
                 // Check if quest timer has finished
@@ -205,7 +205,7 @@ module.exports = new ApplicationCommand({
                     const newXp = oldXp + quest.reward_xp;
 
                     // Safe Deletion: Only reward if we successfully delete
-                    db.run('DELETE FROM active_quests WHERE user_id = ?', [userId], function (delErr) {
+                    db.run('DELETE FROM quest_journal WHERE user_id = ?', [userId], function (delErr) {
                         if (delErr) return interaction.editReply({ content: '❌ Database error completing quest.' });
                         
                         if (this.changes === 0) {

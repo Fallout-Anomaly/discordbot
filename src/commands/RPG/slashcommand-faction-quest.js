@@ -224,9 +224,21 @@ async function acceptQuest(interaction, userId) {
         });
 
         if (existingQuest) {
+            // Find quest details
+            let existingQuestData = null;
+            for (const factionQuests of Object.values(FACTION_QUESTS)) {
+                const found = factionQuests.find(q => q.id === existingQuest.quest_id);
+                if (found) {
+                    existingQuestData = found;
+                    break;
+                }
+            }
+            
+            const questName = existingQuestData ? existingQuestData.name : existingQuest.quest_id;
             const timeLeft = Math.floor((existingQuest.complete_at - Date.now()) / 1000 / 60);
+            
             await interaction.editReply({ 
-                content: `❌ You already have an active quest for **${existingQuest.faction_id}**! Complete or wait ${timeLeft} minutes before accepting a new one.` 
+                content: `❌ You already have an active quest: **${questName}** (${existingQuest.faction_id})\nComplete it or wait ${timeLeft} more minutes before accepting a new one.` 
             });
             return;
         }

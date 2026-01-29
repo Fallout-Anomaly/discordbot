@@ -20,18 +20,20 @@ module.exports = new ApplicationCommand({
             },
             {
                 name: 'amount',
-                description: 'Amount of caps (for deposit/withdraw)',
-                type: ApplicationCommandOptionType.Integer,
-                required: false,
-                min_value: 1,
-                max_value: 999999
+                description: 'Amount of caps (number) or "all" (for deposit/withdraw)',
+                type: ApplicationCommandOptionType.String,
+                required: false
             }
         ]
     },
     defer: 'ephemeral',
     run: async (client, interaction) => {
         const action = interaction.options.getString('action');
-        const amount = interaction.options.getInteger('amount');
+        const amountInput = interaction.options.getString('amount');
+        const normalizedAmountInput = amountInput ? amountInput.trim().toLowerCase() : null;
+        const amount = normalizedAmountInput && normalizedAmountInput !== 'all'
+            ? parseInt(normalizedAmountInput, 10)
+            : null;
         const userId = interaction.user.id;
 
         // Get user data
@@ -107,21 +109,24 @@ module.exports = new ApplicationCommand({
         }
 
         if (action === 'deposit') {
-            if (!amount || amount <= 0) return interaction.editReply({ content: '❌ Please specify a valid amount to deposit.' });
-            if (amount > userData.balance) {
+            const depositAmount = normalizedAmountInput === 'all' ? userData.balance : amount;
+            if (!depositAmount || Number.isNaN(depositAmount) || depositAmount <= 0) {
+                return interaction.editReply({ content: '❌ Please specify a valid amount to deposit.' });
+            }
+            if (depositAmount > userData.balance) {
                 return interaction.editReply({ 
-                    content: `❌ You don't have ${amount} caps. You only have ${userData.balance} caps.` 
+                    content: `❌ You don't have ${depositAmount} caps. You only have ${userData.balance} caps.` 
                 });
             }
 
             // Deposit fee is 5%
-            const fee = Math.floor(amount * 0.05);
-            const actualDeposit = amount - fee;
+            const fee = Math.floor(depositAmount * 0.05);
+            const actualDeposit = depositAmount - fee;
 
             // Deduct from balance
             await new Promise((resolve) => {
                 db.run('UPDATE users SET balance = balance - ? WHERE id = ?', 
-                    [amount, userId], () => resolve());
+                    [depositAmount, userId], () => resolve());
             });
 
             // Add to stash
@@ -158,10 +163,13 @@ module.exports = new ApplicationCommand({
         }
 
         if (action === 'withdraw') {
-            if (!amount || amount <= 0) return interaction.editReply({ content: '❌ Please specify a valid amount to withdraw.' });
-            if (amount > stashData.amount) {
+            const withdrawAmount = normalizedAmountInput === 'all' ? stashData.amount : amount;
+            if (!withdrawAmount || Number.isNaN(withdrawAmount) || withdrawAmount <= 0) {
+                return interaction.editReply({ content: '❌ Please specify a valid amount to withdraw.' });
+            }
+            if (withdrawAmount > stashData.amount) {
                 return interaction.editReply({ 
-                    content: `❌ You don't have ${amount} caps in your stash. You have ${stashData.amount} caps.` 
+                    content: `❌ You don't have ${withdrawAmount} caps in your stash. You have ${stashData.amount} caps.` 
                 });
             }
 
@@ -175,8 +183,8 @@ module.exports = new ApplicationCommand({
             const netGain = accruedInterest - totalFeeDeducted;
 
             // Withdraw fee is 2% on the withdrawal amount
-            const withdrawFee = Math.floor(amount * 0.02);
-            const actualWithdraw = amount - withdrawFee;
+            const withdrawFee = Math.floor(withdrawAmount * 0.02);
+            const actualWithdraw = withdrawAmount - withdrawFee;
             
             // Total payout = withdrawal + net interest
             const totalPayout = actualWithdraw + netGain;
@@ -190,7 +198,7 @@ module.exports = new ApplicationCommand({
             // Subtract from stash
             await new Promise((resolve) => {
                 db.run('UPDATE stash SET amount = amount - ? WHERE user_id = ?',
-                    [amount, userId], () => resolve());
+                    [withdrawAmount, userId], () => resolve());
             });
 
             const embed = new EmbedBuilder()
@@ -201,7 +209,7 @@ module.exports = new ApplicationCommand({
                     { name: '📈 Interest Earned', value: `**+${netGain} Caps**`, inline: true },
                     { name: '💸 Withdraw Fee (2%)', value: `**-${withdrawFee} Caps**`, inline: true },
                     { name: '💵 Total Received', value: `**${totalPayout} Caps**`, inline: false },
-                    { name: '📊 Stash Remaining', value: `**${stashData.amount - amount} Caps**`, inline: false }
+                    { name: '📊 Stash Remaining', value: `**${stashData.amount - withdrawAmount} Caps**`, inline: false }
                 )
                 .setColor('#FF9800')
                 .setFooter({ text: 'Keep stashing for long-term gains!' });
