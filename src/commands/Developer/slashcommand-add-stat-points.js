@@ -85,5 +85,23 @@ module.exports = new ApplicationCommand({
             .setTimestamp();
 
         await interaction.editReply({ embeds: [embed] });
+
+        // Notify the target user they received perk points
+        try {
+            const userEmbed = new EmbedBuilder()
+                .setTitle('🎉 Perk Points Received!')
+                .setDescription(`You received **${amount} perk point${amount > 1 ? 's' : ''}**!`)
+                .addFields(
+                    { name: 'Perk Points Added', value: `+${amount}`, inline: true },
+                    { name: 'New Total', value: `${newTotal}`, inline: true },
+                    { name: 'Level', value: `${actualLevel}`, inline: true }
+                )
+                .setColor('#FFD700')
+                .setTimestamp();
+
+            await targetUser.send({ embeds: [userEmbed] });
+        } catch (dmError) {
+            console.log(`Could not DM ${targetUser.tag} about perk points:`, dmError.message);
+        }
     }
 }).toJSON();

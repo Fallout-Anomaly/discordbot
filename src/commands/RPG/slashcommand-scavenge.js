@@ -169,5 +169,11 @@ async function processScavengeResult(client, interaction) {
             { name: 'Status', value: damageMsg || 'Safe return', inline: false }
         );
 
+    // Add level up announcement if applicable
+    if (levelCheck.leveledUp) {
+        embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n+${levelCheck.levelsGained} SPECIAL Point${levelCheck.levelsGained > 1 ? 's' : ''} earned!`, inline: false });
+        embed.setColor('#FFD700');
+    }
+
     interaction.editReply({ embeds: [embed] });
 }

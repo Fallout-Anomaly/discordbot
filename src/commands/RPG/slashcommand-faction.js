@@ -2,6 +2,7 @@ const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
 const FactionManager = require('../../utils/FactionManager');
+const { calculateLevel } = require('../../utils/LevelSystem');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -44,12 +45,13 @@ module.exports = new ApplicationCommand({
         const subcommand = interaction.options.getSubcommand();
         const userId = interaction.user.id;
 
-        // Get user level
+        // Get user XP and calculate actual level
         const userData = await new Promise((resolve) => {
-            db.get('SELECT level FROM users WHERE id = ?', [userId], (err, row) => {
-                resolve(row || { level: 1 });
+            db.get('SELECT xp FROM users WHERE id = ?', [userId], (err, row) => {
+                resolve(row || { xp: 0 });
             });
         });
+        const userLevel = calculateLevel(userData.xp);
 
         // Initialize factions if needed
         await FactionManager.initializePlayerFactions(userId);
@@ -58,7 +60,7 @@ module.exports = new ApplicationCommand({
             return await showStatus(interaction, userId);
         } else if (subcommand === 'choose') {
             const factionId = interaction.options.getString('faction');
-            return await chooseFaction(interaction, userId, factionId, userData.level);
+            return await chooseFaction(interaction, userId, factionId, userLevel);
         }
     }
 }).toJSON();

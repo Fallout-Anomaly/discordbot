@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const Component = require('../../structure/Component');
 const db = require('../../utils/EconomyDB');
+const { checkLevelUp } = require('../../utils/LevelSystem');
 
 module.exports = new Component({
     customId: 'pvp_accept_*',
@@ -126,12 +127,29 @@ async function executePvP(attId, defId, client, db, respond, attName) {
     }
 
     const attWon = attHp > 0;
+
+    // Check for level ups for both players
+    const attOldData = await new Promise((resolve) => {
+        db.get('SELECT xp FROM users WHERE id = ?', [attId], (err, row) => resolve(row || { xp: 0 }));
+    });
+    const defOldData = await new Promise((resolve) => {
+        db.get('SELECT xp FROM users WHERE id = ?', [defId], (err, row) => resolve(row || { xp: 0 }));
+    });
+
+    const attOldXp = attOldData.xp || 0;
+    const defOldXp = defOldData.xp || 0;
+    const attNewXp = attOldXp + 100;
+    const defNewXp = attWon ? defOldXp + 25 : defOldXp + 100;
+    const attLevelCheck = checkLevelUp(attOldXp, attNewXp);
+    const defLevelCheck = checkLevelUp(defOldXp, defNewXp);
+
+    // Award XP and stat points with level ups
     if (attWon) {
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100 WHERE id = ?', [attId], () => r()));
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25 WHERE id = ?', [defId], () => r()));
+        await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100, stat_points = stat_points + ? WHERE id = ?', [attLevelCheck.levelsGained, attId], () => r()));
+        await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25, stat_points = stat_points + ? WHERE id = ?', [defLevelCheck.levelsGained, defId], () => r()));
     } else {
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25 WHERE id = ?', [attId], () => r()));
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100 WHERE id = ?', [defId], () => r()));
+        await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25, stat_points = stat_points + ? WHERE id = ?', [attLevelCheck.levelsGained, attId], () => r()));
+        await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100, stat_points = stat_points + ? WHERE id = ?', [defLevelCheck.levelsGained, defId], () => r()));
     }
 
     const report = new EmbedBuilder()
@@ -143,6 +161,14 @@ async function executePvP(attId, defId, client, db, respond, attName) {
             { name: 'Battle', value: log.slice(-20).join('\n').slice(0, 1024) },
             { name: 'Result', value: attWon ? `🎉 ${attName} WINS!\n💰 +100\n✨ +100 XP` : `🎉 ${defName} WINS!\n💰 +100\n✨ +100 XP` }
         );
+
+    // Add level up announcements if applicable
+    if (attLevelCheck.leveledUp) {
+        report.addFields({ name: '⭐ LEVEL UP! (Attacker)', value: `**Level ${attLevelCheck.newLevel}** 🎉\n+${attLevelCheck.levelsGained} SPECIAL Point${attLevelCheck.levelsGained > 1 ? 's' : ''} earned!`, inline: false });
+    }
+    if (defLevelCheck.leveledUp) {
+        report.addFields({ name: '⭐ LEVEL UP! (Defender)', value: `**Level ${defLevelCheck.newLevel}** 🎉\n+${defLevelCheck.levelsGained} SPECIAL Point${defLevelCheck.levelsGained > 1 ? 's' : ''} earned!`, inline: false });
+    }
 
     return respond.editReply({ embeds: [report] });
 }
