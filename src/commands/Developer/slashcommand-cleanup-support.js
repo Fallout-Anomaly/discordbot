@@ -30,7 +30,7 @@ module.exports = new ApplicationCommand({
     options: {
         botOwner: true
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     run: async (client, interaction) => {
         // Interaction is auto-deferred via defer property in handler
 

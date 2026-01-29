@@ -40,7 +40,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     developer: true, // Requires bot developer permission
     run: async (client, interaction) => {
         const targetUser = interaction.options.getUser('user');

@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'timeout',
         description: 'Put a user in timeout (moderate).',
-        defer: 'ephemeral',
+        defer: { flags: 64 },
         options: [
             {
                 name: 'user',

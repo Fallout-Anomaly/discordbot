@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'setnick',
         description: 'Change a user\'s nickname.',
-        defer: 'ephemeral',
+        defer: { flags: 64 },
         options: [
             {
                 name: 'user',

@@ -22,11 +22,24 @@ module.exports = new ApplicationCommand({
                 name: 'amount',
                 description: 'Amount of caps (number) or "all" (for deposit/withdraw)',
                 type: ApplicationCommandOptionType.String,
-                required: false
+                required: false,
+                autocomplete: true
             }
         ]
     },
     defer: 'ephemeral',
+    autocomplete: async (client, interaction) => {
+        const focused = interaction.options.getFocused(true);
+        if (focused.name !== 'amount') return interaction.respond([]);
+
+        const value = String(focused.value || '').toLowerCase();
+        const suggestions = [];
+        if (!value || 'all'.startsWith(value)) {
+            suggestions.push({ name: 'all', value: 'all' });
+        }
+
+        return interaction.respond(suggestions.slice(0, 25));
+    },
     run: async (client, interaction) => {
         const action = interaction.options.getString('action');
         const amountInput = interaction.options.getString('amount');
@@ -39,20 +52,38 @@ module.exports = new ApplicationCommand({
         // Get user data
         const userData = await new Promise((resolve) => {
             db.get('SELECT * FROM users WHERE id = ?', [userId], (err, row) => {
-                resolve(row || { id: userId, balance: 0 });
+                if (row) {
+                    resolve({
+                        ...row,
+                        balance: row.balance ?? 0,
+                        xp: row.xp ?? 0,
+                        level: row.level ?? 1
+                    });
+                } else {
+                    resolve({ id: userId, balance: 0, xp: 0, level: 1 });
+                }
             });
         });
 
         // Get stash data
         const stashData = await new Promise((resolve) => {
             db.get('SELECT * FROM stash WHERE user_id = ?', [userId], (err, row) => {
-                resolve(row || { 
-                    user_id: userId, 
-                    amount: 0, 
-                    last_fee_paid: Date.now(),
-                    interest_earned: 0,
-                    interest_claimed: 0
-                });
+                if (row) {
+                    resolve({
+                        ...row,
+                        amount: row.amount ?? 0,
+                        created_at: row.created_at ?? Date.now()
+                    });
+                } else {
+                    resolve({ 
+                        user_id: userId, 
+                        amount: 0, 
+                        created_at: Date.now(),
+                        last_fee_paid: Date.now(),
+                        interest_earned: 0,
+                        interest_claimed: 0
+                    });
+                }
             });
         });
 

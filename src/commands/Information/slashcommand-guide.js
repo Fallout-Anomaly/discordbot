@@ -6,7 +6,7 @@ module.exports = new ApplicationCommand({
         name: 'guide',
         description: 'Interactive Survivor\'s Guide to all available commands.',
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     run: async (client, interaction) => {
         const commands = client.collection.application_commands;
         const categories = {

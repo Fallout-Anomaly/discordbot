@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'userinfo',
         description: 'Display information about a user.',
-        defer: 'ephemeral',
+        defer: { flags: 64 },
         options: [
             {
                 name: 'user',
