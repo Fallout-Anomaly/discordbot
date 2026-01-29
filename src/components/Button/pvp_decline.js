@@ -2,7 +2,7 @@ const Component = require('../../structure/Component');
 
 module.exports = new Component({
     customId: 'pvp_decline_*',
-    type: 'Button',
+    type: 'button',
     run: async (client, interaction) => {
         // Parse IDs from customId: pvp_decline_{attackerId}_{defenderId}
         const parts = interaction.customId.split('_');
