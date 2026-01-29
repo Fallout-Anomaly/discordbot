@@ -299,46 +299,52 @@ module.exports = new ApplicationCommand({
         }
     },
     autocomplete: async (interaction) => {
-        const subcommand = interaction.options.getSubcommand();
-        
-        if (subcommand !== 'accept') return;
-
-        const focusedOption = interaction.options.getFocused(true);
-        if (focusedOption.name !== 'quest') return;
-
-        const userId = interaction.user.id;
-        const stats = await FactionManager.getPlayerFactionStats(userId);
-        const allegiance = await FactionManager.getPlayerAllegiance(userId);
-
-        // Collect all available quests
-        const allQuests = [];
-        
-        for (const [factionId, factionQuests] of Object.entries(FACTION_QUESTS)) {
-            const playerRank = stats[factionId]?.rank || 'Outsider';
-            const hasAllegiance = allegiance?.faction_id === factionId;
+        try {
+            // Get subcommand from raw data since getSubcommand() isn't available in autocomplete
+            const subcommand = interaction.data?.options?.[0]?.name;
             
-            factionQuests.forEach(quest => {
-                // Show Recruit quests to everyone, show Ally+ quests only to those with allegiance
-                const canSeeQuest = quest.rank === 'Recruit' || hasAllegiance;
-                if (!canSeeQuest) return;
+            if (subcommand !== 'accept') return;
+
+            const focusedOption = interaction.options.getFocused(true);
+            if (focusedOption.name !== 'quest') return;
+
+            const userId = interaction.user.id;
+            const stats = await FactionManager.getPlayerFactionStats(userId);
+            const allegiance = await FactionManager.getPlayerAllegiance(userId);
+
+            // Collect all available quests
+            const allQuests = [];
+            
+            for (const [factionId, factionQuests] of Object.entries(FACTION_QUESTS)) {
+                const playerRank = stats[factionId]?.rank || 'Outsider';
+                const hasAllegiance = allegiance?.faction_id === factionId;
                 
-                const isAvailable = isRankSufficient(playerRank, quest.rank);
-                if (isAvailable) {
-                    allQuests.push({
-                        name: `${quest.name} (${factionId})`,
-                        value: quest.id
-                    });
-                }
-            });
+                factionQuests.forEach(quest => {
+                    // Show Recruit quests to everyone, show Ally+ quests only to those with allegiance
+                    const canSeeQuest = quest.rank === 'Recruit' || hasAllegiance;
+                    if (!canSeeQuest) return;
+                    
+                    const isAvailable = isRankSufficient(playerRank, quest.rank);
+                    if (isAvailable) {
+                        allQuests.push({
+                            name: `${quest.name} (${factionId})`,
+                            value: quest.id
+                        });
+                    }
+                });
+            }
+
+            // Filter based on user input
+            const input = focusedOption.value.toLowerCase();
+            const filtered = allQuests
+                .filter(q => q.value.toLowerCase().includes(input) || q.name.toLowerCase().includes(input))
+                .slice(0, 25); // Discord limit
+
+            await interaction.respond(filtered);
+        } catch (error) {
+            console.error('Autocomplete error:', error);
+            await interaction.respond([]);
         }
-
-        // Filter based on user input
-        const input = focusedOption.value.toLowerCase();
-        const filtered = allQuests
-            .filter(q => q.value.toLowerCase().includes(input) || q.name.toLowerCase().includes(input))
-            .slice(0, 25); // Discord limit
-
-        await interaction.respond(filtered);
     }
 }).toJSON();
 
