@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'serverinfo',
         description: 'Display information about the server.',
-        defer: 'ephemeral'
+        defer: { flags: 64 }
     },
     run: async (client, interaction) => {
         const { guild } = interaction;

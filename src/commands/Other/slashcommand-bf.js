@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'bf',
         description: 'Submit feedback/requests specifically for the BOT.',
-        defer: 'ephemeral',
+        defer: { flags: 64 },
         options: [
             {
                 name: 'feedback',

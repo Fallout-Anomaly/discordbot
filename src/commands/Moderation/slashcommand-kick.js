@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'kick',
         description: 'Kick a user from the server.',
-        defer: 'ephemeral',
+        defer: { flags: 64 },
         options: [
             {
                 name: 'user',

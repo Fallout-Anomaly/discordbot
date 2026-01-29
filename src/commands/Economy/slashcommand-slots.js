@@ -16,7 +16,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     run: async (client, interaction) => {
         const amount = interaction.options.getInteger('amount');
         const userId = interaction.user.id;

@@ -41,7 +41,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     run: async (client, interaction) => {
         const db = EconomyDB.getDatabase();
         const subcommand = interaction.options.getSubcommand();

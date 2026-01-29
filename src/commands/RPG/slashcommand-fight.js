@@ -49,7 +49,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     run: async (client, interaction) => {
         const subcommand = interaction.options.getSubcommand();
 

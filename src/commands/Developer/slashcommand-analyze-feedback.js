@@ -9,7 +9,6 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'analyze-feedback',
         description: 'Scan and analyze player feedback from the feedback channel',
-        defer: 'ephemeral', // IMPORTANT: Defer immediately to prevent 10062 Unknown interaction
         options: [
             {
                 name: 'action',
@@ -38,6 +37,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
+    defer: { flags: 64 },
     run: async (client, interaction) => {
         // Owner-only check
         if (interaction.user.id !== config.users.ownerId) {

@@ -33,7 +33,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     developer: true,
     run: async (client, interaction) => {
         const db = require('../../utils/EconomyDB');

@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'ban',
         description: 'Ban a user from the server.',
-        defer: 'ephemeral',
+        defer: { flags: 64 },
         options: [
             {
                 name: 'user',

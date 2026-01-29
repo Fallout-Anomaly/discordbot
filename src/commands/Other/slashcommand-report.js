@@ -5,7 +5,7 @@ module.exports = new ApplicationCommand({
     command: {
         name: 'report',
         description: 'Report a user or an issue to the staff.',
-        defer: 'ephemeral',
+        defer: { flags: 64 },
         options: [
             {
                 name: 'user',

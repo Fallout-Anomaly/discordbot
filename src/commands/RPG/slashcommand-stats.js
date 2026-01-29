@@ -16,7 +16,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
-    defer: 'ephemeral',
+    defer: { flags: 64 },
     run: async (client, interaction) => {
         
         const target = interaction.options.getUser('user') || interaction.user;

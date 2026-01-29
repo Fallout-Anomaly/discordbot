@@ -124,6 +124,11 @@ module.exports = new ApplicationCommand({
                     return interaction.editReply({ content: `❌ You already have an active quest: **${existingQuest.title}**. Finish it first!` });
                 }
 
+                // Ensure user exists (required for FOREIGN KEY constraint)
+                await new Promise((resolve) => {
+                    db.run('INSERT OR IGNORE INTO users (id, balance, xp, level) VALUES (?, 0, 0, 1)', [userId], () => resolve());
+                });
+
                 // Get user stats for AI context
                 const userParams = await new Promise((resolve) => {
                     db.get('SELECT level, stat_strength, stat_intelligence FROM users WHERE id = ?', [userId], (e, r) => resolve(r || {}));
@@ -164,7 +169,10 @@ module.exports = new ApplicationCommand({
                 db.run(`INSERT INTO quest_journal (user_id, title, description, objective, difficulty, reward_caps, reward_xp, reward_item, start_time, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [userId, newQuest.title, newQuest.description, newQuest.objective, newQuest.difficulty, newQuest.reward_caps, newQuest.reward_xp, newQuest.reward_item || null, startTime, durationMs],
                     (err) => {
-                        if (err) return interaction.editReply({ content: '❌ Failed to save quest to Pip-Boy database.' });
+                        if (err) {
+                            console.error('Quest Journal insert error:', err);
+                            return interaction.editReply({ content: '❌ Failed to save quest to Pip-Boy database.' });
+                        }
 
                         const embed = new EmbedBuilder()
                             .setTitle('🆕 New Quest Received')
@@ -189,6 +197,11 @@ module.exports = new ApplicationCommand({
             db.get('SELECT * FROM quest_journal WHERE user_id = ?', [userId], (err, quest) => {
                 if (!quest) return interaction.editReply({ content: '❌ You do not have an active quest to complete.' });
 
+                const questTitle = quest.title || 'Unknown Quest';
+                const questDifficulty = quest.difficulty || 'Unknown';
+                const rewardCaps = Number.isFinite(quest.reward_caps) ? quest.reward_caps : 0;
+                const rewardXp = Number.isFinite(quest.reward_xp) ? quest.reward_xp : 0;
+
                 // Check if quest timer has finished
                 const now = Date.now();
                 const endTime = quest.start_time + quest.duration;
@@ -202,7 +215,7 @@ module.exports = new ApplicationCommand({
                 // Get current XP for level check
                 db.get('SELECT xp FROM users WHERE id = ?', [userId], (xerr, user) => {
                     const oldXp = user?.xp || 0;
-                    const newXp = oldXp + quest.reward_xp;
+                    const newXp = oldXp + rewardXp;
 
                     // Safe Deletion: Only reward if we successfully delete
                     db.run('DELETE FROM quest_journal WHERE user_id = ?', [userId], function (delErr) {
@@ -217,7 +230,7 @@ module.exports = new ApplicationCommand({
 
                         // Grant Rewards with stat points for level up
                         db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, daily_quest_count = daily_quest_count + 1, stat_points = stat_points + ? WHERE id = ?', 
-                            [quest.reward_caps, quest.reward_xp, levelCheck.levelsGained, userId]);
+                            [rewardCaps, rewardXp, levelCheck.levelsGained, userId]);
 
                         // Grant Item if exists
                         if (quest.reward_item) {
@@ -235,14 +248,14 @@ module.exports = new ApplicationCommand({
 
                         // Archive to history (for stats)
                         db.run('INSERT INTO quest_history (user_id, difficulty, reward_caps, reward_xp, timestamp) VALUES (?, ?, ?, ?, ?)',
-                            [userId, quest.difficulty, quest.reward_caps, quest.reward_xp, Date.now()], (_histErr) => {
+                            [userId, questDifficulty, rewardCaps, rewardXp, Date.now()], (_histErr) => {
                                 // ignore errors, just stats
                             }
                         );
 
                         const embed = new EmbedBuilder()
                             .setTitle('🎉 Quest Complete!')
-                            .setDescription(`You successfully completed: **${quest.title}**\n\n**Rewards:**\n💰 ${quest.reward_caps} Caps\n✨ ${quest.reward_xp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
+                            .setDescription(`You successfully completed: **${questTitle}**\n\n**Rewards:**\n💰 ${rewardCaps} Caps\n✨ ${rewardXp} XP` + (quest.reward_item ? `\n🎁 **Item:** ${quest.reward_item}` : ''))
                             .setColor('#f1c40f');
 
                         // Add level up announcement if applicable
