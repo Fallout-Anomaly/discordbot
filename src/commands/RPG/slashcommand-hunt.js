@@ -135,8 +135,8 @@ module.exports = new ApplicationCommand({
             return interaction.editReply({ embeds: [embed] });
         }
 
-        const newXp = userData.xp + encounter.xp;
-        const levelCheck = checkLevelUp(userData.xp, newXp);
+        const newXp = (userData.xp ?? 0) + encounter.xp;
+        const levelCheck = checkLevelUp(userData.xp ?? 0, newXp);
 
         await new Promise((resolve) => {
             db.run(
@@ -151,7 +151,7 @@ module.exports = new ApplicationCommand({
             db.run('INSERT OR REPLACE INTO hunt_cooldown (user_id, cooldown_expiry) VALUES (?, ?)', [userId, cooldownEnd], () => resolve());
         });
 
-        const newBalance = userData.balance + encounter.caps;
+        const newBalance = (userData.balance ?? 0) + encounter.caps;
 
         const embed = new EmbedBuilder()
             .setTitle(`${encounter.emoji} Successful Hunt!`)

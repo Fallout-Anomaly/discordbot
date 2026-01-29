@@ -24,7 +24,7 @@ module.exports = new ApplicationCommand({
                 return interaction.reply({ content: '❌ Database error.', ephemeral: true });
             }
 
-            const balance = row ? row.balance : 0;
+            const balance = row ? (row.balance ?? 0) : 0;
 
             // If user doesn't exist, create them
             if (!row) {

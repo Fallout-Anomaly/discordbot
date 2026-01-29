@@ -60,7 +60,7 @@ module.exports = new ApplicationCommand({
             );
         });
 
-        const newBalance = userData.balance + amount;
+        const newBalance = (userData.balance ?? 0) + amount;
 
         const embed = new EmbedBuilder()
             .setTitle('💰 Caps Given')

@@ -42,7 +42,16 @@ module.exports = new ApplicationCommand({
         // Get user data
         const userData = await new Promise((resolve) => {
             db.get('SELECT * FROM users WHERE id = ?', [userId], (err, row) => {
-                resolve(row || { id: userId, balance: 0, protection_expires: 0, insurance_level: 0 });
+                if (row) {
+                    resolve({
+                        ...row,
+                        balance: row.balance ?? 0,
+                        protection_expires: row.protection_expires ?? 0,
+                        insurance_level: row.insurance_level ?? 0
+                    });
+                } else {
+                    resolve({ id: userId, balance: 0, protection_expires: 0, insurance_level: 0 });
+                }
             });
         });
 

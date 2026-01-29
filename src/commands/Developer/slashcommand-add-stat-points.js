@@ -50,7 +50,7 @@ module.exports = new ApplicationCommand({
         });
 
         // Calculate actual level from XP (in case DB level is outdated)
-        const actualLevel = calculateLevel(userData.xp);
+        const actualLevel = calculateLevel(userData.xp ?? 0);
 
         // Add SPECIAL points
         await new Promise((resolve, reject) => {
@@ -78,7 +78,7 @@ module.exports = new ApplicationCommand({
                 { name: 'Previous Total', value: `${userData.stat_points}`, inline: true },
                 { name: 'New Total', value: `${newTotal}`, inline: true },
                 { name: 'Current Level', value: `${actualLevel}`, inline: true },
-                { name: 'Current XP', value: `${userData.xp}`, inline: true }
+                { name: 'Current XP', value: `${userData.xp ?? 0}`, inline: true }
             )
             .setColor('#00ff00')
             .setFooter({ text: `Executed by ${interaction.user.tag}` })

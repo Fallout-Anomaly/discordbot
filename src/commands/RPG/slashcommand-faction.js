@@ -51,7 +51,7 @@ module.exports = new ApplicationCommand({
                 resolve(row || { xp: 0 });
             });
         });
-        const userLevel = calculateLevel(userData.xp);
+        const userLevel = calculateLevel(userData.xp ?? 0);
 
         // Initialize factions if needed
         await FactionManager.initializePlayerFactions(userId);
