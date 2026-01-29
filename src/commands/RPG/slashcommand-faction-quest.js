@@ -300,13 +300,12 @@ module.exports = new ApplicationCommand({
     },
     autocomplete: async (interaction) => {
         try {
-            // Get subcommand from raw data since getSubcommand() isn't available in autocomplete
-            const subcommand = interaction.data?.options?.[0]?.name;
+            // Autocomplete interaction has different API - use raw data
+            if (interaction.isAutocomplete?.() === false) return;
             
-            if (subcommand !== 'accept') return;
-
-            const focusedOption = interaction.options.getFocused(true);
-            if (focusedOption.name !== 'quest') return;
+            // Check if this is for the quest parameter
+            const focused = interaction.options?.getFocused?.(true);
+            if (!focused || focused.name !== 'quest') return;
 
             const userId = interaction.user.id;
             const stats = await FactionManager.getPlayerFactionStats(userId);
@@ -335,15 +334,19 @@ module.exports = new ApplicationCommand({
             }
 
             // Filter based on user input
-            const input = focusedOption.value.toLowerCase();
+            const input = (focused?.value || '').toLowerCase();
             const filtered = allQuests
                 .filter(q => q.value.toLowerCase().includes(input) || q.name.toLowerCase().includes(input))
                 .slice(0, 25); // Discord limit
 
             await interaction.respond(filtered);
         } catch (error) {
-            console.error('Autocomplete error:', error);
-            await interaction.respond([]);
+            console.error('Quest autocomplete error:', error);
+            try {
+                await interaction.respond([]);
+            } catch (e) {
+                // Silently fail if respond fails
+            }
         }
     }
 }).toJSON();
