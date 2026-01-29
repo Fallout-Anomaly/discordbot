@@ -8,6 +8,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.error('Could not connect to economy database:', err.message);
     } else {
         console.log('Connected to economy database.');
+        db.run('PRAGMA foreign_keys = ON;'); // Enforce foreign key constraints
     }
 });
 
@@ -61,9 +62,22 @@ db.serialize(() => {
         "stat_points INTEGER DEFAULT 5"
     ];
 
-    columnsToAdd.forEach(col => {
-        db.run(`ALTER TABLE users ADD COLUMN ${col}`, () => {
-            // Error is expected if column already exists, safe to ignore
+    // Check which columns exist before attempting ALTER TABLE
+    db.all(`PRAGMA table_info(users)`, (err, columns) => {
+        if (err) {
+            console.error('Error checking table schema:', err.message);
+            return;
+        }
+
+        const existingColumns = new Set(columns.map(col => col.name));
+
+        columnsToAdd.forEach(col => {
+            const colName = col.split(' ')[0]; // Extract column name from definition
+            if (!existingColumns.has(colName)) {
+                db.run(`ALTER TABLE users ADD COLUMN ${col}`, (alterErr) => {
+                    if (alterErr) console.error(`Error adding column ${colName}:`, alterErr.message);
+                });
+            }
         });
     });
 
@@ -126,8 +140,9 @@ db.serialize(() => {
 
     // Active Quests Table
     db.run(`CREATE TABLE IF NOT EXISTS active_quests (
-        user_id TEXT PRIMARY KEY,
-        title TEXT,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
         description TEXT,
         objective TEXT,
         difficulty TEXT,
@@ -135,7 +150,9 @@ db.serialize(() => {
         reward_xp INTEGER,
         start_time INTEGER,
         duration INTEGER,
-        reward_item TEXT
+        reward_item TEXT,
+        UNIQUE(user_id, title),
+        FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
 
     // Donor/Supporter System
@@ -234,13 +251,35 @@ db.serialize(() => {
         FOREIGN KEY(faction_id) REFERENCES factions(id)
     )`);
 
-    // Faction Perks Lookup
-    db.run(`CREATE TABLE IF NOT EXISTS faction_perks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+    // Faction Hostility (tracks which factions are hostile to the player)
+    db.run(`CREATE TABLE IF NOT EXISTS faction_hostility (
+        user_id TEXT,
         faction_id TEXT,
-        rank TEXT,
-        perk_name TEXT,
-        perk_value REAL,
+        hostility_state INTEGER DEFAULT 0,
+        reason TEXT,
+        timestamp INTEGER,
+        PRIMARY KEY (user_id, faction_id),
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(faction_id) REFERENCES factions(id)
+    )`);
+
+    // Territory Control
+    db.run(`CREATE TABLE IF NOT EXISTS territories (
+        territory_id TEXT PRIMARY KEY,
+        controlling_faction TEXT,
+        last_contested INTEGER,
+        contested_by TEXT,
+        FOREIGN KEY(controlling_faction) REFERENCES factions(id)
+    )`);
+    // Reputation Log (for proper daily cap tracking)
+    db.run(`CREATE TABLE IF NOT EXISTS faction_rep_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        faction_id TEXT,
+        delta INTEGER,
+        source TEXT,
+        timestamp INTEGER,
+        FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(faction_id) REFERENCES factions(id)
     )`);
 
@@ -268,6 +307,19 @@ db.serialize(() => {
             `INSERT OR IGNORE INTO factions (id, name, color, type, emoji) VALUES (?, ?, ?, ?, ?)`,
             [f.id, f.name, f.color, f.type, f.emoji],
             () => {}
+        );
+    });
+
+    // Initialize territories with default controllers (NULL = unclaimed)
+    // Territory IDs must match FactionManager.js TERRITORIES constant keys
+    const { TERRITORIES } = require('./FactionManager');
+    Object.keys(TERRITORIES).forEach(tid => {
+        db.run(
+            `INSERT OR IGNORE INTO territories (territory_id, controlling_faction) VALUES (?, ?)`,
+            [tid, null],
+            (err) => {
+                if (err) console.error(`Territory init error for ${tid}:`, err.message);
+            }
         );
     });
 });

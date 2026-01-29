@@ -94,13 +94,22 @@ async function showStatus(interaction, userId) {
         perksText = perks.map(p => `• ${p.name}: +${p.value}`).join('\n');
     }
 
+    // Build hostility field
+    const hostile = await FactionManager.getHostileFactions(userId);
+    let hostileText = 'None';
+    if (hostile.length > 0) {
+        const states = { 0: '✅ Neutral', 1: '⚠️ Suspicious', 2: '☠️ Hostile', 3: '💀 KOS' };
+        hostileText = hostile.map(h => `${h.emoji} ${h.name}: ${states[h.hostility_state]}`).join('\n');
+    }
+
     const embed = new EmbedBuilder()
         .setTitle('📊 FACTION STATUS')
         .setColor(allegiance ? stats[allegiance.faction_id]?.color || '#808080' : '#666666')
         .addFields(
             { name: '⚔️ MAJOR FACTIONS', value: majorText || 'None', inline: false },
             { name: '🏴 BLACK MARKET', value: blackText || 'None', inline: false },
-            { name: '✨ ACTIVE PERKS', value: perksText, inline: false }
+            { name: '✨ ACTIVE PERKS', value: perksText, inline: false },
+            { name: '☠️ HOSTILITY', value: hostileText, inline: false }
         );
 
     if (allegiance) {

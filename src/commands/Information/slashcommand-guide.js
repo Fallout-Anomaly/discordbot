@@ -10,6 +10,7 @@ module.exports = new ApplicationCommand({
         const commands = client.collection.application_commands;
         const categories = {
             'economy': { name: '💰 Economy & RPG', cmds: [] },
+            'faction': { name: '⚔️ Factions & Territory', cmds: [] },
             'utility': { name: '🔧 Utility & Info', cmds: [] },
             'fun': { name: '🎲 Fun & Extras', cmds: [] },
             'moderation': { name: '🛡️ Moderation', cmds: [] }
@@ -21,8 +22,12 @@ module.exports = new ApplicationCommand({
             const desc = cmd.command.description;
             const line = `\`/${name}\` - ${desc}`;
 
+            // Factions & Territory
+            if (['faction', 'faction-quest', 'territory'].includes(name)) {
+                categories.faction.cmds.push(line);
+            }
             // Economy & RPG
-            if (['balance', 'pay', 'daily', 'shop', 'scavenge', 'inventory', 'use', 'stats', 'quests', 'rob', 'radiation', 'nuka-cola', 'power-armor', 'fish', 'hunt', 'protection', 'stash', 'create-raffle'].includes(name)) {
+            else if (['balance', 'pay', 'daily', 'shop', 'scavenge', 'inventory', 'use', 'stats', 'quests', 'rob', 'radiation', 'nuka-cola', 'power-armor', 'fish', 'hunt', 'protection', 'stash', 'create-raffle', 'fight'].includes(name)) {
                 categories.economy.cmds.push(line);
             } 
             // Utility & Info
@@ -39,7 +44,7 @@ module.exports = new ApplicationCommand({
         // 1. Create the Main Embed
         const embed = new EmbedBuilder()
             .setTitle('📖 Survivor\'s Field Guide')
-            .setDescription('Select a category from the menu below to view available commands.\n\n**Categories:**\n💰 **Economy/RPG**: Trading, scavenging, items, quests, robbing, radiation, consumables, power armor, fishing, hunting.\n🔧 **Utility**: Information, help, supporter features.\n🎲 **Fun**: Games, gambling, and profiles.')
+            .setDescription('Select a category from the menu below to view available commands.\n\n**Categories:**\n⚔️ **Factions**: Join factions, earn reputation, claim territories, complete quests.\n💰 **Economy/RPG**: Trading, scavenging, items, combat, robbing, radiation, consumables, power armor, fishing, hunting.\n🔧 **Utility**: Information, help, supporter features.\n🎲 **Fun**: Games, gambling, and profiles.')
             .setColor('#27ae60')
             .setThumbnail('https://i.imgur.com/8Q9Q2Xn.png')
             .setFooter({ text: 'Select an option below • AnomalyBot' });
@@ -49,7 +54,8 @@ module.exports = new ApplicationCommand({
             .setCustomId('guide_menu')
             .setPlaceholder('Select a Category')
             .addOptions(
-                { label: 'Economy & RPG', description: 'Shop, Inv, Quests, Rob, Fish, Hunt', value: 'economy', emoji: '💰' },
+                { label: 'Factions & Territory', description: 'Allegiance, Reputation, Quests, Territories', value: 'faction', emoji: '⚔️' },
+                { label: 'Economy & RPG', description: 'Shop, Inv, Combat, Rob, Fish, Hunt', value: 'economy', emoji: '💰' },
                 { label: 'Utility', description: 'Help, Info, Supporters', value: 'utility', emoji: '🔧' },
                 { label: 'Fun & Extras', description: 'Gambling, Profile', value: 'fun', emoji: '🎲' }
             );
