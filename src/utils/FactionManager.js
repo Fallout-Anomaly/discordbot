@@ -226,7 +226,8 @@ async function modifyReputation(userId, factionId, amount, _source = 'quest') {
                     const dailyRepEarned = row?.total || 0;
                     const dailyCap = 10;
 
-                    if (dailyRepEarned >= dailyCap) {
+                    // Skip daily cap check for admin commands
+                    if (_source !== 'admin' && dailyRepEarned >= dailyCap) {
                         db.run('ROLLBACK');
                         return resolve({ 
                             reputation: currentRep, 
@@ -237,8 +238,8 @@ async function modifyReputation(userId, factionId, amount, _source = 'quest') {
                         });
                     }
 
-                    // Calculate actual cap based on actual daily total
-                    const actualCap = Math.min(amount, dailyCap - dailyRepEarned);
+                    // Calculate actual cap based on actual daily total (bypass for admin)
+                    const actualCap = _source === 'admin' ? amount : Math.min(amount, dailyCap - dailyRepEarned);
                     const actualNewRep = Math.max(-100, Math.min(100, currentRep + actualCap));
                     const actualNewRank = getRankFromRep(actualNewRep);
                     const actualRankChanged = oldRank !== actualNewRank;

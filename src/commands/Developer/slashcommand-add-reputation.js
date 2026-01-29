@@ -63,17 +63,25 @@ module.exports = new ApplicationCommand({
         const currentRank = stats[factionId]?.rank || 'Outsider';
 
         // Modify reputation (bypassing daily limits by using 'admin' source)
-        const result = await FactionManager.modifyReputation(targetUser.id, factionId, amount, 'admin');
-
-        if (!result.success) {
+        let result;
+        try {
+            result = await FactionManager.modifyReputation(targetUser.id, factionId, amount, 'admin');
+        } catch (error) {
+            console.error('Modify reputation error:', error);
             return interaction.editReply({ 
-                content: `❌ Failed to modify reputation: ${result.reason}` 
+                content: `❌ Failed to modify reputation: ${error.message}` 
+            });
+        }
+
+        if (result.throttled && result.delta === 0) {
+            return interaction.editReply({ 
+                content: `❌ ${result.reason || 'Daily reputation cap reached'}` 
             });
         }
 
         const newRep = result.reputation;
         const newRank = result.rank;
-        const rankChanged = currentRank !== newRank;
+        const rankChanged = result.rankChanged || currentRank !== newRank;
 
         const embed = new EmbedBuilder()
             .setTitle('✅ Faction Reputation Modified')
