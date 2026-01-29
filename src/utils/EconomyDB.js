@@ -168,9 +168,7 @@ db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS stash (
         user_id TEXT PRIMARY KEY,
         amount INTEGER DEFAULT 0,
-        last_fee_paid INTEGER DEFAULT 0,
-        interest_earned INTEGER DEFAULT 0,
-        interest_claimed INTEGER DEFAULT 0,
+        created_at INTEGER DEFAULT 0,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
 
@@ -189,11 +187,21 @@ db.serialize(() => {
     const indexes = [
         "CREATE INDEX IF NOT EXISTS idx_active_quests_user ON active_quests(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_inventory_user ON inventory(user_id)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_inventory_user_item ON inventory(user_id, item_id)",
         "CREATE INDEX IF NOT EXISTS idx_hunt_cooldown_user ON hunt_cooldown(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_fish_cooldown_user ON fish_cooldown(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_rob_cooldown_user ON rob_cooldown(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_quest_history_user ON quest_history(user_id)"
     ];
+
+    // PvP Fight Cooldowns
+    db.run(`CREATE TABLE IF NOT EXISTS pvp_cooldowns (
+        user_id TEXT PRIMARY KEY,
+        last_attacker_id TEXT,
+        attacker_cooldown_expires INTEGER,
+        defender_cooldown_expires INTEGER,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )`);
 
     indexes.forEach(idx => {
         db.run(idx, (err) => {

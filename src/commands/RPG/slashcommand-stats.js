@@ -28,8 +28,7 @@ module.exports = new ApplicationCommand({
                 if (err) reject(err);
                 else resolve(row);
             });
-        }).catch(err => {
-            error('[STATS] Database error:', err);
+        }).catch(() => {
             return null;
         });
 

@@ -1,8 +1,5 @@
-const { EmbedBuilder } = require('discord.js');
 const Event = require("../../structure/Event");
-const config = require("../../config");
-const db = require("../../utils/EconomyDB");
-const { error, info } = require("../../utils/Console");
+const { info } = require("../../utils/Console");
 const SupportUtil = require("../../utils/SupportUtil");
 
 // Track interval to prevent duplicates on reload
