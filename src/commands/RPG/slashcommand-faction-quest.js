@@ -213,6 +213,11 @@ async function acceptQuest(interaction, userId) {
 
         const db = require('../../utils/EconomyDB');
         
+        // Ensure user exists in database (required for FOREIGN KEY constraint)
+        await new Promise((resolve) => {
+            db.run('INSERT OR IGNORE INTO users (id, balance, xp, level) VALUES (?, 0, 0, 1)', [userId], () => resolve());
+        });
+        
         // Check for existing active quest (prevent overwriting progress)
         const existingQuest = await new Promise((resolve) => {
             db.get('SELECT quest_id, faction_id, complete_at FROM active_quests WHERE user_id = ?', [userId], (err, row) => resolve(row));
