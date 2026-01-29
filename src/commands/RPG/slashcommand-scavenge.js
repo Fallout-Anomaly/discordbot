@@ -149,14 +149,13 @@ async function processScavengeResult(client, interaction) {
     }
 
     // Check for level up
-    const userData = await new Promise((resolve) => {
-        db.get('SELECT xp FROM users WHERE id = ?', [userId], (err, row) => resolve(row || { xp: 0 }));
-    });
-    const oldXp = userData.xp || 0;
+    const oldXp = user.xp || 0;
     const newXp = oldXp + xp;
     const levelCheck = checkLevelUp(oldXp, newXp);
 
-    db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?', [caps, xp, levelCheck.levelsGained, userId]);
+    await new Promise((resolve) => {
+        db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?', [caps, xp, levelCheck.levelsGained, userId], () => resolve());
+    });
 
     const embed = new EmbedBuilder()
         .setTitle('🎒 Scavenge Report')
