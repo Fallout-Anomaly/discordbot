@@ -25,6 +25,10 @@ function getRewardMultiplier(choice) {
 
 module.exports = new Component({
     customId: /^quest_(attack|sneak|talk)_\d+_.+$/,
+    type: 'button',
+    options: {
+        public: false
+    },
     run: async (client, interaction) => {
         try {
             // 1. Lock the button immediately to prevent double-clicks (shows spinner)
