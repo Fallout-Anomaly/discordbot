@@ -216,23 +216,6 @@ const FACTION_QUESTS = {
     ]
 };
 
-// Helper function to get emoji based on quest type
-function getQuestEmoji(type) {
-    const emojis = {
-        training: '🎯',
-        research: '🔬',
-        support: '🛠️',
-        delivery: '📦',
-        intimidation: '💪',
-        gathering: '🎒',
-        exploration: '🗺️',
-        collection: '📋',
-        combat: '⚔️',
-        stealth: '🥷'
-    };
-    return emojis[type] || '📜';
-}
-
 module.exports = new ApplicationCommand({
     command: {
         name: 'faction-quest',
@@ -344,7 +327,7 @@ module.exports = new ApplicationCommand({
             console.error('Quest autocomplete error:', error);
             try {
                 await interaction.respond([]);
-            } catch (e) {
+            } catch {
                 // Silently fail if respond fails
             }
         }
@@ -502,7 +485,6 @@ async function completeQuest(interaction, userId) {
 
         // Check if quest is complete
         if (Date.now() < activeQuest.complete_at) {
-            const timeLeft = Math.ceil((activeQuest.complete_at - Date.now()) / 1000);
             await interaction.editReply({ 
                 content: `❌ Quest not ready yet. Complete <t:${Math.floor(activeQuest.complete_at / 1000)}:R>` 
             });
