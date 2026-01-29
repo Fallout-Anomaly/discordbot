@@ -324,4 +324,7 @@ db.serialize(() => {
     });
 });
 
+// Export both the db directly and a getDatabase function to avoid circular dependency issues
 module.exports = db;
+module.exports.getDatabase = () => db;
+

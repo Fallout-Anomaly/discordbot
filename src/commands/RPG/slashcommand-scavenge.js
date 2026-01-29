@@ -4,6 +4,7 @@ const ApplicationCommand = require("../../structure/ApplicationCommand");
 const config = require('../../config');
 const { SCAVENGE_DEFAULTS } = require('../../utils/Constants');
 const { error } = require('../../utils/Console');
+const { checkLevelUp } = require('../../utils/LevelSystem');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -147,7 +148,15 @@ async function processScavengeResult(client, interaction) {
         db.run(`UPDATE users SET health = MAX(0, MIN(max_health, health - ?)), radiation = MAX(0, MIN(100, radiation + ?)) WHERE id = ?`, [dmg, rads, userId]);
     }
 
-    db.run('UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?', [caps, xp, userId]);
+    // Check for level up
+    const userData = await new Promise((resolve) => {
+        db.get('SELECT xp FROM users WHERE id = ?', [userId], (err, row) => resolve(row || { xp: 0 }));
+    });
+    const oldXp = userData.xp || 0;
+    const newXp = oldXp + xp;
+    const levelCheck = checkLevelUp(oldXp, newXp);
+
+    db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?', [caps, xp, levelCheck.levelsGained, userId]);
 
     const embed = new EmbedBuilder()
         .setTitle('🎒 Scavenge Report')

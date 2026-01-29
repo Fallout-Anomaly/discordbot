@@ -1,6 +1,7 @@
 const { EmbedBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
+const { checkLevelUp } = require('../../utils/LevelSystem');
 
 const ENEMIES = {
     'radroach': { name: '🪳 Radroach', hp: 15, damage: 3, special: { str: 1, agi: 2 }, loot: { caps: 10, item: null } },
@@ -201,8 +202,16 @@ async function fightNPC(interaction, userId, client, db) {
         loot = `🎁 **Rare Loot Drop!**\n`;
     }
 
+    // Check for level up
+    const userData = await new Promise((resolve) => {
+        db.get('SELECT xp FROM users WHERE id = ?', [userId], (err, row) => resolve(row || { xp: 0 }));
+    });
+    const oldXp = userData.xp || 0;
+    const newXp = oldXp + xp;
+    const levelCheck = checkLevelUp(oldXp, newXp);
+
     await new Promise((resolve) => {
-        db.run('UPDATE users SET balance = balance + ?, xp = xp + ? WHERE id = ?', [caps, xp, userId], () => resolve());
+        db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?', [caps, xp, levelCheck.levelsGained, userId], () => resolve());
     });
 
     const report = new EmbedBuilder()

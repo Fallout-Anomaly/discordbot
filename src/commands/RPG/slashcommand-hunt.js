@@ -141,7 +141,7 @@ module.exports = new ApplicationCommand({
         await new Promise((resolve) => {
             db.run(
                 'UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?',
-                [encounter.caps, encounter.xp, levelCheck.leveledUp ? 1 : 0, userId],
+                [encounter.caps, encounter.xp, levelCheck.levelsGained, userId],
                 () => resolve()
             );
         });

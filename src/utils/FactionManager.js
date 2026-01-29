@@ -1,4 +1,5 @@
-const db = require('./EconomyDB');
+const EconomyDB = require('./EconomyDB');
+const getDb = () => EconomyDB.getDatabase();
 
 // Hostility states for faction relationships
 const HOSTILITY_STATES = {
@@ -140,6 +141,7 @@ const REP_THRESHOLDS = {
 
 // Get player's faction standings
 async function getPlayerFactionStats(userId) {
+    const db = getDb();
     return new Promise((resolve) => {
         db.all(
             `SELECT pf.faction_id, pf.reputation, pf.rank, f.name, f.emoji, f.color, f.type,
@@ -172,6 +174,7 @@ async function getPlayerFactionStats(userId) {
 
 // Get player's chosen allegiance
 async function getPlayerAllegiance(userId) {
+    const db = getDb();
     return new Promise((resolve) => {
         db.get(
             `SELECT pa.faction_id, pa.allegiance_locked, f.name, f.emoji FROM player_allegiance pa
@@ -193,6 +196,9 @@ function getRankFromRep(rep) {
 
 // Modify player reputation
 async function modifyReputation(userId, factionId, amount, _source = 'quest') {
+    const db = getDb();
+    if (amount === 0) return { success: true, gained: 0, oldRep: 0, newRep: 0 };
+    
     const stats = await getPlayerFactionStats(userId);
     const currentRep = stats[factionId]?.reputation || 0;
     const now = Date.now();
@@ -287,6 +293,7 @@ async function modifyReputation(userId, factionId, amount, _source = 'quest') {
 
 // Choose allegiance at level 10+ - triggers automatic hostility
 async function chooseAllegiance(userId, factionId, userLevel) {
+    const db = getDb();
     if (userLevel < 10) {
         return { success: false, reason: 'You must be level 10 to choose an allegiance.' };
     }
@@ -344,6 +351,7 @@ async function chooseAllegiance(userId, factionId, userLevel) {
 
 // Check if can access faction content
 async function canAccessFaction(userId, targetFactionId) {
+    const db = getDb();
     const allegiance = await getPlayerAllegiance(userId);
     const targetFaction = await new Promise((resolve) => {
         db.get('SELECT type FROM factions WHERE id = ?', [targetFactionId], (err, row) => resolve(row));
@@ -393,6 +401,7 @@ async function getPlayerPerks(userId) {
 
 // Initialize player factions (run on first login)
 async function initializePlayerFactions(userId) {
+    const db = getDb();
     return new Promise((resolve) => {
         // Dynamically fetch all faction IDs from database
         db.all('SELECT id FROM factions', (err, rows) => {
@@ -416,6 +425,7 @@ async function initializePlayerFactions(userId) {
 
 // Set hostility state (for Phase 2: hit squads, ambushes)
 async function setHostility(userId, factionId, state, reason = '') {
+    const db = getDb();
     return new Promise((resolve) => {
         db.run(
             `INSERT INTO faction_hostility (user_id, faction_id, hostility_state, reason, timestamp) 
@@ -429,6 +439,7 @@ async function setHostility(userId, factionId, state, reason = '') {
 
 // Get hostility status
 async function getHostility(userId, factionId) {
+    const db = getDb();
     return new Promise((resolve) => {
         db.get(
             `SELECT hostility_state, reason FROM faction_hostility 
@@ -441,6 +452,7 @@ async function getHostility(userId, factionId) {
 
 // Get all hostile factions for player
 async function getHostileFactions(userId) {
+    const db = getDb();
     return new Promise((resolve) => {
         db.all(
             `SELECT fh.faction_id, fh.hostility_state, f.name, f.emoji 
@@ -456,6 +468,7 @@ async function getHostileFactions(userId) {
 
 // PHASE 2: Get territory info
 async function getTerritoryControl(userId) {
+    const db = getDb();
     const allegiance = await getPlayerAllegiance(userId);
     if (!allegiance?.faction_id) return [];
     return new Promise((resolve) => {

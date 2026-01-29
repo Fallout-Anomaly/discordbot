@@ -100,7 +100,7 @@ async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
         await new Promise((resolve) => {
             db.run(
                 'UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?',
-                [caught.caps, caught.xp, levelCheck.leveledUp ? 1 : 0, userId],
+                [caught.caps, caught.xp, levelCheck.levelsGained, userId],
                 () => resolve()
             );
         });
