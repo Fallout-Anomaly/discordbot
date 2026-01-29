@@ -268,7 +268,8 @@ module.exports = new ApplicationCommand({
                         name: 'quest',
                         description: 'Quest ID to accept',
                         type: ApplicationCommandOptionType.String,
-                        required: true
+                        required: true,
+                        autocomplete: true
                     }
                 ]
             },
@@ -296,6 +297,48 @@ module.exports = new ApplicationCommand({
             console.error('Faction quest error:', error);
             await interaction.editReply({ content: 'Error processing quest command' });
         }
+    },
+    autocomplete: async (interaction) => {
+        const subcommand = interaction.options.getSubcommand();
+        
+        if (subcommand !== 'accept') return;
+
+        const focusedOption = interaction.options.getFocused(true);
+        if (focusedOption.name !== 'quest') return;
+
+        const userId = interaction.user.id;
+        const stats = await FactionManager.getPlayerFactionStats(userId);
+        const allegiance = await FactionManager.getPlayerAllegiance(userId);
+
+        // Collect all available quests
+        const allQuests = [];
+        
+        for (const [factionId, factionQuests] of Object.entries(FACTION_QUESTS)) {
+            const playerRank = stats[factionId]?.rank || 'Outsider';
+            const hasAllegiance = allegiance?.faction_id === factionId;
+            
+            factionQuests.forEach(quest => {
+                // Show Recruit quests to everyone, show Ally+ quests only to those with allegiance
+                const canSeeQuest = quest.rank === 'Recruit' || hasAllegiance;
+                if (!canSeeQuest) return;
+                
+                const isAvailable = isRankSufficient(playerRank, quest.rank);
+                if (isAvailable) {
+                    allQuests.push({
+                        name: `${quest.name} (${factionId})`,
+                        value: quest.id
+                    });
+                }
+            });
+        }
+
+        // Filter based on user input
+        const input = focusedOption.value.toLowerCase();
+        const filtered = allQuests
+            .filter(q => q.value.toLowerCase().includes(input) || q.name.toLowerCase().includes(input))
+            .slice(0, 25); // Discord limit
+
+        await interaction.respond(filtered);
     }
 }).toJSON();
 
