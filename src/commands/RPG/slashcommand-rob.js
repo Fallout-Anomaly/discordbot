@@ -100,7 +100,6 @@ module.exports = new ApplicationCommand({
         const targetWealth = targetData.balance;
         
         // Check if target has active bodyguard protection
-        const now = Date.now();
         const hasBodyguards = targetData.protection_expires && targetData.protection_expires > now;
         
         let baseSuccessChance = ROBBERY_MODIFIERS.BASE_SUCCESS_CHANCE;
