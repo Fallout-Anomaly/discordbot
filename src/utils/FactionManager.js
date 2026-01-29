@@ -76,8 +76,8 @@ const TERRITORIES = {
 
 // Rank unlock thresholds
 const RANK_UNLOCKS = {
-    Outsider: { can_access_quests: false, can_claim_territory: false, daily_cap_bonus: 0 },
-    Neutral: { can_access_quests: false, can_claim_territory: false, daily_cap_bonus: 0 },
+    Outsider: { can_access_quests: true, can_access_recruit_quests: true, can_claim_territory: false, daily_cap_bonus: 0 },
+    Neutral: { can_access_quests: true, can_access_recruit_quests: true, can_claim_territory: false, daily_cap_bonus: 0 },
     Ally: { can_access_quests: true, can_claim_territory: false, daily_cap_bonus: 5 },
     Veteran: { can_access_quests: true, can_claim_territory: true, daily_cap_bonus: 10, unlock_tier_2_quests: true },
     Champion: { can_access_quests: true, can_claim_territory: true, daily_cap_bonus: 15, unlock_tier_3_quests: true, can_command_faction: true }
@@ -338,10 +338,13 @@ async function chooseAllegiance(userId, factionId, userLevel) {
                 for (const enemyId of enemies) {
                     await setHostility(userId, enemyId, HOSTILITY_STATES.HOSTILE, `Enemy of ${factionId}`);
                 }
+
+                // Grant initial reputation boost when choosing allegiance (25 rep = Ally rank)
+                await modifyReputation(userId, factionId, 25, 'allegiance_choice');
                 
                 resolve({
                     success: true,
-                    message: `Allegiance locked to ${factionId}. Your choices matter now.`,
+                    message: `Allegiance locked to ${factionId}. You have been promoted to **Ally** rank! Your choices matter now.`,
                     enemies_marked_hostile: enemies.length
                 });
             }
