@@ -20,13 +20,18 @@ module.exports = new ApplicationCommand({
         const focusedValue = interaction.options.getFocused();
         const userId = interaction.user.id;
         
-        // Getting inventory for autocomplete
-        db.all(`SELECT i.name, i.id FROM inventory inv JOIN items i ON inv.item_id = i.id WHERE inv.user_id = ? AND (i.type = 'consumable' OR i.type = 'lootbox') AND inv.amount > 0 AND i.name LIKE ? LIMIT 25`, 
+        // Getting inventory for autocomplete with timeout protection
+        db.all(`SELECT i.name, inv.item_id FROM inventory inv JOIN items i ON inv.item_id = i.id WHERE inv.user_id = ? AND (i.type = 'consumable' OR i.type = 'lootbox') AND inv.amount > 0 AND i.name LIKE ? LIMIT 25`, 
         [userId, `%${focusedValue}%`], (err, rows) => {
-            if (err || !rows) return interaction.respond([]);
-            // Filter unique by ID just in case, though DB group should handle it or DISTINCT
-            const unique = [...new Map(rows.map(item => [item.id, item])).values()];
-            interaction.respond(unique.map(row => ({ name: row.name.slice(0, 100), value: row.id })));
+            if (err || !rows || rows.length === 0) {
+                return interaction.respond([]).catch(() => {});
+            }
+            // Filter unique by item_id
+            const unique = [...new Map(rows.map(item => [item.item_id, item])).values()];
+            interaction.respond(unique.map(row => ({ 
+                name: row.name.slice(0, 100), 
+                value: row.item_id 
+            }))).catch(() => {});
         });
     },
     run: async (client, interaction) => {

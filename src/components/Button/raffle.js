@@ -45,21 +45,10 @@ module.exports = new Component({
 
             const totalEntries = entries.reduce((sum, e) => sum + e.count, 0);
 
-            let entriesDisplay = '';
-            if (entries.length === 0) {
-                entriesDisplay = 'No entries yet. Be the first to enter!';
-            } else {
-                // Sort by entry count (descending)
-                entries.sort((a, b) => b.count - a.count);
-                for (const entry of entries.slice(0, 10)) {
-                    const tierInfo = DONOR_TIERS[entry.donor_tier] || DONOR_TIERS['none'];
-                    const tierLabel = entry.donor_tier !== 'none' ? ` ${tierInfo.badge}` : '';
-                    entriesDisplay += `<@${entry.user_id}>${tierLabel}: ${entry.count} entry${entry.count > 1 ? 'ies' : ''}\n`;
-                }
-                if (entries.length > 10) {
-                    entriesDisplay += `\n... and ${entries.length - 10} more players`;
-                }
-            }
+            // Privacy: Don't show individual entries
+            const entriesDisplay = totalEntries === 0 
+                ? 'No entries yet. Be the first to enter!' 
+                : 'Participant details are hidden for privacy. Good luck to all participants!';
 
             // Format countdown
             const now = Date.now();
