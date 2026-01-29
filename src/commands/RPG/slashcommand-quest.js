@@ -217,7 +217,7 @@ module.exports = new ApplicationCommand({
 
                         // Grant Rewards with stat points for level up
                         db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, daily_quest_count = daily_quest_count + 1, stat_points = stat_points + ? WHERE id = ?', 
-                            [quest.reward_caps, quest.reward_xp, levelCheck.leveledUp ? 1 : 0, userId]);
+                            [quest.reward_caps, quest.reward_xp, levelCheck.levelsGained, userId]);
 
                         // Grant Item if exists
                         if (quest.reward_item) {

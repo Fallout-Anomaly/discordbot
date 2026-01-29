@@ -1,38 +1,48 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
+const ApplicationCommand = require('../../structure/ApplicationCommand');
 const FactionManager = require('../../utils/FactionManager');
 const EconomyDB = require('../../utils/EconomyDB');
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('territory')
-        .setDescription('View and manage faction territories')
-        .addSubcommand(sub =>
-            sub.setName('list')
-                .setDescription('List all territories and their controlling factions')
-        )
-        .addSubcommand(sub =>
-            sub.setName('income')
-                .setDescription('Check passive income from your faction\'s territories')
-        )
-        .addSubcommand(sub =>
-            sub.setName('claim')
-                .setDescription('Claim a territory for your faction')
-                .addStringOption(opt =>
-                    opt.setName('territory')
-                        .setDescription('Territory to claim')
-                        .setRequired(true)
-                        .addChoices(
+module.exports = new ApplicationCommand({
+    command: {
+        name: 'territory',
+        description: 'View and manage faction territories',
+        options: [
+            {
+                name: 'list',
+                description: 'List all territories and their controlling factions',
+                type: ApplicationCommandOptionType.Subcommand
+            },
+            {
+                name: 'income',
+                description: 'Check passive income from your faction\'s territories',
+                type: ApplicationCommandOptionType.Subcommand
+            },
+            {
+                name: 'claim',
+                description: 'Claim a territory for your faction',
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'territory',
+                        description: 'Territory to claim',
+                        type: ApplicationCommandOptionType.String,
+                        required: true,
+                        choices: [
                             { name: '🏢 Cambridge Police Department (Brotherhood)', value: 'cambridge_pd' },
                             { name: '🔬 The Institute (Institute)', value: 'the_institute' },
                             { name: '🚂 Railroad HQ (Railroad)', value: 'railroad_hq' },
                             { name: '🏰 The Castle (Minutemen)', value: 'the_castle' },
                             { name: '💀 Corvega Assembly (Raiders)', value: 'corvega' },
                             { name: '🏚️ Vault 81 (Wastelanders)', value: 'vault_81' }
-                        )
-                )
-        ),
-
-    async execute(interaction) {
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    defer: 'ephemeral',
+    run: async (client, interaction) => {
         const db = EconomyDB.getDatabase();
         const subcommand = interaction.options.getSubcommand();
         const userId = interaction.user.id;
@@ -47,10 +57,10 @@ module.exports = {
             }
         } catch (error) {
             console.error('Territory command error:', error);
-            await interaction.reply({ content: 'Error processing territory command', ephemeral: true });
+            await interaction.editReply({ content: 'Error processing territory command' });
         }
     }
-};
+}).toJSON();
 
 async function showTerritoryList(interaction) {
     const db = EconomyDB.getDatabase();
@@ -61,7 +71,7 @@ async function showTerritoryList(interaction) {
             ORDER BY controlling_faction
         `, async (err, territories) => {
             if (err) {
-                await interaction.reply({ content: 'Database error', ephemeral: true });
+                await interaction.editReply({ content: 'Database error' });
                 return resolve();
             }
 
@@ -81,7 +91,7 @@ async function showTerritoryList(interaction) {
                 });
             }
 
-            await interaction.reply({ embeds: [embed] });
+            await interaction.editReply({ embeds: [embed] });
             resolve();
         });
     });
@@ -93,9 +103,8 @@ async function showIncome(interaction, userId) {
         const allegiance = await FactionManager.getPlayerAllegiance(userId);
 
         if (!allegiance?.faction_id) {
-            await interaction.reply({
-                content: '❌ You must join a faction first to earn territory income',
-                ephemeral: true
+            await interaction.editReply({
+                content: '❌ You must join a faction first to earn territory income'
             });
             return;
         }
@@ -125,10 +134,10 @@ async function showIncome(interaction, userId) {
             });
         }
 
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         console.error('Income command error:', error);
-        await interaction.reply({ content: 'Error calculating income', ephemeral: true });
+        await interaction.editReply({ content: 'Error calculating income' });
     }
 }
 
@@ -142,9 +151,8 @@ async function claimTerritory(interaction, userId, db) {
             const allegiance = await FactionManager.getPlayerAllegiance(userId);
             const rank = stats[allegiance?.faction_id]?.rank || 'Outsider';
 
-            await interaction.reply({
-                content: `❌ You need **Veteran** rank or higher to claim territories. Current rank: **${rank}**`,
-                ephemeral: true
+            await interaction.editReply({
+                content: `❌ You need **Veteran** rank or higher to claim territories. Current rank: **${rank}**`
             });
             return;
         }
@@ -154,14 +162,14 @@ async function claimTerritory(interaction, userId, db) {
         const territory = TERRITORIES[territoryId];
 
         if (!territory) {
-            await interaction.reply({ content: '❌ Territory not found', ephemeral: true });
+            await interaction.editReply({ content: '❌ Territory not found' });
             return;
         }
 
         return new Promise((resolve) => {
             db.get(`SELECT controlling_faction FROM territories WHERE territory_id = ?`, [territoryId], async (err, row) => {
                 if (err) {
-                    await interaction.reply({ content: 'Database error', ephemeral: true });
+                    await interaction.editReply({ content: 'Database error' });
                     return resolve();
                 }
 
@@ -169,18 +177,16 @@ async function claimTerritory(interaction, userId, db) {
 
                 // Check if player faction already controls it
                 if (currentFaction === allegiance.faction_id) {
-                    await interaction.reply({
-                        content: `✅ Your faction already controls **${territory.name}**`,
-                        ephemeral: true
+                    await interaction.editReply({
+                        content: `✅ Your faction already controls **${territory.name}**`
                     });
                     return resolve();
                 }
 
                 // Challenge if already controlled (null or 'None' means unclaimed)
                 if (currentFaction && currentFaction !== 'None') {
-                    await interaction.reply({
-                        content: `⚔️ **${territory.name}** is controlled by **${currentFaction}**\n\nTo take it, your faction will need to contest it in combat.\n\n*This feature coming soon!*`,
-                        ephemeral: true
+                    await interaction.editReply({
+                        content: `⚔️ **${territory.name}** is controlled by **${currentFaction}**\n\nTo take it, your faction will need to contest it in combat.\n\n*This feature coming soon!*`
                     });
                     return resolve();
                 }
@@ -190,7 +196,7 @@ async function claimTerritory(interaction, userId, db) {
                     [allegiance.faction_id, territoryId], 
                     async (err) => {
                         if (err) {
-                            await interaction.reply({ content: 'Error claiming territory', ephemeral: true });
+                            await interaction.editReply({ content: 'Error claiming territory' });
                             return resolve();
                         }
 
@@ -207,7 +213,7 @@ async function claimTerritory(interaction, userId, db) {
                                 { name: 'Rep Bonus', value: '+5 reputation', inline: true }
                             );
 
-                        await interaction.reply({ embeds: [embed] });
+                        await interaction.editReply({ embeds: [embed] });
                         resolve();
                     }
                 );
@@ -215,6 +221,6 @@ async function claimTerritory(interaction, userId, db) {
         });
     } catch (error) {
         console.error('Claim territory error:', error);
-        await interaction.reply({ content: 'Error claiming territory', ephemeral: true });
+        await interaction.editReply({ content: 'Error claiming territory' });
     }
 }

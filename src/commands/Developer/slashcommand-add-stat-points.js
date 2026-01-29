@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
+const { calculateLevel } = require('../../utils/LevelSystem');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -23,10 +24,9 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
+    defer: 'ephemeral',
     developer: true, // Requires bot developer permission
     run: async (client, interaction) => {
-        await interaction.deferReply({ flags: 64 });
-
         const targetUser = interaction.options.getUser('user');
         const amount = interaction.options.getInteger('amount');
 
@@ -40,9 +40,17 @@ module.exports = new ApplicationCommand({
         // Get current user data
         const userData = await new Promise((resolve) => {
             db.get('SELECT stat_points, level, xp FROM users WHERE id = ?', [targetUser.id], (err, row) => {
-                resolve(row || { stat_points: 5, level: 1, xp: 0 });
+                if (row) {
+                    resolve(row);
+                } else {
+                    // If user doesn't exist, return defaults
+                    resolve({ stat_points: 5, level: 1, xp: 0 });
+                }
             });
         });
+
+        // Calculate actual level from XP (in case DB level is outdated)
+        const actualLevel = calculateLevel(userData.xp);
 
         // Add SPECIAL points
         await new Promise((resolve, reject) => {
@@ -69,7 +77,7 @@ module.exports = new ApplicationCommand({
                 { name: 'Points Added', value: `+${amount}`, inline: true },
                 { name: 'Previous Total', value: `${userData.stat_points}`, inline: true },
                 { name: 'New Total', value: `${newTotal}`, inline: true },
-                { name: 'Current Level', value: `${userData.level}`, inline: true },
+                { name: 'Current Level', value: `${actualLevel}`, inline: true },
                 { name: 'Current XP', value: `${userData.xp}`, inline: true }
             )
             .setColor('#00ff00')

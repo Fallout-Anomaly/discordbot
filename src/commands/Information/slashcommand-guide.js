@@ -6,6 +6,7 @@ module.exports = new ApplicationCommand({
         name: 'guide',
         description: 'Interactive Survivor\'s Guide to all available commands.',
     },
+    defer: 'ephemeral',
     run: async (client, interaction) => {
         const commands = client.collection.application_commands;
         const categories = {
@@ -63,7 +64,7 @@ module.exports = new ApplicationCommand({
         const row = new ActionRowBuilder().addComponents(selectMenu);
 
         // 3. Send Initial Message and fetch for collectors
-        await interaction.reply({ 
+        await interaction.editReply({ 
             embeds: [embed], 
             components: [row]
         });
@@ -78,10 +79,6 @@ module.exports = new ApplicationCommand({
 
         collector.on('collect', async i => {
             try {
-                if (i.user.id !== interaction.user.id) {
-                    return i.reply({ content: '❌ This menu is not for you!', ephemeral: true });
-                }
-
                 // Acknowledge immediately to prevent timeout
                 await i.deferUpdate();
 

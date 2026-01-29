@@ -16,8 +16,8 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
+    defer: 'ephemeral',
     run: async (client, interaction) => {
-        await interaction.deferReply();
         
         const target = interaction.options.getUser('user') || interaction.user;
         const isSelf = target.id === interaction.user.id;

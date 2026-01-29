@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
+const ApplicationCommand = require('../../structure/ApplicationCommand');
 const FactionManager = require('../../utils/FactionManager');
 
 // Quest definitions per faction
@@ -161,34 +162,46 @@ const FACTION_QUESTS = {
     ]
 };
 
-module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('faction-quest')
-        .setDescription('Accept faction quests and missions')
-        .addSubcommand(sub =>
-            sub.setName('list')
-                .setDescription('List available quests for your faction')
-        )
-        .addSubcommand(sub =>
-            sub.setName('accept')
-                .setDescription('Accept a faction quest')
-                .addStringOption(opt =>
-                    opt.setName('quest')
-                        .setDescription('Quest ID to accept')
-                        .setRequired(true)
-                )
-        )
-        .addSubcommand(sub =>
-            sub.setName('complete')
-                .setDescription('Mark a quest as complete')
-                .addStringOption(opt =>
-                    opt.setName('quest')
-                        .setDescription('Quest ID to complete')
-                        .setRequired(true)
-                )
-        ),
-
-    async execute(interaction) {
+module.exports = new ApplicationCommand({
+    command: {
+        name: 'faction-quest',
+        description: 'Accept faction quests and missions',
+        options: [
+            {
+                name: 'list',
+                description: 'List available quests for your faction',
+                type: ApplicationCommandOptionType.Subcommand
+            },
+            {
+                name: 'accept',
+                description: 'Accept a faction quest',
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'quest',
+                        description: 'Quest ID to accept',
+                        type: ApplicationCommandOptionType.String,
+                        required: true
+                    }
+                ]
+            },
+            {
+                name: 'complete',
+                description: 'Mark a quest as complete',
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'quest',
+                        description: 'Quest ID to complete',
+                        type: ApplicationCommandOptionType.String,
+                        required: true
+                    }
+                ]
+            }
+        ]
+    },
+    defer: 'ephemeral',
+    run: async (client, interaction) => {
         const subcommand = interaction.options.getSubcommand();
         const userId = interaction.user.id;
 
@@ -202,18 +215,17 @@ module.exports = {
             }
         } catch (error) {
             console.error('Faction quest error:', error);
-            await interaction.reply({ content: 'Error processing quest command', ephemeral: true });
+            await interaction.editReply({ content: 'Error processing quest command' });
         }
     }
-};
+}).toJSON();
 
 async function listQuests(interaction, userId) {
     try {
         const canAccess = await FactionManager.canAccessFactionQuests(userId);
         if (!canAccess) {
-            await interaction.reply({
-                content: '❌ You need **Ally** rank or higher in a faction to access quests',
-                ephemeral: true
+            await interaction.editReply({
+                content: '❌ You need **Ally** rank or higher in a faction to access quests'
             });
             return;
         }
@@ -242,10 +254,10 @@ async function listQuests(interaction, userId) {
             });
         });
 
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         console.error('List quests error:', error);
-        await interaction.reply({ content: 'Error listing quests', ephemeral: true });
+        await interaction.editReply({ content: 'Error listing quests' });
     }
 }
 
@@ -256,9 +268,8 @@ async function acceptQuest(interaction, userId) {
         const factionId = allegiance?.faction_id?.toLowerCase();
 
         if (!factionId) {
-            await interaction.reply({
-                content: '❌ You must join a faction first',
-                ephemeral: true
+            await interaction.editReply({
+                content: '❌ You must join a faction first'
             });
             return;
         }
@@ -267,9 +278,8 @@ async function acceptQuest(interaction, userId) {
         const quest = quests.find(q => q.id === questId);
 
         if (!quest) {
-            await interaction.reply({
-                content: '❌ Quest not found',
-                ephemeral: true
+            await interaction.editReply({
+                content: '❌ Quest not found'
             });
             return;
         }
@@ -278,9 +288,8 @@ async function acceptQuest(interaction, userId) {
         const playerRank = stats[allegiance.faction_id]?.rank || 'Outsider';
 
         if (!isRankSufficient(playerRank, quest.rank)) {
-            await interaction.reply({
-                content: `❌ You need **${quest.rank}** rank to accept this quest. Current: **${playerRank}**`,
-                ephemeral: true
+            await interaction.editReply({
+                content: `❌ You need **${quest.rank}** rank to accept this quest. Current: **${playerRank}**`
             });
             return;
         }
@@ -296,10 +305,10 @@ async function acceptQuest(interaction, userId) {
             )
             .setFooter({ text: `Use /faction-quest complete ${questId} when done` });
 
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         console.error('Accept quest error:', error);
-        await interaction.reply({ content: 'Error accepting quest', ephemeral: true });
+        await interaction.editReply({ content: 'Error accepting quest' });
     }
 }
 
@@ -310,7 +319,7 @@ async function completeQuest(interaction, userId) {
         const factionId = allegiance?.faction_id?.toLowerCase();
 
         if (!factionId) {
-            await interaction.reply({ content: '❌ You must join a faction first', ephemeral: true });
+            await interaction.editReply({ content: '❌ You must join a faction first' });
             return;
         }
 
@@ -318,7 +327,7 @@ async function completeQuest(interaction, userId) {
         const quest = quests.find(q => q.id === questId);
 
         if (!quest) {
-            await interaction.reply({ content: '❌ Quest not found', ephemeral: true });
+            await interaction.editReply({ content: '❌ Quest not found' });
             return;
         }
 
@@ -335,10 +344,10 @@ async function completeQuest(interaction, userId) {
                 { name: 'Experience', value: `+${quest.reward.xp}`, inline: true }
             );
 
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         console.error('Complete quest error:', error);
-        await interaction.reply({ content: 'Error completing quest', ephemeral: true });
+        await interaction.editReply({ content: 'Error completing quest' });
     }
 }
 

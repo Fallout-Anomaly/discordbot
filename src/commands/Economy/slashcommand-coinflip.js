@@ -16,12 +16,13 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
+    defer: 'ephemeral',
     run: async (client, interaction) => {
         const amount = interaction.options.getInteger('amount');
         const userId = interaction.user.id;
 
         if (amount <= 0) {
-            return interaction.reply({ content: '❌ Bet amount must be greater than 0.', ephemeral: true });
+            return interaction.editReply({ content: '❌ Bet amount must be greater than 0.' });
         }
 
         // ATOMIC DEDUCTION: Check balance and deduct in a single operation
@@ -30,15 +31,14 @@ module.exports = new ApplicationCommand({
             'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
             [amount, userId, amount],
             function (err) {
-                if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                if (err) return interaction.editReply({ content: '❌ Database error.' });
 
                 // If this.changes is 0, the WHERE clause failed (insufficient funds)
                 if (this.changes === 0) {
                     db.get('SELECT balance FROM users WHERE id = ?', [userId], (err, row) => {
                         const currentBalance = row ? row.balance : 0;
-                        return interaction.reply({ 
-                            content: `❌ You're broke! You only have **${currentBalance}** Caps.`, 
-                            ephemeral: true 
+                        return interaction.editReply({ 
+                            content: `❌ You're broke! You only have **${currentBalance}** Caps.`
                         });
                     });
                     return;
@@ -54,14 +54,14 @@ module.exports = new ApplicationCommand({
                         'UPDATE users SET balance = balance + ? WHERE id = ?',
                         [payout, userId],
                         () => {
-                            interaction.reply({ 
+                            interaction.editReply({ 
                                 content: `🪙 **HEADS!** You **WON** **${amount}** Caps!\nYour new balance: **${payout}** (previous balance + ${amount})`
                             });
                         }
                     );
                 } else {
                     // Money already deducted, just notify loss
-                    interaction.reply({ 
+                    interaction.editReply({ 
                         content: `💀 **TAILS!** You **LOST** **${amount}** Caps. Better luck next time!` 
                     });
                 }
