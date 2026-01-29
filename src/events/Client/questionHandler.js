@@ -15,6 +15,10 @@ module.exports = new Event({
     run: async (client, message) => {
         // Basic checks - ignore bots and DM
         if (message.author.bot || !message.guild) return;
+
+        // Excluded channels where AI should never respond
+        const EXCLUDED_AI_CHANNELS = ['1465566014250029158'];
+        if (EXCLUDED_AI_CHANNELS.includes(message.channel.id)) return;
         
         const askChannelId = process.env.ASK_CHANNEL_ID;
         const forumChannels = config.channels.forum_support || [];
