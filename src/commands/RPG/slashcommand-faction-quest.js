@@ -230,11 +230,18 @@ async function acceptQuest(interaction, userId) {
         const completeTime = Date.now() + duration;
 
         // Store quest in database (INSERT only now that we've checked)
-        await new Promise((resolve) => {
+        await new Promise((resolve, reject) => {
             db.run(
                 'INSERT INTO active_quests (user_id, quest_id, faction_id, started_at, complete_at) VALUES (?, ?, ?, ?, ?)',
                 [userId, questId, questFaction, Date.now(), completeTime],
-                () => resolve()
+                function(err) {
+                    if (err) {
+                        console.error('Error inserting quest:', err);
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                }
             );
         });
 
@@ -262,11 +269,18 @@ async function completeQuest(interaction, userId) {
         const db = require('../../utils/EconomyDB');
         
         // Get active quest from database
-        const activeQuest = await new Promise((resolve) => {
+        const activeQuest = await new Promise((resolve, reject) => {
             db.get(
                 'SELECT quest_id, faction_id, started_at, complete_at FROM active_quests WHERE user_id = ?',
                 [userId],
-                (err, row) => resolve(row)
+                (err, row) => {
+                    if (err) {
+                        console.error('Error querying active quest:', err);
+                        reject(err);
+                    } else {
+                        resolve(row);
+                    }
+                }
             );
         });
 
