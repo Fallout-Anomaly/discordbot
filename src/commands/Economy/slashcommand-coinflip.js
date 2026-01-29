@@ -45,7 +45,14 @@ module.exports = new ApplicationCommand({
         // Get user's LUCK stat for win calculation
         const userData = await new Promise((resolve) => {
             db.get('SELECT balance, stat_luck FROM users WHERE id = ?', [userId], (err, row) => {
-                resolve(row || { balance: 0, stat_luck: 1 });
+                if (row) {
+                    resolve({
+                        balance: row.balance ?? 0,
+                        stat_luck: row.stat_luck ?? 1
+                    });
+                } else {
+                    resolve({ balance: 0, stat_luck: 1 });
+                }
             });
         });
 

@@ -43,7 +43,7 @@ module.exports = new ApplicationCommand({
                 // If this.changes is 0, the WHERE clause failed (insufficient funds)
                 if (this.changes === 0) {
                     db.get('SELECT balance FROM users WHERE id = ?', [userId], (err, row) => {
-                        const currentBalance = row ? row.balance : 0;
+                        const currentBalance = row ? (row.balance ?? 0) : 0;
                         return interaction.editReply({ 
                             content: `❌ You entered the casino with empty pockets. You have **${currentBalance}** Caps.`
                         });

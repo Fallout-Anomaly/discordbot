@@ -154,7 +154,7 @@ module.exports = new ApplicationCommand({
                     
 
 
-                    const balance = userRow ? userRow.balance : 0;
+                    const balance = userRow ? (userRow.balance ?? 0) : 0;
                     const charisma = userRow ? (userRow.stat_charisma || 1) : 1;
                     
                     // Charisma Discount

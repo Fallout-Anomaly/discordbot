@@ -48,7 +48,7 @@ module.exports = new ApplicationCommand({
                 if (this.changes === 0) {
                     // Fetch actual balance for user feedback
                     db.get('SELECT balance FROM users WHERE id = ?', [senderId], (err, row) => {
-                        const currentBalance = row ? row.balance : 0;
+                        const currentBalance = row ? (row.balance ?? 0) : 0;
                         return interaction.reply({ 
                             content: `❌ You don't have enough Caps to cover that transaction. Balance: **${currentBalance}**`, 
                             ephemeral: true 
