@@ -224,6 +224,12 @@ async function fightNPC(interaction, userId, client, db) {
         )
         .setFooter({ text: `${turn} turns` });
 
+    // Add level up announcement if applicable
+    if (levelCheck.leveledUp) {
+        report.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n+${levelCheck.levelsGained} SPECIAL Point${levelCheck.levelsGained > 1 ? 's' : ''} earned!`, inline: false });
+        report.setColor('#FFD700');
+    }
+
     return interaction.editReply({ embeds: [report] });
 }
 

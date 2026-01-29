@@ -247,7 +247,7 @@ module.exports = new ApplicationCommand({
 
                         // Add level up announcement if applicable
                         if (levelCheck.leveledUp) {
-                            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n+1 SPECIAL Point earned!`, inline: false });
+                            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n+${levelCheck.levelsGained} SPECIAL Point${levelCheck.levelsGained > 1 ? 's' : ''} earned!`, inline: false });
                             embed.setColor('#FFD700');
                         }
 
