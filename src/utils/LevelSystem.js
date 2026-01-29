@@ -50,6 +50,16 @@ function getLevelProgress(totalXp) {
 }
 
 /**
+ * Calculate total XP needed for a specific level
+ * @param {number} level - Target level
+ * @returns {number} Total XP needed to reach that level
+ */
+function calculateTotalXP(level) {
+    if (level <= 1) return 0;
+    return Math.min(level, MAX_LEVEL) * XP_PER_LEVEL;
+}
+
+/**
  * Check if a user leveled up
  * @param {number} oldXp - XP before the action
  * @param {number} newXp - XP after the action
@@ -69,6 +79,7 @@ function checkLevelUp(oldXp, newXp) {
 
 module.exports = {
     calculateLevel,
+    calculateTotalXP,
     getXpToNextLevel,
     getLevelProgress,
     checkLevelUp,
