@@ -316,3 +316,6 @@ async function executePvP(attId, defId, client, db, respond, attName) {
 
     return respond.editReply({ embeds: [report] });
 }
+
+module.exports.executePvP = executePvP;
+module.exports.getPlayerStats = getPlayerStats;

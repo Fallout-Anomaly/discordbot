@@ -1,5 +1,6 @@
 const EconomyDB = require('./EconomyDB');
-const getDb = () => EconomyDB.getDatabase();
+// Access db directly since circular dependency prevents getDatabase() from working
+const getDb = () => EconomyDB;
 
 // Hostility states for faction relationships
 const HOSTILITY_STATES = {
