@@ -133,6 +133,7 @@ const FACTION_PERKS = {
 
 const REP_THRESHOLDS = {
     Outsider: -100,
+    Recruit: -75,
     Neutral: -50,
     Ally: 0,
     Veteran: 50,
@@ -191,6 +192,7 @@ function getRankFromRep(rep) {
     if (rep >= REP_THRESHOLDS.Veteran) return 'Veteran';
     if (rep >= REP_THRESHOLDS.Ally) return 'Ally';
     if (rep >= REP_THRESHOLDS.Neutral) return 'Neutral';
+    if (rep >= REP_THRESHOLDS.Recruit) return 'Recruit';
     return 'Outsider';
 }
 
@@ -212,10 +214,12 @@ async function modifyReputation(userId, factionId, amount, _source = 'quest') {
             db.run('BEGIN IMMEDIATE TRANSACTION');
 
             // Check daily limit INSIDE transaction (atomic read)
+            // Exclude special sources (admin, allegiance_choice) from daily cap
             db.get(
                 `SELECT COALESCE(SUM(CASE WHEN delta > 0 THEN delta ELSE 0 END), 0) as total 
                  FROM faction_rep_log 
-                 WHERE user_id = ? AND faction_id = ? AND timestamp >= ?`,
+                 WHERE user_id = ? AND faction_id = ? AND timestamp >= ?
+                 AND source NOT IN ('admin', 'allegiance_choice')`,
                 [userId, factionId, dayStart],
                 (err, row) => {
                     if (err) {
@@ -410,12 +414,16 @@ async function initializePlayerFactions(userId) {
         // Dynamically fetch all faction IDs from database
         db.all('SELECT id FROM factions', (err, rows) => {
             const factionIds = (rows || []).map(row => row.id);
+            
+            // If no factions exist, resolve immediately to prevent hang
+            if (factionIds.length === 0) return resolve();
+            
             let completed = 0;
 
             factionIds.forEach(factionId => {
                 db.run(
                     `INSERT OR IGNORE INTO player_factions (user_id, faction_id, reputation, rank) 
-                     VALUES (?, ?, 0, 'Neutral')`,
+                     VALUES (?, ?, -100, 'Outsider')`,
                     [userId, factionId],
                     () => {
                         completed++;
@@ -495,7 +503,10 @@ function getRankAccess(rank) { return RANK_UNLOCKS[rank] || RANK_UNLOCKS.Outside
 async function canAccessFactionQuests(userId) {
     const stats = await getPlayerFactionStats(userId);
     const allegiance = await getPlayerAllegiance(userId);
-    if (!allegiance?.faction_id) return false;
+    
+    // Allow players without allegiance to access quests (limited to Recruit tier by quest command logic)
+    if (!allegiance?.faction_id) return true;
+    
     const rankAccess = getRankAccess(stats[allegiance.faction_id]?.rank || 'Outsider');
     return rankAccess.can_access_quests || false;
 }
