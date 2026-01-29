@@ -281,20 +281,18 @@ module.exports = new ApplicationCommand({
             await interaction.editReply({ content: 'Error processing quest command' });
         }
     },
-    autocomplete: async (interaction) => {
+    autocomplete: async (client, interaction) => {
         try {
-            // Simple static autocomplete - show all Recruit quests (available to everyone)
+            // Show all quests from all factions with rank prefix
             const allQuests = [];
             
-            // Add all Recruit tier quests from all factions
+            // Add all quests from all factions (player can filter themselves)
             for (const [factionId, factionQuests] of Object.entries(FACTION_QUESTS)) {
                 factionQuests.forEach(quest => {
-                    if (quest.rank === 'Recruit') {
-                        allQuests.push({
-                            name: `${quest.name} - ${factionId}`,
-                            value: quest.id
-                        });
-                    }
+                    allQuests.push({
+                        name: `[${quest.rank}] ${quest.name} - ${factionId}`,
+                        value: quest.id
+                    });
                 });
             }
 
@@ -308,7 +306,13 @@ module.exports = new ApplicationCommand({
                 )
                 .slice(0, 25);
 
-            await interaction.respond(filtered.length > 0 ? filtered : allQuests.slice(0, 25));
+            // If user typed something but found nothing, return empty (don't show default list)
+            // Otherwise show matches or the first 25 defaults
+            if (input.length > 0 && filtered.length === 0) {
+                await interaction.respond([]);
+            } else {
+                await interaction.respond(filtered.length > 0 ? filtered : allQuests.slice(0, 25));
+            }
         } catch (error) {
             console.error('Quest autocomplete error:', error);
             // Return empty array on error
@@ -421,14 +425,31 @@ async function acceptQuest(interaction, userId) {
         }
 
         const db = require('../../utils/EconomyDB');
+        
+        // Check for existing active quest (prevent overwriting progress)
+        const existingQuest = await new Promise((resolve) => {
+            db.get('SELECT quest_id, faction_id, complete_at FROM active_quests WHERE user_id = ?', [userId], (err, row) => resolve(row));
+        });
+
+        if (existingQuest) {
+            const timeLeft = Math.floor((existingQuest.complete_at - Date.now()) / 1000 / 60);
+            await interaction.editReply({ 
+                content: `❌ You already have an active quest for **${existingQuest.faction_id}**! Complete or wait ${timeLeft} minutes before accepting a new one.` 
+            });
+            return;
+        }
+
         const duration = quest.duration || 600000; // Default 10 minutes if not specified
         const completeTime = Date.now() + duration;
 
-        // Store quest in database
-        db.run(
-            'INSERT OR REPLACE INTO active_quests (user_id, quest_id, faction_id, started_at, complete_at) VALUES (?, ?, ?, ?, ?)',
-            [userId, questId, questFaction, Date.now(), completeTime]
-        );
+        // Store quest in database (INSERT only now that we've checked)
+        await new Promise((resolve) => {
+            db.run(
+                'INSERT INTO active_quests (user_id, quest_id, faction_id, started_at, complete_at) VALUES (?, ?, ?, ?, ?)',
+                [userId, questId, questFaction, Date.now(), completeTime],
+                () => resolve()
+            );
+        });
 
         const embed = new EmbedBuilder()
             .setTitle(`📋 Quest Accepted: ${quest.name}`)
@@ -504,8 +525,10 @@ async function completeQuest(interaction, userId) {
         
         const levelCheck = await checkLevelUp(userId, user.xp - quest.reward.xp, user.xp);
 
-        // Delete completed quest
-        db.run('DELETE FROM active_quests WHERE user_id = ?', [userId]);
+        // Delete completed quest (CRITICAL: await to prevent race condition)
+        await new Promise((resolve) => {
+            db.run('DELETE FROM active_quests WHERE user_id = ?', [userId], () => resolve());
+        });
 
         const embed = new EmbedBuilder()
             .setTitle(`✅ Quest Complete: ${quest.name}`)
@@ -533,11 +556,12 @@ async function completeQuest(interaction, userId) {
 }
 
 function isRankSufficient(playerRank, requiredRank) {
-    const ranks = ['Outsider', 'Neutral', 'Ally', 'Veteran', 'Champion'];
+    // Full rank hierarchy including Recruit tier
+    const ranks = ['Outsider', 'Recruit', 'Neutral', 'Ally', 'Veteran', 'Champion'];
     
-    // Recruit quests are available to Outsider and Neutral ranks
+    // Recruit quests are available to everyone (Outsider and above)
     if (requiredRank === 'Recruit') {
-        return ['Outsider', 'Neutral', 'Ally', 'Veteran', 'Champion'].includes(playerRank);
+        return true;
     }
     
     const playerIndex = ranks.indexOf(playerRank);
