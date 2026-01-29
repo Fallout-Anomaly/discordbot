@@ -10,7 +10,7 @@ module.exports.QUEST_TEMPLATES = [
 ];
 
 module.exports.LEVEL_SYSTEM = {
-    XP_PER_LEVEL: 500,
+    XP_PER_LEVEL: 1200,
     MAX_LEVEL: 100
 };
 

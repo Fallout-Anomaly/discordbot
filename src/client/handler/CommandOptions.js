@@ -74,8 +74,9 @@ const handleApplicationCommandOptions = async (interaction, options, _command) =
             let data = application_commands_cooldown.get(interaction.user.id);
 
             if (data.some((cmd) => cmd === interaction.commandName)) {
+                const expiredTimestamp = Math.floor((Date.now() + options.cooldown) / 1000);
                 await interaction.reply({
-                    content: config.messages.GUILD_COOLDOWN.replace(/%cooldown%/g, options.cooldown / 1000),
+                    content: config.messages.GUILD_COOLDOWN.replace(/%cooldown%/g, `<t:${expiredTimestamp}:R>`),
                     ephemeral: true
                 });
 
@@ -171,8 +172,9 @@ const handleMessageCommandOptions = async (message, options, command) => {
             let data = message_commands_cooldown.get(message.author.id);
 
             if (data.some((v) => v === mainCommandName)) {
+                const expiredTimestamp = Math.floor((Date.now() + options.cooldown) / 1000);
                 await message.reply({
-                    content: config.messages.GUILD_COOLDOWN.replace(/%cooldown%/g, options.cooldown / 1000)
+                    content: config.messages.GUILD_COOLDOWN.replace(/%cooldown%/g, `<t:${expiredTimestamp}:R>`)
                 });
 
                 return false;
