@@ -4,7 +4,7 @@ const db = require('../../utils/EconomyDB');
 
 module.exports = new Component({
     customId: 'pvp_accept_*',
-    type: 'Button',
+    type: 'button',
     run: async (client, interaction) => {
         // Parse IDs from customId: pvp_accept_{attackerId}_{defenderId}
         const parts = interaction.customId.split('_');
