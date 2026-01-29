@@ -142,7 +142,11 @@ db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS active_quests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id TEXT NOT NULL,
-        title TEXT NOT NULL,
+        quest_id TEXT NOT NULL,
+        faction_id TEXT NOT NULL,
+        started_at INTEGER NOT NULL,
+        complete_at INTEGER NOT NULL,
+        title TEXT,
         description TEXT,
         objective TEXT,
         difficulty TEXT,
@@ -151,7 +155,7 @@ db.serialize(() => {
         start_time INTEGER,
         duration INTEGER,
         reward_item TEXT,
-        UNIQUE(user_id, title),
+        UNIQUE(user_id),
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
 

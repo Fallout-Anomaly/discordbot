@@ -6,6 +6,15 @@ const FactionManager = require('../../utils/FactionManager');
 const FACTION_QUESTS = {
     brotherhood: [
         {
+            id: 'bos_recruit_training',
+            name: 'Recruit Training',
+            description: 'Prove your worth in basic combat drills',
+            reward: { caps: 50, rep: 5, xp: 30 },
+            rank: 'Recruit',
+            duration: 300000, // 5 minutes
+            type: 'training'
+        },
+        {
             id: 'bos_patrol',
             name: 'Brotherhood Patrol',
             description: 'Scout the wasteland for tech and threats',
@@ -31,6 +40,15 @@ const FACTION_QUESTS = {
         }
     ],
     institute: [
+        {
+            id: 'inst_recruit_analysis',
+            name: 'Data Analysis',
+            description: 'Analyze sample data for Institute research',
+            reward: { caps: 60, rep: 5, xp: 35 },
+            rank: 'Recruit',
+            duration: 300000, // 5 minutes
+            type: 'research'
+        },
         {
             id: 'inst_synth_retrieval',
             name: 'Synth Retrieval',
@@ -58,6 +76,15 @@ const FACTION_QUESTS = {
     ],
     minutemen: [
         {
+            id: 'mm_recruit_assistance',
+            name: 'Settlement Assistance',
+            description: 'Help repair basic structures in a settlement',
+            reward: { caps: 55, rep: 5, xp: 32 },
+            rank: 'Recruit',
+            duration: 300000, // 5 minutes
+            type: 'support'
+        },
+        {
             id: 'mm_settlement_aid',
             name: 'Settlement Aid',
             description: 'Provide supplies and defense to struggling settlements',
@@ -83,6 +110,15 @@ const FACTION_QUESTS = {
         }
     ],
     railroad: [
+        {
+            id: 'rr_recruit_courier',
+            name: 'Courier Run',
+            description: 'Deliver encoded messages through the Railroad network',
+            reward: { caps: 65, rep: 5, xp: 38 },
+            rank: 'Recruit',
+            duration: 300000, // 5 minutes
+            type: 'delivery'
+        },
         {
             id: 'rr_rescue_synth',
             name: 'Synth Rescue',
@@ -110,6 +146,15 @@ const FACTION_QUESTS = {
     ],
     raiders: [
         {
+            id: 'raider_recruit_shakedown',
+            name: 'Shake Down',
+            description: 'Intimidate a small merchant for caps',
+            reward: { caps: 70, rep: 5, xp: 40 },
+            rank: 'Recruit',
+            duration: 300000, // 5 minutes
+            type: 'intimidation'
+        },
+        {
             id: 'raider_raid',
             name: 'The Raid',
             description: 'Lead a raiding party against settlements and traders',
@@ -135,6 +180,15 @@ const FACTION_QUESTS = {
         }
     ],
     wastelanders: [
+        {
+            id: 'wast_recruit_scavenge',
+            name: 'Scavenge Run',
+            description: 'Gather basic supplies for the community',
+            reward: { caps: 45, rep: 5, xp: 28 },
+            rank: 'Recruit',
+            duration: 300000, // 5 minutes
+            type: 'gathering'
+        },
         {
             id: 'wast_water_supply',
             name: 'Water Supply Run',
@@ -162,6 +216,23 @@ const FACTION_QUESTS = {
     ]
 };
 
+// Helper function to get emoji based on quest type
+function getQuestEmoji(type) {
+    const emojis = {
+        training: '🎯',
+        research: '🔬',
+        support: '🛠️',
+        delivery: '📦',
+        intimidation: '💪',
+        gathering: '🎒',
+        exploration: '🗺️',
+        collection: '📋',
+        combat: '⚔️',
+        stealth: '🥷'
+    };
+    return emojis[type] || '📜';
+}
+
 module.exports = new ApplicationCommand({
     command: {
         name: 'faction-quest',
@@ -170,7 +241,23 @@ module.exports = new ApplicationCommand({
             {
                 name: 'list',
                 description: 'List available quests for your faction',
-                type: ApplicationCommandOptionType.Subcommand
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'faction',
+                        description: 'View quests for a specific faction (optional)',
+                        type: ApplicationCommandOptionType.String,
+                        required: false,
+                        choices: [
+                            { name: '⚔️ Brotherhood', value: 'brotherhood' },
+                            { name: '🤖 Institute', value: 'institute' },
+                            { name: '🇺🇸 Minutemen', value: 'minutemen' },
+                            { name: '🚆 Railroad', value: 'railroad' },
+                            { name: '💀 Raiders', value: 'raiders' },
+                            { name: '🏜️ Wastelanders', value: 'wastelanders' }
+                        ]
+                    }
+                ]
             },
             {
                 name: 'accept',
@@ -187,16 +274,8 @@ module.exports = new ApplicationCommand({
             },
             {
                 name: 'complete',
-                description: 'Mark a quest as complete',
-                type: ApplicationCommandOptionType.Subcommand,
-                options: [
-                    {
-                        name: 'quest',
-                        description: 'Quest ID to complete',
-                        type: ApplicationCommandOptionType.String,
-                        required: true
-                    }
-                ]
+                description: 'Complete your active quest and claim rewards',
+                type: ApplicationCommandOptionType.Subcommand
             }
         ]
     },
@@ -225,31 +304,47 @@ async function listQuests(interaction, userId) {
         const canAccess = await FactionManager.canAccessFactionQuests(userId);
         if (!canAccess) {
             await interaction.editReply({
-                content: '❌ You need **Ally** rank or higher in a faction to access quests'
+                content: '❌ You need to be at least Level 10 to access faction quests'
             });
             return;
         }
 
+        const factionOption = interaction.options.getString('faction');
         const allegiance = await FactionManager.getPlayerAllegiance(userId);
         const stats = await FactionManager.getPlayerFactionStats(userId);
-        const playerRank = stats[allegiance.faction_id]?.rank || 'Outsider';
-
-        const factionId = allegiance.faction_id.toLowerCase();
+        
+        // Use provided faction or allegiance faction
+        const factionId = factionOption ? factionOption.toLowerCase() : allegiance?.faction_id?.toLowerCase();
+        
+        if (!factionId) {
+            await interaction.editReply({
+                content: '❌ Please specify a faction or choose your allegiance first with `/faction choose`'
+            });
+            return;
+        }
+        
+        const playerRank = stats[factionId]?.rank || 'Outsider';
+        const hasAllegiance = allegiance?.faction_id === factionId;
         const quests = FACTION_QUESTS[factionId] || [];
 
         const embed = new EmbedBuilder()
             .setTitle(`📜 ${factionId.toUpperCase()} Faction Quests`)
             .setColor(0x1f8b4c)
-            .setDescription(`Your Rank: **${playerRank}**`);
+            .setDescription(`${hasAllegiance ? 'Your Faction' : 'Viewing'} | Your Rank: **${playerRank}** (${stats[factionId]?.reputation || 0} rep)`);
 
         quests.forEach(quest => {
+            // Show Recruit quests to everyone, show Ally+ quests only to those with allegiance
+            const canSeeQuest = quest.rank === 'Recruit' || hasAllegiance;
+            if (!canSeeQuest) return;
+            
             const isAvailable = isRankSufficient(playerRank, quest.rank);
             const status = isAvailable ? '✅' : '🔒';
             const rankReq = isAvailable ? '' : ` (Requires: ${quest.rank})`;
+            const duration = quest.duration ? ` | ${Math.floor(quest.duration / 60000)} min` : '';
 
             embed.addFields({
                 name: `${status} ${quest.name}`,
-                value: `${quest.description}\n**Reward:** ${quest.reward.caps} caps + ${quest.reward.rep} rep + ${quest.reward.xp} XP\n**Type:** ${quest.type}${rankReq}`,
+                value: `${quest.description}\n**Reward:** ${quest.reward.caps} caps + ${quest.reward.rep} rep + ${quest.reward.xp} XP\n**Type:** ${quest.type}${duration}${rankReq}`,
                 inline: false
             });
         });
@@ -265,17 +360,20 @@ async function acceptQuest(interaction, userId) {
     try {
         const questId = interaction.options.getString('quest');
         const allegiance = await FactionManager.getPlayerAllegiance(userId);
-        const factionId = allegiance?.faction_id?.toLowerCase();
+        const stats = await FactionManager.getPlayerFactionStats(userId);
 
-        if (!factionId) {
-            await interaction.editReply({
-                content: '❌ You must join a faction first'
-            });
-            return;
+        // Find which faction this quest belongs to
+        let questFaction = null;
+        let quest = null;
+        
+        for (const [factionId, factionQuests] of Object.entries(FACTION_QUESTS)) {
+            const foundQuest = factionQuests.find(q => q.id === questId);
+            if (foundQuest) {
+                questFaction = factionId;
+                quest = foundQuest;
+                break;
+            }
         }
-
-        const quests = FACTION_QUESTS[factionId] || [];
-        const quest = quests.find(q => q.id === questId);
 
         if (!quest) {
             await interaction.editReply({
@@ -284,8 +382,16 @@ async function acceptQuest(interaction, userId) {
             return;
         }
 
-        const stats = await FactionManager.getPlayerFactionStats(userId);
-        const playerRank = stats[allegiance.faction_id]?.rank || 'Outsider';
+        // Recruit quests can be done for any faction, Ally+ quests require allegiance
+        const hasAllegiance = allegiance?.faction_id === questFaction;
+        if (quest.rank !== 'Recruit' && !hasAllegiance) {
+            await interaction.editReply({ 
+                content: `❌ This quest requires allegiance to **${questFaction}**. Recruit quests can be done for any faction!` 
+            });
+            return;
+        }
+
+        const playerRank = stats[questFaction]?.rank || 'Outsider';
 
         if (!isRankSufficient(playerRank, quest.rank)) {
             await interaction.editReply({
@@ -294,16 +400,27 @@ async function acceptQuest(interaction, userId) {
             return;
         }
 
+        const db = require('../../utils/EconomyDB');
+        const duration = quest.duration || 600000; // Default 10 minutes if not specified
+        const completeTime = Date.now() + duration;
+
+        // Store quest in database
+        db.run(
+            'INSERT OR REPLACE INTO active_quests (user_id, quest_id, faction_id, started_at, complete_at) VALUES (?, ?, ?, ?, ?)',
+            [userId, questId, questFaction, Date.now(), completeTime]
+        );
+
         const embed = new EmbedBuilder()
             .setTitle(`📋 Quest Accepted: ${quest.name}`)
             .setColor(0x1f8b4c)
-            .setDescription(quest.description)
+            .setDescription(`${quest.description}\n\n**Faction:** ${questFaction.charAt(0).toUpperCase() + questFaction.slice(1)}`)
             .addFields(
                 { name: 'Reward', value: `${quest.reward.caps} caps`, inline: true },
                 { name: 'Reputation', value: `+${quest.reward.rep}`, inline: true },
-                { name: 'Experience', value: `+${quest.reward.xp}`, inline: true }
+                { name: 'Experience', value: `+${quest.reward.xp}`, inline: true },
+                { name: 'Complete After', value: `<t:${Math.floor(completeTime / 1000)}:R>`, inline: false }
             )
-            .setFooter({ text: `Use /faction-quest complete ${questId} when done` });
+            .setFooter({ text: `Use /faction-quest complete when timer expires` });
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
@@ -314,35 +431,80 @@ async function acceptQuest(interaction, userId) {
 
 async function completeQuest(interaction, userId) {
     try {
-        const questId = interaction.options.getString('quest');
-        const allegiance = await FactionManager.getPlayerAllegiance(userId);
-        const factionId = allegiance?.faction_id?.toLowerCase();
+        const db = require('../../utils/EconomyDB');
+        const { checkLevelUp } = require('../../utils/LevelSystem');
+        
+        // Get active quest from database
+        const activeQuest = await new Promise((resolve) => {
+            db.get(
+                'SELECT quest_id, faction_id, started_at, complete_at FROM active_quests WHERE user_id = ?',
+                [userId],
+                (err, row) => resolve(row)
+            );
+        });
 
-        if (!factionId) {
-            await interaction.editReply({ content: '❌ You must join a faction first' });
+        if (!activeQuest) {
+            await interaction.editReply({ content: '❌ You don\'t have any active quests' });
             return;
         }
 
-        const quests = FACTION_QUESTS[factionId] || [];
-        const quest = quests.find(q => q.id === questId);
+        // Check if quest is complete
+        if (Date.now() < activeQuest.complete_at) {
+            const timeLeft = Math.ceil((activeQuest.complete_at - Date.now()) / 1000);
+            await interaction.editReply({ 
+                content: `❌ Quest not ready yet. Complete <t:${Math.floor(activeQuest.complete_at / 1000)}:R>` 
+            });
+            return;
+        }
+
+        // Find quest definition
+        const quests = FACTION_QUESTS[activeQuest.faction_id] || [];
+        const quest = quests.find(q => q.id === activeQuest.quest_id);
 
         if (!quest) {
-            await interaction.editReply({ content: '❌ Quest not found' });
+            await interaction.editReply({ content: '❌ Quest definition not found' });
             return;
         }
 
-        // Award rewards
-        await FactionManager.modifyReputation(userId, allegiance.faction_id, quest.reward.rep);
+        // Award reputation to the quest's faction (not necessarily allegiance faction)
+        const repResult = await FactionManager.modifyReputation(userId, activeQuest.faction_id, quest.reward.rep, 'quest');
+        
+        // Award caps and XP
+        await new Promise((resolve) => {
+            db.run(
+                'UPDATE users SET caps = caps + ?, xp = xp + ? WHERE id = ?',
+                [quest.reward.caps, quest.reward.xp, userId],
+                () => resolve()
+            );
+        });
+
+        // Check for level up
+        const user = await new Promise((resolve) => {
+            db.get('SELECT xp FROM users WHERE id = ?', [userId], (err, row) => resolve(row));
+        });
+        
+        const levelCheck = await checkLevelUp(userId, user.xp - quest.reward.xp, user.xp);
+
+        // Delete completed quest
+        db.run('DELETE FROM active_quests WHERE user_id = ?', [userId]);
 
         const embed = new EmbedBuilder()
             .setTitle(`✅ Quest Complete: ${quest.name}`)
             .setColor(0x1f8b4c)
-            .setDescription('Rewards granted!')
+            .setDescription(`**Faction:** ${activeQuest.faction_id.charAt(0).toUpperCase() + activeQuest.faction_id.slice(1)}\n\nRewards granted!`)
             .addFields(
                 { name: 'Caps', value: `+${quest.reward.caps}`, inline: true },
-                { name: 'Reputation', value: `+${quest.reward.rep}`, inline: true },
+                { name: 'Reputation', value: `+${quest.reward.rep} (${repResult.rank})`, inline: true },
                 { name: 'Experience', value: `+${quest.reward.xp}`, inline: true }
             );
+
+        if (levelCheck.leveledUp) {
+            embed.addFields({
+                name: '⭐ LEVEL UP!',
+                value: `**Level ${levelCheck.newLevel}** 🎉\n+${levelCheck.levelsGained} SPECIAL Point${levelCheck.levelsGained > 1 ? 's' : ''} earned!`,
+                inline: false
+            });
+        }
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
@@ -353,6 +515,12 @@ async function completeQuest(interaction, userId) {
 
 function isRankSufficient(playerRank, requiredRank) {
     const ranks = ['Outsider', 'Neutral', 'Ally', 'Veteran', 'Champion'];
+    
+    // Recruit quests are available to Outsider and Neutral ranks
+    if (requiredRank === 'Recruit') {
+        return ['Outsider', 'Neutral', 'Ally', 'Veteran', 'Champion'].includes(playerRank);
+    }
+    
     const playerIndex = ranks.indexOf(playerRank);
     const requiredIndex = ranks.indexOf(requiredRank);
     return playerIndex >= requiredIndex;
