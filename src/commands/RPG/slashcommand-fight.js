@@ -17,42 +17,45 @@ module.exports = new ApplicationCommand({
         description: 'Battle wasteland creatures or other players. Uses your SPECIAL stats and inventory.',
         options: [
             {
-                name: 'type',
-                description: 'Fight type',
-                type: ApplicationCommandOptionType.String,
-                required: true,
-                choices: [
-                    { name: 'Enemy (NPC)', value: 'npc' },
-                    { name: 'Player (PvP)', value: 'pvp' }
+                name: 'npc',
+                description: 'Battle a wasteland creature',
+                type: 1, // SUBCOMMAND
+                options: [
+                    {
+                        name: 'enemy',
+                        description: 'NPC enemy to fight',
+                        type: ApplicationCommandOptionType.String,
+                        required: true,
+                        choices: Object.entries(ENEMIES).map(([key, data]) => ({
+                            name: data.name,
+                            value: key
+                        }))
+                    }
                 ]
             },
             {
-                name: 'enemy',
-                description: 'NPC enemy to fight',
-                type: ApplicationCommandOptionType.String,
-                required: false,
-                choices: Object.entries(ENEMIES).map(([key, data]) => ({
-                    name: data.name,
-                    value: key
-                }))
-            },
-            {
-                name: 'opponent',
-                description: 'Player to fight (PvP)',
-                type: ApplicationCommandOptionType.User,
-                required: false
+                name: 'pvp',
+                description: 'Battle another player',
+                type: 1, // SUBCOMMAND
+                options: [
+                    {
+                        name: 'opponent',
+                        description: 'Player to fight',
+                        type: ApplicationCommandOptionType.User,
+                        required: true
+                    }
+                ]
             }
         ]
     },
     defer: 'ephemeral',
     run: async (client, interaction) => {
-        const fightType = interaction.options.getString('type');
+        const subcommand = interaction.options.getSubcommand();
 
-        if (fightType === 'npc') {
+        if (subcommand === 'npc') {
             return await fightNPC(interaction, interaction.user.id, client, db);
         } else {
             const opponent = interaction.options.getUser('opponent');
-            if (!opponent) return interaction.editReply({ content: '❌ Please specify a player to fight!' });
             if (opponent.id === interaction.user.id) return interaction.editReply({ content: '❌ You cannot fight yourself!' });
             if (opponent.bot) return interaction.editReply({ content: '❌ You cannot fight bots!' });
             return await initiatePvP(interaction, interaction.user.id, opponent, client, db);
@@ -225,39 +228,22 @@ async function initiatePvP(interaction, attackerId, opponent, client, db) {
 
     const embed = new EmbedBuilder()
         .setTitle('⚔️ PvP CHALLENGE')
-        .setDescription(`${interaction.user.username} challenges you!`)
-        .addFields({ name: 'Rewards', value: '**Win:** 100 Cap + 100 XP\n**Lose:** 25 Caps + 25 XP' })
+        .setDescription(`${interaction.user.username} challenges you to a battle!`)
+        .addFields({ name: 'Rewards', value: '**Win:** 100 Caps + 100 XP\n**Lose:** 25 Caps + 25 XP' })
+        .setColor('#FF6B6B')
         .setFooter({ text: '60 second timeout' });
 
     try {
-        const msg = await opponent.send({ embeds: [embed], components: [new ActionRowBuilder().addComponents(accept, decline)] });
-        const col = msg.createMessageComponentCollector({ filter: (i) => i.customId.startsWith('pvp_'), time: 60000 });
-
-        col.on('end', (collected, reason) => {
-            if (reason === 'time') {
-                const disabledRow = new ActionRowBuilder()
-                    .addComponents(
-                        accept.setDisabled(true),
-                        decline.setDisabled(true)
-                    );
-                msg.edit({ content: '⏱️ Challenge expired.', components: [disabledRow] }).catch(() => {});
-            }
+        await interaction.channel.send({ 
+            content: `${opponent}`,
+            embeds: [embed], 
+            components: [new ActionRowBuilder().addComponents(accept, decline)] 
         });
-
-        col.on('collect', async (btn) => {
-            if (btn.customId.startsWith('pvp_accept')) {
-                await btn.deferReply();
-                await setFightCooldowns(attackerId, opponent.id, db);
-                await executePvP(attackerId, opponent.id, client, db, btn, interaction.user.username);
-            } else {
-                await btn.reply({ content: `✅ Declined ${interaction.user.username}'s challenge.` });
-                await interaction.editReply({ content: `❌ ${opponent.username} declined.` });
-            }
-        });
-
-        return interaction.editReply({ content: `✅ Challenge sent to ${opponent.username}!` });
+        
+        await setFightCooldowns(attackerId, opponent.id, db);
+        return interaction.editReply({ content: `⚔️ Challenge issued to ${opponent}!` });
     } catch {
-        return interaction.editReply({ content: `❌ Could not DM ${opponent.username}.` });
+        return interaction.editReply({ content: `❌ Could not send challenge.` });
     }
 }
 

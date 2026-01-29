@@ -203,10 +203,72 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
 
+    // Faction Metadata
+    db.run(`CREATE TABLE IF NOT EXISTS factions (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        color TEXT,
+        description TEXT,
+        type TEXT,
+        emoji TEXT
+    )`);
+
+    // Player Faction Standings
+    db.run(`CREATE TABLE IF NOT EXISTS player_factions (
+        user_id TEXT,
+        faction_id TEXT,
+        reputation INTEGER DEFAULT 0,
+        rank TEXT DEFAULT 'Outsider',
+        last_rep_gain INTEGER DEFAULT 0,
+        PRIMARY KEY (user_id, faction_id),
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(faction_id) REFERENCES factions(id)
+    )`);
+
+    // Player Allegiance (one major faction per player)
+    db.run(`CREATE TABLE IF NOT EXISTS player_allegiance (
+        user_id TEXT PRIMARY KEY,
+        faction_id TEXT,
+        allegiance_locked INTEGER DEFAULT 0,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(faction_id) REFERENCES factions(id)
+    )`);
+
+    // Faction Perks Lookup
+    db.run(`CREATE TABLE IF NOT EXISTS faction_perks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        faction_id TEXT,
+        rank TEXT,
+        perk_name TEXT,
+        perk_value REAL,
+        FOREIGN KEY(faction_id) REFERENCES factions(id)
+    )`);
+
     indexes.forEach(idx => {
         db.run(idx, (err) => {
             if (err) console.error("Index Error:", err.message);
         });
+    });
+
+    // Initialize faction metadata
+    const factions = [
+        { id: 'brotherhood', name: 'Brotherhood of Steel', color: '#A0522D', type: 'major', emoji: '⚔️' },
+        { id: 'institute', name: 'Institute', color: '#4169E1', type: 'major', emoji: '🤖' },
+        { id: 'minutemen', name: 'Minutemen', color: '#FFD700', type: 'major', emoji: '🇺🇸' },
+        { id: 'railroad', name: 'Railroad', color: '#8B0000', type: 'major', emoji: '🚆' },
+        { id: 'raiders', name: 'Raiders', color: '#FF4500', type: 'major', emoji: '💀' },
+        { id: 'wastelanders', name: 'Independent Wastelanders', color: '#808080', type: 'major', emoji: '🏜️' },
+        { id: 'smugglers', name: 'Smugglers', color: '#2F4F4F', type: 'black-market', emoji: '🏴' },
+        { id: 'mercenaries', name: 'Mercenaries', color: '#696969', type: 'black-market', emoji: '🔫' },
+        { id: 'syndicate', name: 'Wasteland Syndicate', color: '#1C1C1C', type: 'black-market', emoji: '💼' }
+    ];
+
+    factions.forEach(f => {
+        db.run(
+            `INSERT OR IGNORE INTO factions (id, name, color, type, emoji) VALUES (?, ?, ?, ?, ?)`,
+            [f.id, f.name, f.color, f.type, f.emoji],
+            () => {}
+        );
     });
 });
 
