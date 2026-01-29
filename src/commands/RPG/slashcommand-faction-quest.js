@@ -283,78 +283,38 @@ module.exports = new ApplicationCommand({
     },
     autocomplete: async (interaction) => {
         try {
-            // Check if this is for the quest parameter
-            const focused = interaction.options?.getFocused?.(true);
-            if (!focused || focused.name !== 'quest') {
-                await interaction.respond([]);
-                return;
-            }
-
-            const userId = interaction.user.id;
-            
-            // Get faction data with timeout protection
-            let stats, allegiance;
-            try {
-                stats = await Promise.race([
-                    FactionManager.getPlayerFactionStats(userId),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
-                ]);
-                allegiance = await Promise.race([
-                    FactionManager.getPlayerAllegiance(userId),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
-                ]);
-            } catch (err) {
-                console.error('Autocomplete data fetch error:', err);
-                // Fallback: show all Recruit quests
-                stats = {};
-                allegiance = null;
-            }
-
-            // Collect all available quests
+            // Simple static autocomplete - show all Recruit quests (available to everyone)
             const allQuests = [];
             
+            // Add all Recruit tier quests from all factions
             for (const [factionId, factionQuests] of Object.entries(FACTION_QUESTS)) {
-                const playerRank = stats[factionId]?.rank || 'Outsider';
-                const hasAllegiance = allegiance?.faction_id === factionId;
-                
                 factionQuests.forEach(quest => {
-                    try {
-                        // Show Recruit quests to everyone, show Ally+ quests only to those with allegiance
-                        const canSeeQuest = quest.rank === 'Recruit' || hasAllegiance;
-                        if (!canSeeQuest) return;
-                        
-                        // Check rank requirement
-                        const ranks = ['Outsider', 'Neutral', 'Ally', 'Veteran', 'Champion'];
-                        const isAvailable = quest.rank === 'Recruit' 
-                            ? true 
-                            : ranks.indexOf(playerRank) >= ranks.indexOf(quest.rank);
-                        
-                        if (isAvailable) {
-                            allQuests.push({
-                                name: `${quest.name} (${factionId})`.substring(0, 100),
-                                value: quest.id
-                            });
-                        }
-                    } catch (questErr) {
-                        console.error('Quest processing error:', questErr);
+                    if (quest.rank === 'Recruit') {
+                        allQuests.push({
+                            name: `${quest.name} - ${factionId}`,
+                            value: quest.id
+                        });
                     }
                 });
             }
 
             // Filter based on user input
-            const input = (focused?.value || '').toLowerCase();
+            const focused = interaction.options.getFocused();
+            const input = focused.toLowerCase();
             const filtered = allQuests
-                .filter(q => q.value.toLowerCase().includes(input) || q.name.toLowerCase().includes(input))
-                .slice(0, 25); // Discord limit
+                .filter(q => 
+                    q.value.toLowerCase().includes(input) || 
+                    q.name.toLowerCase().includes(input)
+                )
+                .slice(0, 25);
 
-            await interaction.respond(filtered.length > 0 ? filtered : [{ name: 'No quests available', value: 'none' }]);
+            await interaction.respond(filtered.length > 0 ? filtered : allQuests.slice(0, 25));
         } catch (error) {
             console.error('Quest autocomplete error:', error);
+            // Return empty array on error
             try {
-                await interaction.respond([{ name: 'Error loading quests', value: 'error' }]);
-            } catch {
-                // Silently fail if respond fails
-            }
+                await interaction.respond([]);
+            } catch {}
         }
     }
 }).toJSON();
