@@ -141,7 +141,7 @@ module.exports = new ApplicationCommand({
         await new Promise((resolve) => {
             db.run(
                 'UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?',
-                [encounter.caps, encounter.xp, levelCheck.levelsGained, userId],
+                [encounter.caps, encounter.xp, levelCheck.leveledUp ? 1 : 0, userId],
                 () => resolve()
             );
         });
@@ -168,8 +168,7 @@ module.exports = new ApplicationCommand({
 
         // Add level up announcement if applicable
         if (levelCheck.leveledUp) {
-            const pointsText = levelCheck.levelsGained > 1 ? `+${levelCheck.levelsGained} SPECIAL Points` : '+1 SPECIAL Point';
-            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n${pointsText} earned!`, inline: false });
+            embed.addFields({ name: '⭐ LEVEL UP!', value: `**Level ${levelCheck.newLevel}** 🎉\n+1 SPECIAL Point earned!`, inline: false });
             embed.setColor('#FFD700');
         } else {
             embed.setColor(encounter.difficulty === 'Legendary' ? '#FFD700' : encounter.difficulty === 'Epic' ? '#9B59B6' : encounter.difficulty === 'Hard' ? '#E74C3C' : '#2ECC71');

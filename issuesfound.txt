@@ -1,0 +1,333 @@
+================================================================================
+                    ANOMALYBOT - COMPREHENSIVE CODE REVIEW
+                         Date: January 28, 2026
+================================================================================
+
+🔍 CRITICAL ISSUES (Must Fix Immediately)
+================================================================================
+
+1.1 Race Condition in Quest Complete (slashcommand-quest.js)
+   Location: Line 234 vs Line 257
+   Severity: CRITICAL - WILL CRASH
+   
+   Problem: levelCheck.levelsGained is used BEFORE levelCheck is calculated
+   
+   Current Code:
+   Line 234: db.run('UPDATE ... stat_points + ?', [... levelCheck.levelsGained ...])
+   Line 257: const levelCheck = checkLevelUp(oldXp, newXp);
+   
+   Fix: Move line 257 BEFORE line 234
+
+
+1.2 Duplicate Embed Creation in Quest Generate (slashcommand-quest.js)
+   Location: Lines 185-191 and 193-198
+   Severity: HIGH
+   
+   Problem: Two identical embed creations, second overwrites first
+   Fix: Remove duplicate lines 193-198
+
+
+1.3 Undefined Variable in Fish Command (slashcommand-fish.js)
+   Location: Line 96
+   Severity: CRITICAL - WILL CRASH
+   
+   Problem: userData is never fetched before use
+   Current: const oldXp = userData.xp || 0; // userData is undefined!
+   
+   Fix: Fetch user data with db.get before this line
+
+
+1.4 Wrong Reply Method in Scavenge (slashcommand-scavenge.js)
+   Location: Line 141
+   Severity: HIGH - WILL ERROR
+   
+   Problem: Uses reply() after deferReply()
+   Current: interaction.reply({ embeds: [embed] })
+   Fix: interaction.editReply({ embeds: [embed] })
+
+
+1.5 Unhandled Database Errors Throughout Codebase
+   Location: ALL RPG commands and utilities
+   Severity: CRITICAL
+   
+   Problem: db.get/db.run callbacks don't handle errors consistently
+   Fix: Add error checking:
+   db.get('SELECT...', [id], (err, row) => {
+       if (err) {
+           console.error('[COMMAND] DB Error:', err);
+           return interaction.editReply({ content: '❌ Database error' });
+       }
+       // ... rest of code
+   });
+
+
+1.6 Missing Transaction in Rob Command (slashcommand-rob.js)
+   Severity: CRITICAL - DATA CORRUPTION RISK
+   
+   Problem: Three separate UPDATE queries without transaction
+   Result: If one fails, caps could be duplicated or lost
+   
+   Fix: Wrap in transaction:
+   db.serialize(() => {
+       db.run('BEGIN TRANSACTION');
+       db.run('UPDATE stash...');
+       db.run('UPDATE users...'); // victim
+       db.run('UPDATE users...'); // robber
+       db.run('COMMIT', (err) => {
+           if (err) db.run('ROLLBACK');
+       });
+   });
+
+
+1.7 Memory Leak in Support Cleanup (supportCleanup.js)
+   Location: Line 24
+   Severity: HIGH
+   
+   Problem: Interval may leak on bot restart/reconnect
+   Fix: Add process exit handler:
+   process.on('beforeExit', () => {
+       if (cleanupInterval) clearInterval(cleanupInterval);
+   });
+
+
+1.8 Race Condition in Quest Timer System (slashcommand-quest.js)
+   Severity: MEDIUM
+   
+   Problem: start_time uses Date.now() which could vary between insert and check
+   Status: Actually okay, but consider using transaction timestamps
+
+
+================================================================================
+🔴 HIGH PRIORITY ISSUES (Fix Soon)
+================================================================================
+
+2.1 Missing Error Logging in AIService (AIService.js)
+   Problem: catch blocks only log e.message, not full error
+   Fix: Use console.error("AI Error:", e) for stack traces
+
+
+2.2 Infinite Loop Risk in Blacklist Loading (messageCreate.js)
+   Problem: While loop waits 3s but doesn't handle permanent failure
+   Fix: Add fallback after timeout expires
+
+
+2.3 Missing Cooldown Cleanup in Handler
+   Problem: Cooldown Map grows forever, never cleaned
+   Fix: Add hourly cleanup of expired cooldowns
+
+
+2.4 No Database Close on Shutdown (index.js)
+   Problem: Database connection not closed on bot exit
+   Fix: Add SIGINT handler to close db.close()
+
+
+2.5 Missing Input Validation in Stash Command
+   Problem: No check that amount > 0 and is integer
+   Fix: Add validation before processing
+
+
+2.6 Duplicate Code in Support Cleanup
+   Problem: Cleanup logic duplicated in event + command
+   Fix: Extract to shared utility function
+
+
+2.7 Missing Database Indexes
+   Problem: Queries on user_id columns are slow
+   Fix: Add indexes:
+   CREATE INDEX IF NOT EXISTS idx_active_quests_user ON active_quests(user_id);
+   CREATE INDEX IF NOT EXISTS idx_inventory_user ON inventory(user_id);
+   CREATE INDEX IF NOT EXISTS idx_hunt_cooldown_user ON hunt_cooldown(user_id);
+   CREATE INDEX IF NOT EXISTS idx_fish_cooldown_user ON fish_cooldown(user_id);
+   CREATE INDEX IF NOT EXISTS idx_quest_history_user ON quest_history(user_id);
+
+
+================================================================================
+🟡 MEDIUM PRIORITY ISSUES (Code Quality)
+================================================================================
+
+3.1 Inconsistent Error Messages
+   Problem: Some commands say "Database error", others more specific
+   Fix: Create ERROR_MESSAGES constant with codes
+
+
+3.2 Magic Numbers Throughout Code
+   Problem: Hardcoded 500 (XP), 10 (minutes), etc.
+   Fix: Move to CONFIG constants
+
+
+3.3 Missing JSDoc Comments
+   Problem: Most functions lack documentation
+   Fix: Add JSDoc to all exported functions
+
+
+3.4 Mixed Async Patterns
+   Problem: Some callbacks, some promises, some async/await
+   Fix: Standardize to async/await everywhere
+
+
+3.5 Long Functions Need Refactoring
+   Problem: messageCreate.js has 300+ line run() function
+   Fix: Break into smaller functions
+
+
+3.6 Inconsistent Naming Conventions
+   Problem: Some files use camelCase, others snake_case for db columns
+   Fix: Document and standardize conventions
+
+
+3.7 Duplicate Quest Template Logic
+   Problem: QUEST_TEMPLATES appears in both command and AI service
+   Fix: Move to shared data file
+
+
+================================================================================
+🟢 LOW PRIORITY ISSUES (Minor Optimizations)
+================================================================================
+
+4.1 Redundant Database Queries
+   Problem: Stats command fetches user data 3 times
+   Fix: Combine into single query with proper structure
+
+
+4.2 Unused Variables and Imports
+   Problem: Several files import unused modules
+   Fix: Remove unused imports to reduce bundle size
+
+
+4.3 Inconsistent Logging
+   Problem: Mix of console.log, console.error, and Console utility
+   Fix: Use Console utility everywhere
+
+
+4.4 Missing Rate Limiting on AI
+   Problem: No per-user rate limit on AI calls
+   Fix: Implement rate limiter (5 requests/minute)
+
+
+4.5 Hardcoded IDs in Code
+   Problem: Channel IDs like '1464778551093100616' in source
+   Fix: Move to config.js or environment variables
+
+
+================================================================================
+🔒 SECURITY ISSUES
+================================================================================
+
+5.1 Environment Variable Exposure
+   Action: Verify .env is in .gitignore
+   Status: CHECK REQUIRED
+
+
+5.2 Missing Permission Validation
+   Problem: Some commands don't check bot permissions
+   Fix: Add permission checks before operations
+
+
+5.3 No Input Sanitization on AI Prompts
+   Problem: User input passed directly to AI without sanitization
+   Fix: Add prompt injection protection
+
+
+================================================================================
+⚡ PERFORMANCE ISSUES
+================================================================================
+
+6.1 N+1 Query in Raffle System
+   Problem: Loop makes individual INSERT queries
+   Fix: Batch insert with single query
+
+
+6.2 Large Message Fetches
+   Problem: Support cleanup fetches 20 messages every check
+   Fix: Cache recent messages, only fetch when needed
+
+
+6.3 No Connection Pooling
+   Problem: SQLite single connection
+   Note: Consider PostgreSQL for production scaling
+
+
+================================================================================
+🧪 TESTING RECOMMENDATIONS
+================================================================================
+
+7.1 Missing Unit Tests
+   Recommendation: Add Jest tests for:
+   - LevelSystem calculations
+   - Database utilities
+   - Command validators
+
+
+7.2 Missing Integration Tests
+   Recommendation: Add discord.js-mock tests for:
+   - Command interaction flows
+   - Button/modal handlers
+   - Event handlers
+
+
+7.3 No Load Testing
+   Recommendation: Test with 100+ concurrent users
+
+
+================================================================================
+📊 SUMMARY
+================================================================================
+
+Total Issues Found: 34
+
+Critical:     8  ⚠️  Fix Immediately (Next 24 Hours)
+High:         7  🔴  Fix Soon (This Week)  
+Medium:       7  🟡  Plan for Next Sprint
+Low:          5  🟢  Nice to Have
+Security:     3  🔒  Verify ASAP
+Performance:  3  ⚡  Monitor & Optimize
+Testing:      3  🧪  Add Test Coverage
+
+
+================================================================================
+🚨 IMMEDIATE ACTION REQUIRED (Fix Today)
+================================================================================
+
+1. slashcommand-quest.js Line 234 - Move levelCheck calculation BEFORE usage
+2. slashcommand-fish.js Line 96 - Fetch userData before accessing
+3. slashcommand-scavenge.js Line 141 - Change reply() to editReply()
+4. slashcommand-rob.js - Wrap all updates in transaction
+5. Add error handling to ALL database callbacks
+
+
+================================================================================
+📁 FILES REQUIRING IMMEDIATE ATTENTION
+================================================================================
+
+CRITICAL:
+- src/commands/RPG/slashcommand-quest.js (Race condition crash)
+- src/commands/RPG/slashcommand-fish.js (Undefined variable crash)
+- src/commands/RPG/slashcommand-scavenge.js (Interaction error)
+- src/commands/Economy/slashcommand-rob.js (Data corruption risk)
+
+HIGH PRIORITY:
+- src/utils/AIService.js (Error logging)
+- src/events/Client/messageCreate.js (Infinite loop risk)
+- src/events/Client/supportCleanup.js (Memory leak)
+- src/utils/EconomyDB.js (Missing indexes)
+
+
+================================================================================
+✅ WHAT'S WORKING WELL
+================================================================================
+
+- Level system implementation is solid
+- deferReply() pattern mostly correct after recent fixes
+- Quest timer system logic is sound
+- Stat point allocation uses atomic operations correctly
+- AutoResponder keyword matching is efficient
+- Support cleanup architecture is good (just needs bug fixes)
+
+
+================================================================================
+END OF REPORT
+
+Review completed: 80+ files analyzed
+Review duration: Comprehensive deep dive
+Next steps: Address critical issues before deploying to production
+================================================================================

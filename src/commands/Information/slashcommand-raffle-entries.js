@@ -37,7 +37,7 @@ module.exports = new ApplicationCommand({
         const tierInfo = DonorSystem.TIERS[donor.tier];
         const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-        // Fetch entries for active custom raffles
+        // Only show user's own custom raffle entries, not others'
         const customEntries = await new Promise((resolve) => {
             db.all(
                 `SELECT r.title, COUNT(re.user_id) as count 
@@ -50,8 +50,9 @@ module.exports = new ApplicationCommand({
             );
         });
 
+        const displayUser = targetUser || interaction.user;
         const embed = new EmbedBuilder()
-            .setTitle('🎰 Raffle Dashboard')
+            .setTitle(`🎰 ${displayUser.username}'s Raffle Dashboard`)
             .setDescription(`**${tierInfo.name}** Status`)
             .addFields(
                 { 

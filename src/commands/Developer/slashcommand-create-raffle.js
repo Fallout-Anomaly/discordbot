@@ -213,12 +213,7 @@ module.exports = new ApplicationCommand({
                 .setLabel('Enter Raffle')
                 .setStyle(ButtonStyle.Success);
 
-            const viewButton = new ButtonBuilder()
-                .setCustomId(`raffle_view_${newRaffleId}`)
-                .setLabel('View Entries')
-                .setStyle(ButtonStyle.Primary);
-
-            const row = new ActionRowBuilder().addComponents(enterButton, viewButton);
+            const row = new ActionRowBuilder().addComponents(enterButton);
 
             // Post the raffle embed in current channel
             const postedMessage = await interaction.channel.send({ embeds: [embed], components: [row] });
