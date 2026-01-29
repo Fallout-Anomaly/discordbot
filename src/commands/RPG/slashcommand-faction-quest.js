@@ -1,220 +1,7 @@
-const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
+const { EmbedBuilder, ApplicationCommandOptionType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const FactionManager = require('../../utils/FactionManager');
-
-// Quest definitions per faction
-const FACTION_QUESTS = {
-    brotherhood: [
-        {
-            id: 'bos_recruit_training',
-            name: 'Recruit Training',
-            description: 'Prove your worth in basic combat drills',
-            reward: { caps: 50, rep: 5, xp: 30 },
-            rank: 'Recruit',
-            duration: 300000, // 5 minutes
-            type: 'training'
-        },
-        {
-            id: 'bos_patrol',
-            name: 'Brotherhood Patrol',
-            description: 'Scout the wasteland for tech and threats',
-            reward: { caps: 150, rep: 15, xp: 100 },
-            rank: 'Ally',
-            type: 'exploration'
-        },
-        {
-            id: 'bos_scribe_work',
-            name: 'Scribe\'s Record',
-            description: 'Catalog technology finds for the Brotherhood archives',
-            reward: { caps: 100, rep: 10, xp: 75 },
-            rank: 'Ally',
-            type: 'collection'
-        },
-        {
-            id: 'bos_radiation_cleanse',
-            name: 'Radiation Cleanse',
-            description: 'Clear radioactive zones to protect the Brotherhood',
-            reward: { caps: 200, rep: 20, xp: 150 },
-            rank: 'Veteran',
-            type: 'combat'
-        }
-    ],
-    institute: [
-        {
-            id: 'inst_recruit_analysis',
-            name: 'Data Analysis',
-            description: 'Analyze sample data for Institute research',
-            reward: { caps: 60, rep: 5, xp: 35 },
-            rank: 'Recruit',
-            duration: 300000, // 5 minutes
-            type: 'research'
-        },
-        {
-            id: 'inst_synth_retrieval',
-            name: 'Synth Retrieval',
-            description: 'Recover escaped synths from the Commonwealth',
-            reward: { caps: 180, rep: 15, xp: 120 },
-            rank: 'Ally',
-            type: 'combat'
-        },
-        {
-            id: 'inst_component_scavenging',
-            name: 'Component Scavenging',
-            description: 'Gather advanced components for Institute experiments',
-            reward: { caps: 120, rep: 10, xp: 80 },
-            rank: 'Ally',
-            type: 'collection'
-        },
-        {
-            id: 'inst_espionage',
-            name: 'Espionage Mission',
-            description: 'Infiltrate and gather intelligence on rival factions',
-            reward: { caps: 250, rep: 25, xp: 200 },
-            rank: 'Veteran',
-            type: 'stealth'
-        }
-    ],
-    minutemen: [
-        {
-            id: 'mm_recruit_assistance',
-            name: 'Settlement Assistance',
-            description: 'Help repair basic structures in a settlement',
-            reward: { caps: 55, rep: 5, xp: 32 },
-            rank: 'Recruit',
-            duration: 300000, // 5 minutes
-            type: 'support'
-        },
-        {
-            id: 'mm_settlement_aid',
-            name: 'Settlement Aid',
-            description: 'Provide supplies and defense to struggling settlements',
-            reward: { caps: 140, rep: 12, xp: 90 },
-            rank: 'Ally',
-            type: 'support'
-        },
-        {
-            id: 'mm_caravan_escort',
-            name: 'Caravan Escort',
-            description: 'Protect merchant caravans traveling the Commonwealth',
-            reward: { caps: 160, rep: 14, xp: 110 },
-            rank: 'Ally',
-            type: 'combat'
-        },
-        {
-            id: 'mm_restore_liberty',
-            name: 'Restore Liberty',
-            description: 'Reclaim settlements from hostile forces',
-            reward: { caps: 220, rep: 22, xp: 180 },
-            rank: 'Veteran',
-            type: 'combat'
-        }
-    ],
-    railroad: [
-        {
-            id: 'rr_recruit_courier',
-            name: 'Courier Run',
-            description: 'Deliver encoded messages through the Railroad network',
-            reward: { caps: 65, rep: 5, xp: 38 },
-            rank: 'Recruit',
-            duration: 300000, // 5 minutes
-            type: 'delivery'
-        },
-        {
-            id: 'rr_rescue_synth',
-            name: 'Synth Rescue',
-            description: 'Liberate enslaved synths from Institute control',
-            reward: { caps: 170, rep: 16, xp: 130 },
-            rank: 'Ally',
-            type: 'stealth'
-        },
-        {
-            id: 'rr_underground_network',
-            name: 'Underground Network',
-            description: 'Establish safe houses for synth refugees',
-            reward: { caps: 130, rep: 11, xp: 85 },
-            rank: 'Ally',
-            type: 'support'
-        },
-        {
-            id: 'rr_sabotage',
-            name: 'Sabotage Mission',
-            description: 'Disrupt Institute operations across the Commonwealth',
-            reward: { caps: 240, rep: 23, xp: 190 },
-            rank: 'Veteran',
-            type: 'stealth'
-        }
-    ],
-    raiders: [
-        {
-            id: 'raider_recruit_shakedown',
-            name: 'Shake Down',
-            description: 'Intimidate a small merchant for caps',
-            reward: { caps: 70, rep: 5, xp: 40 },
-            rank: 'Recruit',
-            duration: 300000, // 5 minutes
-            type: 'intimidation'
-        },
-        {
-            id: 'raider_raid',
-            name: 'The Raid',
-            description: 'Lead a raiding party against settlements and traders',
-            reward: { caps: 200, rep: 18, xp: 140 },
-            rank: 'Ally',
-            type: 'combat'
-        },
-        {
-            id: 'raider_intimidate',
-            name: 'Intimidation Job',
-            description: 'Extort protection money from wasteland merchants',
-            reward: { caps: 150, rep: 13, xp: 100 },
-            rank: 'Ally',
-            type: 'combat'
-        },
-        {
-            id: 'raider_gang_war',
-            name: 'Gang War',
-            description: 'Assault rival raider gangs to expand Raider territory',
-            reward: { caps: 260, rep: 25, xp: 200 },
-            rank: 'Veteran',
-            type: 'combat'
-        }
-    ],
-    wastelanders: [
-        {
-            id: 'wast_recruit_scavenge',
-            name: 'Scavenge Run',
-            description: 'Gather basic supplies for the community',
-            reward: { caps: 45, rep: 5, xp: 28 },
-            rank: 'Recruit',
-            duration: 300000, // 5 minutes
-            type: 'gathering'
-        },
-        {
-            id: 'wast_water_supply',
-            name: 'Water Supply Run',
-            description: 'Deliver clean water to Wastelander settlements',
-            reward: { caps: 120, rep: 10, xp: 75 },
-            rank: 'Ally',
-            type: 'support'
-        },
-        {
-            id: 'wast_hunting',
-            name: 'Hunting Expedition',
-            description: 'Hunt irradiated creatures for food and materials',
-            reward: { caps: 140, rep: 12, xp: 95 },
-            rank: 'Ally',
-            type: 'combat'
-        },
-        {
-            id: 'wast_raider_defense',
-            name: 'Raider Defense',
-            description: 'Defend Wastelander settlements from Raider attacks',
-            reward: { caps: 210, rep: 20, xp: 160 },
-            rank: 'Veteran',
-            type: 'combat'
-        }
-    ]
-};
+const { FACTION_QUESTS, QUEST_ENCOUNTERS } = require('../../utils/FactionQuestData');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -473,7 +260,6 @@ async function acceptQuest(interaction, userId) {
 async function completeQuest(interaction, userId) {
     try {
         const db = require('../../utils/EconomyDB');
-        const { checkLevelUp } = require('../../utils/LevelSystem');
         
         // Get active quest from database
         const activeQuest = await new Promise((resolve) => {
@@ -506,52 +292,49 @@ async function completeQuest(interaction, userId) {
             return;
         }
 
-        // Award reputation to the quest's faction (not necessarily allegiance faction)
-        const repResult = await FactionManager.modifyReputation(userId, activeQuest.faction_id, quest.reward.rep, 'quest');
-        
-        // Award caps and XP
-        await new Promise((resolve) => {
-            db.run(
-                'UPDATE users SET caps = caps + ?, xp = xp + ? WHERE id = ?',
-                [quest.reward.caps, quest.reward.xp, userId],
-                () => resolve()
-            );
-        });
-
-        // Check for level up
-        const user = await new Promise((resolve) => {
-            db.get('SELECT xp FROM users WHERE id = ?', [userId], (err, row) => resolve(row));
-        });
-        
-        const levelCheck = await checkLevelUp(userId, user.xp - quest.reward.xp, user.xp);
-
-        // Delete completed quest (CRITICAL: await to prevent race condition)
-        await new Promise((resolve) => {
-            db.run('DELETE FROM active_quests WHERE user_id = ?', [userId], () => resolve());
-        });
-
-        const embed = new EmbedBuilder()
-            .setTitle(`✅ Quest Complete: ${quest.name}`)
-            .setColor(0x1f8b4c)
-            .setDescription(`**Faction:** ${activeQuest.faction_id.charAt(0).toUpperCase() + activeQuest.faction_id.slice(1)}\n\nRewards granted!`)
-            .addFields(
-                { name: 'Caps', value: `+${quest.reward.caps}`, inline: true },
-                { name: 'Reputation', value: `+${quest.reward.rep} (${repResult.rank})`, inline: true },
-                { name: 'Experience', value: `+${quest.reward.xp}`, inline: true }
-            );
-
-        if (levelCheck.leveledUp) {
-            embed.addFields({
-                name: '⭐ LEVEL UP!',
-                value: `**Level ${levelCheck.newLevel}** 🎉\n+${levelCheck.levelsGained} SPECIAL Point${levelCheck.levelsGained > 1 ? 's' : ''} earned!`,
-                inline: false
-            });
-        }
-
-        await interaction.editReply({ embeds: [embed] });
+        // Trigger random encounter instead of instant rewards
+        await triggerEncounter(interaction, userId, activeQuest, quest);
     } catch (error) {
         console.error('Complete quest error:', error);
         await interaction.editReply({ content: 'Error completing quest' });
+    }
+}
+
+async function triggerEncounter(interaction, userId, activeQuest, _quest) {
+    try {
+        // Pick random encounter scenario
+        const scenario = QUEST_ENCOUNTERS[Math.floor(Math.random() * QUEST_ENCOUNTERS.length)];
+
+        // Create action buttons with quest data
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`quest_attack_${userId}_${activeQuest.quest_id}`)
+                .setLabel(scenario.options.attack.label)
+                .setStyle(ButtonStyle.Danger),
+            new ButtonBuilder()
+                .setCustomId(`quest_sneak_${userId}_${activeQuest.quest_id}`)
+                .setLabel(scenario.options.sneak.label)
+                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+                .setCustomId(`quest_talk_${userId}_${activeQuest.quest_id}`)
+                .setLabel(scenario.options.talk.label)
+                .setStyle(ButtonStyle.Primary)
+        );
+
+        const embed = new EmbedBuilder()
+            .setTitle(`⚠️ ${scenario.title}`)
+            .setDescription(`**${scenario.description}**\n\n${scenario.situation}\n\n*Choose your approach wisely. Different tactics have different success rates and rewards.*`)
+            .addFields(
+                { name: '⚔️ Attack', value: '**40% success** - Double rewards if successful', inline: true },
+                { name: '🕵️ Sneak', value: '**70% success** - Normal rewards', inline: true },
+                { name: '🗣️ Negotiate', value: '**90% success** - Half rewards', inline: true }
+            )
+            .setColor(0xFF8800);
+
+        await interaction.editReply({ embeds: [embed], components: [row] });
+    } catch (error) {
+        console.error('Trigger encounter error:', error);
+        await interaction.editReply({ content: 'Error triggering quest encounter' });
     }
 }
 
