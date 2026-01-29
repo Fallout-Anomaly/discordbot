@@ -138,7 +138,24 @@ db.serialize(() => {
         }
     });
 
-    // Active Quests Table
+    // Quest Journal Table (radiant quests)
+    db.run(`CREATE TABLE IF NOT EXISTS quest_journal (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        title TEXT,
+        description TEXT,
+        objective TEXT,
+        difficulty TEXT,
+        reward_caps INTEGER,
+        reward_xp INTEGER,
+        reward_item TEXT,
+        start_time INTEGER,
+        duration INTEGER,
+        UNIQUE(user_id),
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )`);
+
+    // Active Faction Quests Table
     db.run(`CREATE TABLE IF NOT EXISTS active_quests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id TEXT NOT NULL,
@@ -146,15 +163,6 @@ db.serialize(() => {
         faction_id TEXT NOT NULL,
         started_at INTEGER NOT NULL,
         complete_at INTEGER NOT NULL,
-        title TEXT,
-        description TEXT,
-        objective TEXT,
-        difficulty TEXT,
-        reward_caps INTEGER,
-        reward_xp INTEGER,
-        start_time INTEGER,
-        duration INTEGER,
-        reward_item TEXT,
         UNIQUE(user_id),
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`);
