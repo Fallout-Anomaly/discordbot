@@ -79,6 +79,18 @@ db.serialize(() => {
                 });
             }
         });
+
+        // Normalize any null or invalid balances to prevent "null" caps display
+        db.run(
+            `UPDATE users
+             SET balance = 0
+             WHERE balance IS NULL OR balance = '' OR balance = 'null'`,
+            (normalizeErr) => {
+                if (normalizeErr) {
+                    console.error('Error normalizing user balances:', normalizeErr.message);
+                }
+            }
+        );
     });
 
     // XP Cooldowns table for persistence across restarts
