@@ -1,9 +1,6 @@
 const { REST, Routes } = require('discord.js');
 const { info, error, success } = require('../../utils/Console');
 const { readdirSync } = require('fs');
-const DiscordBot = require('../DiscordBot');
-const ApplicationCommand = require('../../structure/ApplicationCommand');
-const MessageCommand = require('../../structure/MessageCommand');
 
 class CommandsHandler {
     client;
@@ -17,6 +14,9 @@ class CommandsHandler {
     }
 
     load = () => {
+        // Clear previous array to avoid duplicates during reload/re-init
+        this.client.rest_application_commands_array = [];
+
         for (const directory of readdirSync('./src/commands/')) {
             for (const file of readdirSync('./src/commands/' + directory).filter((f) => f.endsWith('.js'))) {
                 try {
@@ -64,8 +64,9 @@ class CommandsHandler {
                     } else {
                         error('Invalid command type ' + module.__type__ + ' from command file ' + file);
                     }
-                } catch {
+                } catch (e) {
                     error('Unable to load a command from the path: ' + 'src/commands/' + directory + '/' + file);
+                    console.error(e); // Print the actual error!
                 }
             }
         }
@@ -89,14 +90,22 @@ class CommandsHandler {
     registerApplicationCommands = async (development, restOptions = null) => {
         const rest = new REST(restOptions ? restOptions : { version: '10' }).setToken(this.client.token);
 
-        if (development?.enabled) {
-            // Disabled to prevent conflicts with Cloudflare Worker
-            // await rest.put(Routes.applicationGuildCommands(this.client.user.id, development.guildId), { body: this.client.rest_application_commands_array });
-        } else {
-            // Disabled to prevent conflicts with Cloudflare Worker
-            // await rest.put(Routes.applicationCommands(this.client.user.id), { body: this.client.rest_application_commands_array });
+        try {
+            // We register the commands found in our local codebase.
+            // CAUTION: Since a Cloudflare Worker is active, these Slash Commands will NOT work unless the Worker proxies them.
+            // However, we run this to ensure any STALE commands (like the broken /addrole) are removed if we deleted the file.
+            if (development?.enabled) {
+                await rest.put(Routes.applicationGuildCommands(this.client.user.id.toString(), development.guildId.toString()), { body: this.client.rest_application_commands_array });
+                success(`Successfully updated ${this.client.rest_application_commands_array.length} local application commands.`);
+            } else {
+                await rest.put(Routes.applicationCommands(this.client.user.id.toString()), { body: this.client.rest_application_commands_array });
+                success(`Successfully updated ${this.client.rest_application_commands_array.length} global application commands.`);
+            }
+        } catch (err) {
+            error('Failed to register application commands: ' + err.message);
+            // Clear the array on failure to prevent stale data persisting
+            this.client.rest_application_commands_array = [];
         }
-        success('Skipped duplicate command registration (Cloudflare Worker is handling this).');
     }
 }
 

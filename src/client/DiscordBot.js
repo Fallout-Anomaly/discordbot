@@ -1,12 +1,14 @@
 const { Client, Collection, Partials, GatewayIntentBits } = require("discord.js");
 const CommandsHandler = require("./handler/CommandsHandler");
-const { warn, error, info, success } = require("../utils/Console");
+const { warn, error, success } = require("../utils/Console");
 const config = require("../config");
 const CommandsListener = require("./handler/CommandsListener");
 const ComponentsHandler = require("./handler/ComponentsHandler");
-const ComponentsListener = require("./handler/ComponentsListener");
+
 const EventsHandler = require("./handler/EventsHandler");
 const { QuickYAML } = require('quick-yaml.db');
+const KnowledgeBase = require("../utils/KnowledgeBase");
+const path = require('path');
 
 class DiscordBot extends Client {
     collection = {
@@ -18,7 +20,8 @@ class DiscordBot extends Client {
             selects: new Collection(),
             modals: new Collection(),
             autocomplete: new Collection()
-        }
+        },
+        cooldowns: new Collection()
     }
     rest_application_commands_array = [];
     login_attempts = 0;
@@ -33,6 +36,7 @@ class DiscordBot extends Client {
     components_handler = new ComponentsHandler(this);
     events_handler = new EventsHandler(this);
     database = new QuickYAML(config.database.path);
+    knowledge = new KnowledgeBase(path.join(process.cwd(), config.database.knowledge));
 
     constructor() {
         super({
@@ -42,7 +46,8 @@ class DiscordBot extends Client {
                 GatewayIntentBits.MessageContent,
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.DirectMessages,
-                GatewayIntentBits.GuildModeration
+                GatewayIntentBits.GuildModeration,
+                GatewayIntentBits.GuildMessageReactions
             ],
             partials: [
                 Partials.Channel,
@@ -61,7 +66,9 @@ class DiscordBot extends Client {
         });
         
         new CommandsListener(this);
-        new ComponentsListener(this);
+        // ComponentsListener has been integrated into src/events/Client/interactionCreate.js
+        // to prevent duplicate processing and ensure proper acknowledgment order
+        // new ComponentsListener(this);
     }
 
     startStatusRotation = () => {
@@ -79,6 +86,14 @@ class DiscordBot extends Client {
 
         try {
             await this.login(process.env.CLIENT_TOKEN);
+            
+            // Load Knowledge Base
+            await this.knowledge.load();
+
+            // Sync Items to DB
+            const ItemLoader = require('../utils/ItemLoader');
+            await ItemLoader.syncItems();
+            
             this.commands_handler.load();
             this.components_handler.load();
             this.events_handler.load();

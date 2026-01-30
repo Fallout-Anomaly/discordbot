@@ -1,5 +1,4 @@
-const { AttachmentBuilder, Message } = require("discord.js");
-const DiscordBot = require("../../client/DiscordBot");
+const { AttachmentBuilder } = require("discord.js");
 const MessageCommand = require("../../structure/MessageCommand");
 
 module.exports = new MessageCommand({

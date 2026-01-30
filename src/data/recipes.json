@@ -1,0 +1,39 @@
+[
+    {
+        "id": "stim_craft",
+        "result_item": "stimpak",
+        "amount": 1,
+        "ingredients": [
+            { "item_id": "wonderglue", "amount": 1 },
+            { "item_id": "microscope", "amount": 1 }
+        ]
+    },
+    {
+        "id": "jet_craft",
+        "result_item": "jet",
+        "amount": 1,
+        "ingredients": [
+            { "item_id": "plastic", "amount": 2 },
+            { "item_id": "fertilizer", "amount": 1 }
+        ]
+    },
+    {
+        "id": "pipe_pistol_craft",
+        "result_item": "pipe_rifle",
+        "amount": 1,
+        "ingredients": [
+            { "item_id": "steel", "amount": 4 },
+            { "item_id": "gear", "amount": 2 },
+            { "item_id": "wood", "amount": 2 }
+        ]
+    },
+    {
+        "id": "10mm_ammo_craft",
+        "result_item": "10mm_rounds",
+        "amount": 20,
+        "ingredients": [
+            { "item_id": "lead", "amount": 2 },
+            { "item_id": "steel", "amount": 1 }
+        ]
+    }
+]

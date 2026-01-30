@@ -1,5 +1,3 @@
-const { ModalSubmitInteraction } = require("discord.js");
-const DiscordBot = require("../../client/DiscordBot");
 const Component = require("../../structure/Component");
 
 module.exports = new Component({
@@ -16,8 +14,8 @@ module.exports = new Component({
 
         await interaction.reply({
             content: 'Hello **' + field + '**.',
-            ephemeral: true
+            flags: 64
         });
 
     }
-}).toJSON();
+});

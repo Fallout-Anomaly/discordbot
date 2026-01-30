@@ -1,0 +1,1388 @@
+==============================================================
+Guild: Anomaly
+Channel: ⚒ | Fallout Anomaly  Support| 🛡 / 🎮𝙎𝙩𝙚𝙖𝙢-𝘾𝙤𝙣𝙩𝙧𝙤𝙡𝙡𝙚𝙧-𝙄𝙣𝙥𝙪𝙩𝙨
+==============================================================
+
+[12/19/2024 12:53 PM] nomad5157
+Share your settings/input here.
+
+
+[12/19/2024 12:53 PM] .geist
+I need to clean mine up a bit but I'll share mine after work today
+
+
+[12/19/2024 12:57 PM] nomad5157
+steam://controllerconfig/377160/2819945625
+
+
+[12/19/2024 12:57 PM] nomad5157 (pinned)
+https://www.nexusmods.com/fallout4/mods/61239?tab=description
+
+{Embed}
+https://www.nexusmods.com/fallout4/mods/61239?tab=description
+Modern First Person Controller Controls
+Unleash the Full Potential of your Controller, with Full Mod Support for Almost every Mod with the usage of Combo Buttons and More!
+https://images-ext-1.discordapp.net/external/v2c6X-6p2gdzRXqTgYGyFTOVoC91Fj7CeuMtdXYV9j8/https/staticdelivery.nexusmods.com/mods/1151/images/thumbnails/61239/61239-1655011137-1792812736.jpeg
+
+
+[12/19/2024 12:57 PM] nomad5157
+this may be of use to you
+
+
+[12/19/2024 2:26 PM] bafboef
+I really want to play this list with a controller so i'd love to see some good controller inputs
+
+
+[12/19/2024 8:11 PM] .geist
+steam://controllerconfig/2329932978/3387594402
+
+I use a PS5 controller, but it should still be useful. Also a work in progress, there's probably a couple conflicts I overlooked.
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1319472152730406943/image.png?ex=69796233&is=697810b3&hm=cb47401520bf79c92716e596a805330d58a316ebbb2afe6c54e8ae020ff68f75&
+
+
+[1/17/2025 12:37 PM] thedeadlygunner
+Does the modpack have all the requirements already installed or do you need to install them all?
+
+
+[1/17/2025 12:38 PM] nomad5157
+yes
+
+
+[1/17/2025 12:39 PM] thedeadlygunner
+it does have them?
+
+
+[1/17/2025 12:39 PM] nomad5157
+Yes.
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1329867710053613650/image.png?ex=6978f851&is=6977a6d1&hm=eaf831584064fb6ca2e5123a2550c4c96f5d95bc413277cb67c216198431d06e&
+
+
+[1/17/2025 12:40 PM] thedeadlygunner
+okay, awesome, just wanted to make sure before installing the mod, I'm more of a controller guy myself.
+
+
+[1/17/2025 12:41 PM] nomad5157
+No worries, I'm working on providing more controller support next update
+
+
+[1/17/2025 12:41 PM] nomad5157
+Just know a lot of mods do not have controller support and requires making a input for those particular mods
+
+
+[1/17/2025 12:42 PM] thedeadlygunner
+Awesome, I for one love to hear that. And okay, I gotcha. Which file should I download for that controller mod or is it just personal preference?
+
+
+[1/17/2025 12:43 PM] nomad5157
+
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1329868842893054025/image.png?ex=6978f95f&is=6977a7df&hm=abd00be4a3720a49d424fb6f69104cfbe4d7e6ae2b64623c014c8010c73b42d1&
+
+
+[1/17/2025 12:44 PM] nomad5157
+you would need this one for the mod you linked to
+
+
+[1/17/2025 12:44 PM] thedeadlygunner
+Okay, thats the one I was thinking, but just wanted to be sure.
+
+{Reactions}
+❤️
+
+[1/17/2025 12:59 PM] nomad5157
+https://joytokey.net/en/
+
+{Embed}
+https://joytokey.net/en/
+JoyToKey - Download the Latest Official Version
+Download the latest version of JoyToKey for free! JoyToKey enables PC game controllers to emulate a mouse and the keyboard input, so that windows applications and web games can be controlled with joysticks.
+
+{Reactions}
+👍
+
+[1/17/2025 12:59 PM] nomad5157
+this might be some help
+
+
+[1/17/2025 12:59 PM] nomad5157
+I have playstation controller though so I use DS4Windows
+
+
+[1/19/2025 7:34 PM] hm.sag3
+How do we activate the mod
+
+
+[1/19/2025 9:49 PM] camelopardus
+The Nexus mod description has the instructions written out
+
+
+[1/20/2025 11:27 AM] hm.sag3
+When I use it I have mad stickdrift and no my controller is brandnew
+
+
+[1/25/2025 8:27 PM] axpalladin5473
+Is there anywhere I can view all of the modlist's controls so I can map them all with JoyTokey?
+
+
+[1/25/2025 8:32 PM] nomad5157
+You can look in the MCM config there will be a hotkey manager
+
+{Reactions}
+👍
+
+[1/25/2025 8:33 PM] nomad5157
+but each mod in the mcm itself can have multiple different keys you may want to take a look at
+
+
+[1/26/2025 6:55 PM] jqemods
+steam://controllerconfig/377160/3415409618
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1333223782533435402/Screenshot_36.png?ex=69795067&is=6977fee7&hm=667beb9254937a74dc90dfc433202aa8e9c704c24f11d620a6594a8a22f2eb3c&
+https://cdn.discordapp.com/attachments/1319361788730544180/1333223783036883026/Screenshot_17.png?ex=69795067&is=6977fee7&hm=ba34526a310846541bc33f4ef324191e202459aec0eb4cd9c9f618ff9b5046e4&
+https://cdn.discordapp.com/attachments/1319361788730544180/1333223783435210876/Screenshot_18.png?ex=69795068&is=6977fee8&hm=b0085149830176017d5bcc059414f5b46ee4eb6eba71ea8dbb3454af9b5e39a7&
+
+{Reactions}
+❤️ (2)
+
+[1/26/2025 6:57 PM] jqemods
+I'll make a short video going over all the binds and why I have them in certain places
+
+
+[1/26/2025 6:58 PM] jqemods
+this config does take use of some extra button
+
+
+[1/26/2025 6:59 PM] nomad5157
+Thank you for working on this 🙂
+
+
+[1/26/2025 7:00 PM] thedeadlygunner
+Would this work for an xbox controller that has back buttons as well, or probably not?
+
+
+[1/26/2025 7:02 PM] jqemods
+I don't see why not ... if you run into issue I would use a application called ds4 windows which can get your pc to recognize your Xbox controller as a PS4 or 5 controller
+
+{Reactions}
+👍
+
+[1/26/2025 7:08 PM] jqemods
+I also have my hotkeys binds in game so you can match them up I have no clue on how to send MCM presets 
+
+So until then
+
+The name of the mcm menu is in the top left 
+The corresponding bind is on the right
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1333227041721421996/IMG_2469.mov?ex=69795370&is=697801f0&hm=084b4ccd3531a8d5f79bcc4926c15d80adb8c2d3f22990d09c2c1037dff2d454&
+
+{Reactions}
+👍
+
+[1/27/2025 12:03 AM] hm.sag3
+Are you able to scroll around the map? Can you show me?
+
+
+[1/28/2025 2:00 AM] jqemods
+you click r2 or rb on a point on the map then drag in the desired direction
+
+{Reactions}
+🫡
+
+[1/28/2025 2:02 AM] jqemods
+and you use the scroll wheel to zoom in and out which is up and down on your d-pad
+
+{Reactions}
+🫡
+
+[1/28/2025 1:15 PM] axpalladin5473
+Is the list mostly playable with controller after the latest update ?
+
+
+[1/28/2025 2:59 PM] axpalladin5473
+How does one use these configs? The modern first person controller controls mod?
+
+
+[1/28/2025 4:49 PM] nomad5157
+Pinned a message.
+
+
+[1/28/2025 4:49 PM] nomad5157
+If you’re talking about the steam link, paste it in your browser
+
+
+[1/28/2025 4:49 PM] nomad5157
+It will open steam
+
+
+[1/28/2025 4:50 PM] nomad5157
+If you’d like I can walk you through on making a preset for the mcm
+
+{Reactions}
+👍 (2)
+
+[1/28/2025 8:35 PM] jqemods
+Yea when you get the time you can DM me or just drop it in this chat honestly
+
+
+[1/29/2025 8:23 AM] axpalladin5473
+Would be helpful for me too. The download instructions for mo2 are a little confusing and I don’t wanna mess it up
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1334151889922818068/IMG_1091.png?ex=69796505&is=69781385&hm=f99755ebee407d371df99a767100a8020d4d793b33c0f449abff830d3e2c6c83&
+
+
+[1/29/2025 8:28 AM] nomad5157
+I see you are a man of class as well
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1334153188034482237/IMG_4676.png?ex=6979663b&is=697814bb&hm=0e9b55c16c46b325f7df472cb88e963dae69166c9435d8d73f727775b45afefb&
+
+{Reactions}
+😆
+
+[1/29/2025 8:28 AM] nomad5157
+I will look more into controller support sometime this week
+
+{Reactions}
+👍
+
+[1/30/2025 1:01 PM] nomad5157
+
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1334584389396332605/image.png?ex=6978fd91&is=6977ac11&hm=29acbb4bc45b5820ec0f06deacf2e29b280bdf5f6ec03e14e3eb2b9ab1f61193&
+
+
+[1/30/2025 1:02 PM] nomad5157
+The mute button when is below the playstation logo will also open the backpack...still working on it. Xbox controllers yall will need to probably play around with some of the keybinds through the steam input
+
+
+[1/30/2025 1:08 PM] nomad5157
+It seems that the backpack mod is eating the backpack if using a controller so you'll have to use the aid item via the wheel menu
+
+
+[1/30/2025 1:13 PM] nomad5157 (pinned)
+[Click here for Playstation Controls for Fallout Anomaly](https://www.padcrafter.com/?templates=PS5+Controls+Fallout+Anomaly&plat=1&aButton=Dodge+%28Double+Press%29+Holster+Weapon+%28Tap%29+Interact&bButton=Open+Inventory+%28Tap%29+Flashlight+%28Hold%29&xButton=Reload+%26+Check+Mags+%28Tap%29&yButton=Jump+%28Tap&rightBumper=Lean+Right+%28Tap%29+Melee+%28Long+Press%29&rightTrigger=Attack&leftBumper=Lean+Left+%28TAP%29+Throw+Grenade+%28Long+Press%29&leftTrigger=Zoom&startButton=Pause+%28Tap%29+Wait+%28Long+Press%29&col=%23A82C28%2C%23322127%2C%23FFFFFF&leftStickClick=Switch+Camera+%28Tap%29+&dpadDown=Wheel+Menu+%28TAP%29++Zoom+Out+%28Long+Press%29+3rd+Person&dpadLeft=Normal+Controls%2C+&dpadRight=Normal+Controls%2C+&dpadUp=Normal+Controls%2C++Zoom+In+%28Long+Press%29+3rd+Person&backButton=First%2FThird+Person&rightStickClick=Crouch&rightStick=Rotate+Camera&leftStick=Move#)
+
+
+[1/30/2025 1:27 PM] nomad5157 (pinned)
+steam://controllerconfig/377160/3417630938
+
+
+[1/30/2025 1:27 PM] nomad5157
+Pinned a message.
+
+
+[1/30/2025 1:27 PM] nomad5157
+Pinned a message.
+
+
+[2/2/2025 12:39 PM] axpalladin5473
+Is there xbox controller support in the latest update?
+
+
+[2/2/2025 12:40 PM] nomad5157
+Still WIP
+
+
+[2/2/2025 1:01 PM] nomad5157
+!controller
+
+
+[2/2/2025 1:01 PM] Carl-bot#1536
+The PS5 controller is currently supported with most mods. See our PS5 layout below. Xbox controller support is coming soon! Be sure to review the controller setup guide in the readme to avoid any issues.
+
+{Embed}
+[Click here for read me](https://github.com/NomadsReach/Fallout-Anomaly/tree/master)
+https://images-ext-1.discordapp.net/external/XfwxOslWG_bmjXwM5MJZ2vKDvRfEM3QJaPL04WZHFRY/https/raw.githubusercontent.com/NomadsReach/Fallout-Anomaly/refs/heads/master/images/Readme%2520Docs/PS5%2520Controlelr%2520Image.png
+
+
+[2/4/2025 2:12 PM] axpalladin5473
+Is there a separate config for the new Xbox controller support
+
+
+[2/4/2025 2:14 PM] nomad5157
+Read what the message above says please
+
+
+[2/5/2025 1:50 PM] axpalladin5473
+steam://controllerconfig/377160/3421708602                                                            Wanted to share this for anyone who it may concern. This is my xbox controller config with uneducated shooter and all other keybinds, that i know of, working. Only thing I may still change is the keybind for criticals in VAFS. It’s double tap B atm, only bc I haven’t experimented with VAFS or the throw grenades keybind much or at all. If throwing grenades works as I think it should, I’d keybind VAFS to regular press LB and criticals to double tap LB. If you use this configuration with uneducated shooter, set lean left and right, in uneducated shooter's mod config, to B and M respectively, and lean only while in ADS on.
+
+{Reactions}
+💖 (3) 👍
+
+[2/6/2025 10:26 AM] axpalladin5473
+Recently changed the VAFS(G) to Long Press LB and Critical(Z) to Double Press LB on my set up and it’s not bad
+
+
+[2/7/2025 12:20 PM] sniejzakof_91079
+@AxPalladin how do you get out of the power armor,can't find even if my life depends on it🤣
+
+
+[2/7/2025 12:32 PM] axpalladin5473
+Hold A? I haven’t used power armor yet except in concord for like two seconds lol
+
+
+[2/7/2025 12:33 PM] axpalladin5473
+I’m not on rn so you’ll have to experiment til I can check it out
+
+
+[2/7/2025 12:38 PM] sniejzakof_91079
+I'll check in an hour or so,i will let you know
+
+
+[2/7/2025 1:49 PM] sniejzakof_91079
+Nope not holding A😂
+
+
+[2/7/2025 1:52 PM] sniejzakof_91079
+Can i do it with command?
+
+
+[2/7/2025 1:56 PM] sniejzakof_91079
+Holding E on keyboard does it
+
+
+[2/7/2025 3:23 PM] axpalladin5473
+Could set E to the left stick, long press. See if that works and move the T key, wait, to another command wherever you see fit
+
+
+[2/7/2025 4:36 PM] sniejzakof_91079
+It's okay with E for me.i don't mind using controller and keyboard
+
+
+[2/7/2025 4:45 PM] axpalladin5473
+I gotta post a revised config when I play with it some more. I only use controller so it’ll drive me crazy
+
+
+[2/8/2025 12:55 AM] hm.sag3
+Any idea how to activate my flashlight?
+
+
+[2/8/2025 2:40 AM] sniejzakof_91079
+Long press select
+
+
+[2/8/2025 7:19 PM] axpalladin5473
+steam://controllerconfig/377160/3429632432                                                          The layout I've been using. If you use , go to mod config for uneducated shooter and set lean, left and right, to B and M. Make sure Toggle Leaning and only in ADS are on. Then set the backpack button in IAA backpacks to L. Still haven't tested power armor so you'll have to hold E manually to get out i suppose. Also feel like criticals and VAFS could be in a better spot but everything else is pretty solid. All controls are regular fallout4 controls except the following; You double tap LB for VAFS focus. You can lean, while aiming, with the left and right bumpers. Select for PipBoy and hold select for flashlight. Double tap Y to dodge, hold Y for a critical in VAFS. Press B to crouch. Hold B to rest at a campfire, for the CRACKLE mod(not tested), or double tap B for backpack inventory. Double tap X to lower weapon. Hold the down directional arrow for the quick inventory wheel menu, and tap up for favorites. Hold the left and right directional arrows for your visor and night vision(not tested). Hold the left stick, while not moving, to toggle condition boy and survival stats(Immersive Hud). Hold the start button to toggle the FOV depth blurriness. Tap the right stick to change view. You can try holding right stick to exit power armor but this isn't tested yet either. Also, I had trouble setting up supply lines but was able to do it, without any issue, by disabling the controller support mod in mo2. The controls will be a little different, but you can still play on controller like this after setting it up. It's not my preference so it's mostly untested as well. Disabling it temporarily though will allow you to set up supply lines in build mode.
+
+{Reactions}
+9136_Shaq_Hot_Ones 👍
+
+[2/8/2025 7:24 PM] axpalladin5473
+It’s pretty easy to change things around with this as a template so I’d encourage anyone to go into their steam controller config for fallout 4 to edit this if something isn’t to your liking and if you mess up you can just use the link again to reset
+
+
+[2/9/2025 4:10 PM] thicboijuju
+hey was wondering how exactly I can apply this? im a little new to this and am unsure how to apply that controller config code. if youd be able to tell me id appreciate it a lot
+
+
+[2/9/2025 4:16 PM] axpalladin5473
+Copy and post the URL in your web browser and it'll take you to steam controller configuration for fallout 4. Just hit apply. Have to make sure your controller is on and steam is allowing steam controller input. I just edited it though because holding LB for VAFS was a little finicky so use that new one
+
+
+[2/9/2025 4:18 PM] axpalladin5473
+Once youre in-game, go to gameplay settings and turn controller on and make ure controls are set to default. Then do the above mentioned mods config. Not sure if it's still like this, but you cannot activate uneducated shooter before starting a new game or you'll have issues. Activate that mod and configure it in mod config, in-game, after you start a new save
+
+
+[2/9/2025 4:21 PM] axpalladin5473
+You activate it in mo2 by checking the box beside it
+
+
+[2/9/2025 4:35 PM] thicboijuju
+Awesome ty ill give it a try
+
+
+[2/9/2025 4:44 PM] axpalladin5473
+No problem lmk how it goes
+
+
+[2/9/2025 4:47 PM] thicboijuju
+Works perfectly now ty
+
+{Reactions}
+🔥
+
+[2/10/2025 10:02 AM] hm.sag3
+I dont know if i did it too many times but the url isnt pulling up steam
+
+
+[2/10/2025 1:06 PM] axpalladin5473
+Close steam and then try
+
+{Reactions}
+🫡
+
+[2/15/2025 11:31 PM] hm.sag3
+Im using select but im unable to pull up my Pinot
+
+
+[2/15/2025 11:31 PM] hm.sag3
+Pipboy
+
+
+[2/15/2025 11:33 PM] hm.sag3
+Fixed it
+
+{Reactions}
+👍
+
+[2/17/2025 11:50 PM] axpalladin5473
+I've edited my original layout
+
+
+[2/18/2025 12:15 AM] hm.sag3
+Nooooooo
+
+
+[2/18/2025 12:16 AM] hm.sag3
+What’s the new sigs?
+
+
+[2/18/2025 12:07 PM] axpalladin5473
+Sigs?
+
+
+[2/18/2025 12:09 PM] hm.sag3
+Did you specifically change anything compared to this message?
+
+
+[2/18/2025 12:10 PM] axpalladin5473
+It’s practically the same layout. I changed two buttons lol but I added an important note at the bottom about supply lines
+
+
+[2/18/2025 12:10 PM] axpalladin5473
+Hold left stick and hold start were swapped that’s all
+
+
+[2/18/2025 12:21 PM] hm.sag3
+Awesome thanks
+
+
+[2/28/2025 2:32 AM] jack_is_kool
+I’m using the controller mod in the mod pack as well as the config here but I am not able to open my pip boy or turn on light. It seems like none of the buttons correlate with the picture of the ps5 controller just bellow it. Am I doing something wrong?
+
+
+[3/2/2025 8:27 PM] eselobosoyyo
+When I was in settings I moved the mouse to show keyboard key bindings then selected the pip boy key bind then moved the joystick to make it switch to controller keybinds and it switched to controller keybinds with the pip boy option still needing input and just used the circle option and it was input to it instantly
+
+{Reactions}
+🙌
+
+[3/3/2025 2:23 AM] jack_is_kool
+Awesome idea I’ll have to try that out. Thanks man
+
+
+[3/4/2025 9:26 AM] teriyakipapiichulo
+i cannot figure out for the life of me figure out these mapping for controller to work wit the steam layout
+
+
+[3/4/2025 2:52 PM] axpalladin5473
+https://discord.com/channels/1113971680419782666/1319361788730544180/1337940859223670846
+
+{Reactions}
+🙌 (2)
+
+[4/1/2025 10:23 PM] theargonauttt
+How do you open the pip boy?
+
+
+[4/1/2025 11:07 PM] axpalladin5473
+“Select”. Opposite of start button. Has two overlapping windows on it.
+
+{Reactions}
+❤️
+
+[4/1/2025 11:08 PM] axpalladin5473
+For Xbox
+
+
+[4/1/2025 11:51 PM] theargonauttt
+So strange, I tried that, didn't work
+
+Then I went into a building and came out? Worked
+
+{Reactions}
+👍
+
+[4/8/2025 6:49 PM] shinikamiz
+how do i go into vats or vafs on dualsense controller settings ?
+
+
+[4/13/2025 10:35 AM] axpalladin5473
+Scroll up for the PS5 layout
+
+
+[4/21/2025 1:50 PM] esfe4r
+so no xbox overlay yet im taking it
+
+
+[4/21/2025 2:06 PM] nomad5157
+There is some xbox support...we are working on getting it updated. It's on our list of to do
+
+
+[4/21/2025 2:24 PM] esfe4r
+ohh ok ill be patient ik these things take some time
+
+
+[4/24/2025 4:32 PM] syphoncypher
+How did you fix it?
+
+
+[4/24/2025 4:39 PM] hm.sag3
+Hold LB
+
+
+[4/24/2025 4:39 PM] hm.sag3
+Then do it
+
+
+[4/24/2025 4:41 PM] syphoncypher
+It's opening the wheel when I do that
+
+
+[4/24/2025 4:42 PM] syphoncypher
+Oh it's bound to lb + down dpad now?
+
+
+[4/24/2025 4:43 PM] syphoncypher
+nvm that's aft master control
+
+
+[4/24/2025 4:48 PM] syphoncypher
+I think this config might be broken. A lot of keybinds are not doing what is stated here.
+
+
+[4/24/2025 5:15 PM] syphoncypher
+Maybe it's the list. I went in and edited the settings and it's still not bringing up my pipboy.
+
+
+[4/24/2025 5:23 PM] syphoncypher
+Can anyone help me out here? I've tried everything.
+
+
+[4/24/2025 5:42 PM] syphoncypher
+I'm using PS5 pad and none of this is working
+
+
+[4/24/2025 5:46 PM] syphoncypher
+There's not evena keybind for a pipboy in the game's regular settings
+
+{Reactions}
+❤️
+
+[4/24/2025 6:19 PM] rno1d
+Sorry to wake an old thread! I can’t figure out how to turn on the flashlight. Usually holding b works but it doesn’t seem to be with this set up
+
+
+[4/24/2025 6:23 PM] axpalladin5473
+Hold Select. It’s the share button or what looks like two overlapping squares on the Xbox controller, I think. Opposite of the start button. I haven’t played the updated list yet tho so this setup may be outdated idk
+
+
+[4/27/2025 10:08 AM] us3r1985_94860
+Just about to download the update. Did you guys fix the ps4 controller issues yet or should I still use the layout suggested by AxPalladin on this thread?
+
+
+[4/27/2025 2:09 PM] nomad5157
+Theres some issues that need to be ironed out
+
+{Reactions}
+👍
+
+[4/28/2025 8:17 AM] us3r1985_94860
+Any idea when this will be sorted? Even the above layout isn’t working anymore and I can’t figure out how to map wasd to the joysticks
+
+
+[4/28/2025 10:39 AM] us3r1985_94860
+Idk if this is just me but even keyboard keys aren’t working, like pressing B in character creation didn’t take me to the body part, and I can’t seem to get the jump keys working which should be space
+
+
+[5/10/2025 7:29 PM] dominguez132.
+Heyo, I am useing a xbox wireless controller, in game I can not open the pipboy. I have turned the control mod on and off. For whatever reason even re-mapping was not working.
+
+
+[5/10/2025 7:29 PM] dominguez132.
+
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1370905671481954416/image.png?ex=69794a66&is=6977f8e6&hm=c738b7d974a2b218a000fd95aa3293f745e8e95395e8e68bf3f022c325e6d50c&
+
+
+[5/10/2025 7:30 PM] dominguez132.
+under Settings, Controls their is no option to change the input.
+
+
+[5/13/2025 12:23 AM] darkmay200
+Turn off the controller mod
+
+
+[5/13/2025 5:12 AM] dominguez132.
+That was the first thing I did
+
+
+[5/14/2025 1:27 PM] c0dey.
+Hey, I just downloaded the modlist. I spent quite a while verifying I had the right setup, but some buttons just don't seem to work with my PS5 controller and still display as XBox in game. Looking at this feed, should I just assume it won't work correctly?
+
+
+[5/14/2025 1:41 PM] c0dey.
+I believe I figured it all out. Went back further through the thread.
+
+
+[5/15/2025 7:10 PM] igoturhost
+I'm still having issues trying to open the pipboy. Very frustrating.
+
+
+[5/15/2025 7:28 PM] igoturhost
+Sorry for the random ping, but how did u fix the pipboy?
+
+
+[5/16/2025 11:05 AM] salamnder
+Hello all, I have created a Xbox Controller Config for Fallout Anomaly that includes mode shifting which allows full functionality of most of the mods. May I share the URL here? Hoping that it can be tested by the community and I am happy to make any improvements.
+
+
+[5/16/2025 11:29 AM] salamnder
+Sharing anyways: steam://controllerconfig/377160/3482465058.  
+
+I use Dynamic Helmet but only removing facial clothing, in the MCM choosing both helmet and facial clothing sometimes bugs where one stays and the other gets removed. I mainly just wanted to remove the gas mask.
+Make sure to set the MCM button for removing facial clothing to "P" - I just chose a random unassigned key.
+I also use Uneducated Shooter(Leaning Disabled as I like vanilla peaking better) so its mainly for Gun Inertia and Dynamic height.
+
+All other MCM keybinds I matched with the existing Fallout Anomaly MCM Config, just make sure to apply that and this should work out of the box. Here is a list of commands:
+
+The configuration uses Fallout 4 Default controller configuration as a base, all the normal keybinds from the game are the same.
+
+Mode Shift:
+LB + A = Weapon Wheel
+LB + B = Enable/Disable HUD from Immersive HUD
+LB + X = Swap semi or full auto for weapon
+LB + Y = Replaceable Armor Plate
+LB +RB = VAFS for slowing time
+LB + RT = VAFS for using criticals
+LB + Dpad down = Lower/holster weapon (hit RT to raise it again)
+LB + Dpad up = Dynamic Helmet(removes facial clothing like gas mask)
+LB + Dpad right = Swap should camera in 3rd person
+Double Click A = Dodge(Does not work in quick succession, I will see if there are timing settings that can be adjusted and look at the mod itself to see if possible)
+Left Joystick + Right Joystick click = Barber/Surgery Camera(I have not tested this yet in game, the keybind matches the MCM but will be testing hopefully today to see if it works)
+
+{Reactions}
+🔥 (3)
+
+[5/16/2025 1:09 PM] igoturhost
+I will give this a try later when I get home. Have u had any issues with getting the pipboy to pull up with this control scheme. I've tried so many different control schemes and nothing lets me pull up the pipboy unless I move to mouse and keeb.
+
+
+[5/16/2025 1:11 PM] salamnder
+Thanks! I have not had an issue with pulling up the pip boy because this config adds on to the default controller configuration instead of changing it entirely. The pip boy should come up just by hitting “B” like normal. I hope it works for you👍
+
+{Reactions}
+❤️
+
+[5/16/2025 1:12 PM] igoturhost
+If not, I may need to reinstall the mods as I'm wondering if something got messed up when I tried using the optional PS5 controller mod.
+
+
+[5/16/2025 2:41 PM] salamnder
+For smoother gameplay, be sure to go to Wheeler MCM and disable the dpad down feature since its already in the config as LB + A
+
+{Reactions}
+❤️
+
+[5/16/2025 9:44 PM] igoturhost
+still no dice. idk what else to try at this point short of deleting eveything and starting fresh
+
+
+[5/16/2025 10:09 PM] salamnder
+Hmm you still cant pull up your pip boy?  I had that issue too. I think I fixed it by turning off the controller setting in the main menu, go to controls for keyboard and hit default, the turn controller back on
+
+
+[5/16/2025 10:10 PM] igoturhost
+Hmm, I'll try that next time I log back on
+
+{Reactions}
+👍 (2)
+
+[5/17/2025 6:30 PM] igoturhost
+Didn't work unfortunately :(
+
+
+[5/17/2025 7:12 PM] salamnder
+Sorry to hear. If you have optional controller mod enabled for Anomaly you could try disabling it. It is not required for my config. Hope that works, let me know👍
+
+
+[5/17/2025 7:49 PM] igoturhost
+I'm doing a fresh install as well. I'll let u know, I appreciate all the help tho.
+
+
+[6/19/2025 10:14 PM] oxenbone
+Is the controller config working for anyone? a lot of the keybinds dont do what they say they do on the readme
+
+
+[6/20/2025 4:35 PM] ursorenda
+it is for me but I haven't done a comprehensive check yet
+
+
+[6/20/2025 4:36 PM] ursorenda
+had a bit of a struggle at first (pip boy didn't seem to be mapped to B/Circle) but after some sleuthing the modpage a bit I found that it needs a specific steam controller layout in order to work properly
+
+
+[6/20/2025 4:36 PM] ursorenda
+easy mode to accomplish this is to copy paste this url into your browser, it will prompt you to open steam, then it should bring up a controller layout page
+
+
+[6/20/2025 4:36 PM] ursorenda
+steam://controllerconfig/377160/2819945625
+
+
+[6/20/2025 4:37 PM] ursorenda
+after applying that layout everything i checked worked as intended
+
+
+[6/21/2025 2:01 AM] oxenbone
+this layout works for anyone that sees this in the future
+
+{Reactions}
+💯 (2)
+
+[6/21/2025 2:49 AM] ursorenda
+also for anyone who runs into the issue of steam not bringing up the layout page, after linking out of your browser it should:
+A. Open steam
+and 
+B. Open a subwindow inside steam with the controller layout associated with the link
+
+If it doesn't give you the second one close steam at the system tray and reboot the steam client, then try again
+
+Also also, per the mod author of the above controller config you should also go into the game menu after activating controller under gameplay, go into keybinds and reset to default.
+
+
+[6/21/2025 4:52 AM] oxenbone
+config in the pinned messages also works if you reset to default
+
+
+[7/12/2025 10:12 PM] trueduck22
+Now base fallout isn't working
+
+
+[7/12/2025 10:12 PM] trueduck22
+Why is nothing working
+
+
+[7/12/2025 11:13 PM] ursorenda
+you'll want to make a post in the https://discord.com/channels/1113971680419782666/1315750844964016238
+
+
+[7/12/2025 11:14 PM] ursorenda
+we cant really help you here
+
+
+[8/3/2025 3:22 AM] codyfl1992
+My controller works but how do I open my pipboy?
+
+
+[8/3/2025 3:26 AM] codyfl1992
+I press B and they crouch but doesn't bring up pipboy? Using a PS5 controller btw
+
+
+[8/3/2025 3:26 AM] ursorenda
+did yhou follow the instructions on the mod author's mod page?
+
+
+[8/3/2025 3:27 AM] codyfl1992
+Can you provide a link?
+
+
+[8/3/2025 3:27 AM] ursorenda
+go into MO2, under optionals find the PS5 support plugin, right click and select "visit on nexus"
+
+
+[8/3/2025 3:30 AM] ursorenda
+the instructions provided by that mod author are the only *officially* supported install instructions for using controllers with our mod pack
+
+
+[8/3/2025 3:33 AM] codyfl1992
+When I copy the link for the layout in my browser and enter it gives and option to open steam but steam does nothing.
+
+
+[8/3/2025 3:33 AM] codyfl1992
+What is the name of the layout?
+
+
+[8/3/2025 3:35 AM] ursorenda
+close steam, restart it
+
+
+[8/3/2025 3:35 AM] ursorenda
+should work
+
+
+[8/3/2025 3:35 AM] ursorenda
+sorry, *exit* steam, right click on it in system tray and completely close the steam app
+
+
+[8/3/2025 3:36 AM] ursorenda
+then restart steam lmfao
+
+
+[8/3/2025 3:37 AM] codyfl1992
+Okay that worked. Applied the layout. Now I go into game and reset controls to default, correct?
+
+
+[8/3/2025 3:42 AM] codyfl1992
+Followed the instructions and still only crouch when pressing B. No pipboy
+
+
+[8/3/2025 3:56 AM] codyfl1992
+I have no idea. I've read thru this thread, followed the instructions on the page you guided me to. I have no idea why something as simple as pulling up the pipboy isn't working.
+
+
+[8/3/2025 3:58 AM] ursorenda
+because bethesda, is the short answer.
+
+You may attempt going to the keybind section and selecting "defaults"
+
+But that can break things if you do it twice, so try it at your own risk
+
+
+[8/3/2025 4:00 AM] ursorenda
+also, as annoying of an answer as this is:
+
+sometimes people find that reinstalling fixes that issue. We're definitely tracking that this is a bug but the majority of our users aren't controller, and we can't pin point why it does that. Best we can figure Wabba doesn't port something over correctly *some of the time*, becuase some users have zero issue (myself) and sometimes users have specific issues (your pipboy button is a common one), and other times we get weirder ones like the jump button intermittently not working lmfao
+
+
+[8/3/2025 4:01 AM] ursorenda
+I can tell you, one of my friends who was frustrated with the same issue reverted to a previous version and it fixed it for him. 
+
+I've tried pitching this to others and it didn't fix it, so I'm pretty sure he just got lucky on the reinstall lol
+
+
+[8/3/2025 4:02 AM] codyfl1992
+What is the keyboard button for the pipboy? Maybe I can just use that to bring up but I'm guessing if the pipboy button doesn't work then other stuff won't work correctly either?
+
+
+[8/3/2025 4:03 AM] ursorenda
+due to the way fallout 4 was coded it's an either or situation, you can't use keyboard and controller simultaneously.
+
+
+[8/3/2025 4:03 AM] ursorenda
+unless I'm remembering incorrectly (again, I don't use controller)
+
+but on keyboard it's default tab
+
+
+[8/3/2025 4:05 AM] codyfl1992
+Yeah tab didn't bring it up. I'll try reinstall on MO. I only play with controller so if I can't get it to work then I can't play the game which is super unfortunate lol. The modpack looks awesome
+
+
+[8/3/2025 4:14 AM] codyfl1992
+Even switched over to keyboard and pressing tab still doesn't bring up pipboy. It's like the pipboy is completely broken
+
+
+[8/3/2025 4:30 AM] codyfl1992
+It seems that the pipboy is set to I and not tab. It does let me bring it up and then navigate the pip menus with my controller. Guess I'll have to play with the controller and keyboard together but it's better than nothing I suppose lol.
+
+
+[8/3/2025 4:32 AM] ursorenda
+it's a bug that arises when you swap to controller without following all the instructions to the letter. 
+
+It's annoying, and I apologize...
+
+But I can tell you that the most reliable solution is to delete the My Documents data for FO4, do a verify integrity of game files in steam, then DM me so I can give you step by step instructions that hopefully result in a working controller setup
+
+
+[8/3/2025 10:51 AM] codyfl1992
+Will this require me to re-install the modpack?
+
+
+[8/3/2025 2:22 PM] ursorenda
+It does 😅
+
+you can try resetting to default keybinds after swapping to keyboard and mouse
+
+
+[8/15/2025 12:40 AM] quizzy317
+How did you get it to work? I applied that layout but when I go in-game controls are unresponsive on the Steam Deck, only KBM work as usual. I don't have the optional controller plugin turned on.
+
+
+[8/15/2025 12:41 AM] quizzy317
+Fixed, need to go into the Fallout 4 settings and toggle controller on then off then on again.
+
+
+[8/20/2025 10:06 AM] atombonniebaby
+I'm getting this now too, and I was messing around with the settings and changed the pause menu and then all of a sudden the pip boy popped back up with the option to change it... now I can't change the pause menu button, but it was remapped anyway and still works 😅 So try remapping in the main game settings and see if you can get the pip boy to reappear there 🤷‍♀️ it never ceases to amaze me the way fo4 can break itself 😅
+
+
+[9/1/2025 11:59 AM] quizzy317
+So how do I get these controller config links to apply to MO2 in Steam instead of vanilla Fallout 4? When I click the links and hit apply it applies the controls to vanilla F04 and not Anomaly/MO2.
+
+
+[9/6/2025 4:10 AM] ursorenda
+it should apply through steam universally. It did for me, anyway
+
+
+[9/24/2025 11:21 PM] gpin_
+Hi is the controller supposed to work in the game main starting menu? I've followed all the instructions but it isn't working or when choosing the character starting stats?
+
+
+[9/24/2025 11:58 PM] ursorenda
+if f you followed the instructions on the mod page for the controller patch, yes it should work just fine
+
+
+[9/25/2025 12:49 AM] gpin_
+Hi, I followed the guide on the anomaly wabbajack and made sure to follow the controller section. I was using the dualsense wireless, could that make a difference?
+
+
+[9/25/2025 2:51 AM] selura
+So, just to be sure, an x-box elite 2 controller won't work, right?
+
+
+[9/25/2025 10:14 AM] quizzy317
+Works fine for me using that preset.
+
+
+[9/25/2025 1:04 PM] selura
+Strange, I did everything using that preset and the only thing that worked was R1 being the Activation button. Nothing else. Using the default preset that I use in vanilla Fallout and Skyrim, nothing worked.
+
+
+[9/25/2025 1:07 PM] selura
+Any troubleshooting I could do?
+
+
+[9/25/2025 1:12 PM] gpin_
+Same on duelsense controller
+
+
+[9/25/2025 1:15 PM] selura
+You mean that it didnt work for you, too?
+
+
+[9/25/2025 1:20 PM] gpin_
+Yeah duelsense controller doesn't work appart from the r1 button works and in the character creation screen clicking the left thumbstick alters the background depth of field . I've also tried using the dsx app to emulate xbox controller and ps4 controller but no joy
+
+
+[9/25/2025 1:25 PM] selura
+Makes sense, the description of the mod in the modorganizer says its for ps5 support, and that xbox is coming later. That's why I want to know how @Quizzy718 got it to work
+
+
+[9/25/2025 1:28 PM] gpin_
+Doesn't work for ps5 either, for me at least
+
+
+[9/25/2025 2:58 PM] gpin_
+I enabled controller in game settings and now have partial controls working
+
+
+[9/25/2025 9:47 PM] ursorenda
+there is no functional difference that I'm aware of between 1st party, mainstream controllers. Can't help you if you have a madcatz controller but PS and Xbox controllers work just fine for most people. 
+
+Unfortunately we have no worldly idea why some folks get it working and some don't, we would require invasive surveying to get to the bottom of the issue and it's just not important enough for us to take such a dramatic step. 
+
+I *can* say, I've followed the instructions to the letter about 15 times across 6 machines and had no issues. Keep trying, I'm certain you'll get it working
+
+
+[9/26/2025 12:04 AM] selura
+Can you paste the instructions here, step by step and in order? I feel the instructions are scattered over a handful of places.
+
+
+[9/26/2025 2:12 AM] selura
+Ok, nowhere was stated that we must activate the controller on the settings. It seems trivial and obvious, but it's not. I recommend updating the manual to reflect this. It worked after I activated controller mode on settings, saved and restarted.
+
+
+[9/26/2025 2:25 AM] selura
+How do I open pipboy? B only changes camera.
+
+
+[9/26/2025 6:32 PM] gpin_
+I followed all the instructions. And managed to get the ps5 controller working fully appart from the pip boy. I've noticed in the layout scheme the corresponding action for pipboy is bound to tab on the keyboard but pipboy is actually the  I key on my keyboard.
+Also something strange happened, after that one and only time of getting the controller to work, once I opened the vault door using the overseer terminal and killed the tall zombie the camera freaked out  and I couldn't go into first person. Then my whole pc screen glitched out and started scrolling across right to left even after closing the game down to desktop the only thing that resolved was a restart. Now the 3rd person camera is bugged and the half the controller function have stopped even a after re installation of the list multiple times the issues have crossed over!
+
+
+[9/26/2025 6:49 PM] ursorenda
+https://tenor.com/view/really-gif-16462970074420267735
+
+{Embed}
+https://tenor.com/view/really-gif-16462970074420267735
+https://images-ext-1.discordapp.net/external/tYBmBbQyJOzWxs514lPDBR98bvd9LHEr56BCSJvck30/https/media.tenor.com/5Hg4DuG0ytcAAAAe/really.png
+
+
+[9/26/2025 8:39 PM] selura
+Same about the pip-boy, and it seems the CM's here are clueless. On my keyboard the pip-boy is bound to i and i can't find where to change that inside the game or in the config files.
+
+
+[9/26/2025 9:46 PM] gpin_
+The list is still in beta so hopefully they'll be able to fix these issues out sooner rather than later.
+In the meantime I'll give  life in the ruins with radfall add on a go and I'll come back to anomaly once they've sorted the controller issues out
+
+
+[9/26/2025 10:57 PM] nomad5157
+We are looking into updating our controller support here in the next coming updates. It's on our list of things to do.
+
+{Reactions}
+👍
+
+[9/27/2025 6:53 PM] ursorenda
+try this steam controller profile instead for me, if you could:
+
+steam://controllerconfig/377160/3482465058
+
+
+[9/27/2025 6:58 PM] gpin_
+I reinstalled and seems like there was an update and the pip boy is now working on controller. However the controller profile that was linked in the readme doesn't work properly for me, the run button doesn't work for example
+
+
+[9/27/2025 6:59 PM] ursorenda
+that's likely an outdated version
+
+
+[9/27/2025 7:04 PM] gpin_
+Is the link you just posted called fallout anomaly xbox configuration?
+
+
+[9/27/2025 7:06 PM] ursorenda
+It will work for either, it was created by a user a while ago and it worked for a buddy of mine
+
+
+[9/27/2025 7:23 PM] gpin_
+Thanks so much!
+Seems to work so far. Is there a way to add the  leaning from uneducated shooter?
+
+
+[9/27/2025 7:24 PM] ursorenda
+You’d have to play around with that steamcontroller profile
+
+
+[9/27/2025 7:25 PM] gpin_
+BTW I'm using ps5 controller and it works
+
+
+[9/27/2025 7:39 PM] gpin_
+@Salamnder Hi just started using your config and it's working great! I was wondering if theres a way of adding the lean to the left and right d pad when holding left trigger? I can't figure out the editing system in steam
+
+
+[9/27/2025 7:58 PM] selura
+No, just the same: everything works, except B button changes camera instead of openning pip-boy
+
+
+[9/27/2025 8:03 PM] selura
+Just to be clear, I tried changing B to press i on the keyboard, no dice.
+
+
+[9/27/2025 8:04 PM] selura
+I don't know if it's related, but while I'm using the controller, the keyboard presses are ignored, like the keybinds are disabled or something. This is strange all in all. Fallout 4 vanilla works very well with a controller.
+
+
+[9/27/2025 8:15 PM] gpin_
+I reinstalled the mod list and changed some of the controls in settings, pip boy to select and sneak to b button and I've managed to get it working
+
+
+[9/27/2025 8:17 PM] selura
+Settings in-game?
+
+
+[9/27/2025 8:18 PM] gpin_
+Yep
+
+
+[9/27/2025 8:19 PM] gpin_
+
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1421652544177967214/Screenshot_2025-09-28_011845.png?ex=6979561b&is=6978049b&hm=b9d6b104125f69293405af392653ff336e5381db5581def9feea2a5845a9f9d6&
+
+
+[9/27/2025 8:23 PM] selura
+there is no vats or pip-boy options for me
+
+
+[9/27/2025 8:23 PM] selura
+
+
+{Attachments}
+https://cdn.discordapp.com/attachments/1319361788730544180/1421653523371659264/image.png?ex=69795705&is=69780585&hm=a7d21b3c01fb2f99334e61b1b7a75caca497216db3cde0e5395a0d75ce30ec0c&
+
+
+[9/27/2025 8:26 PM] gpin_
+Have you tried pressing y for defaults? Also I reinstalled the list today and there was a new update so I don't know if that is what did it?
+
+
+[9/27/2025 8:26 PM] selura
+yes, i tried defaults already
+
+
+[9/27/2025 8:26 PM] selura
+something is wonky. I will purge every settings folder and file, redownload them with steam and reinstall the list
+
+
+[9/27/2025 8:31 PM] gpin_
+I know how frustrating it is, hope you manage to get it sorted 👍
+
+
+[9/27/2025 9:02 PM] selura
+It didnt't work. I'm giving up
+
+
+[9/27/2025 9:38 PM] gpin_
+The only other thing I can think of is, I downloaded a different list and started playing it, which had the pip boy working. I then downloaded anomal and started playing and the pip boy option was there. I'm not sure if it's coincidence?
+
+
+[9/27/2025 9:39 PM] selura
+I finally got it to work. The solution? Disabling the Optional controller support mod.
+
+
+[9/27/2025 9:39 PM] selura
+Honestly I cant even fathom the need for it, since vanilla already has controller support
+
+
+[9/27/2025 9:43 PM] gpin_
+Nice one. Come to think of it I'm sure I disabled that mod started playing and then re enabled it.
+The only thing is without the mod and controller profile you might be missing some of the controls?
+
+
+[9/27/2025 9:47 PM] selura
+I dont know, is there anything besides vanilla control needed? Anyway, if need be I can just edit the layout on Steam Profiles
+
+
+[9/27/2025 9:49 PM] gpin_
+If you keep scrolling up to @Salamnder post he's got all the controls listed like weapon wheel , dodge etc
+
+
+[9/28/2025 10:34 AM] quizzy317
+The linked preset doesn't need the controller mod activated. Just apply the preset, make sure the mod isn't activated, then go in-game and activate controller in the settings use KBM.
+
+
+[10/3/2025 8:02 PM] blastbeats
+i've given up completely. it shouldn't be this complicated
+
+
+[10/4/2025 2:59 PM] ursorenda
+we agree, unfortunately our efforts are focused on other systems. We aren't sure why the issue is intermittent between users.
+
+
+[10/4/2025 3:00 PM] ursorenda
+I can tell you, there should be *significantly* less issue in the 0.6.0 update.
+
+
+[10/7/2025 2:00 AM] catrotzuk
+Just spend 5- 10 minutes on steam keybinding "steam controller" to keyboard keys.
+
+That's what I did, I uave controller disabled on FO4
+
+Works great.
+
+
+[10/7/2025 12:26 PM] ursorenda
+If I could have anyone using controller verify whether Sausage's method works for them that'd be great. That way I don't have to carve out time to test something I don't use >.<
+
+
+[10/7/2025 2:54 PM] blastbeats
+lol false alarm earlier
+
+
+[10/7/2025 2:55 PM] blastbeats
+tried your profile and salmander's but still no pipboy on B
+
+
+[10/7/2025 2:55 PM] ursorenda
+Did you try sausage’s method?
+
+
+[10/7/2025 2:55 PM] blastbeats
+nah not yet
+
+
+[10/7/2025 2:55 PM] blastbeats
+i don't even know any of the keyboard controls
+
+
+[10/7/2025 2:56 PM] ursorenda
+If I had to guess that would work the best.
+
+@Death by sausage would you mind sharing your controller profile?
+
+
+[10/7/2025 2:57 PM] blastbeats
+i remember doing something very similar in oblivion years ago because it had no gamepad support on steam. it made navigating menus kinda clunky if i remember right
+
+
+[10/7/2025 2:58 PM] ursorenda
+You have to rethink how you nav menus, using keys rather than mouse
+
+
+[10/7/2025 2:58 PM] blastbeats
+oh i never use mouse anyway lol
+
+
+[10/7/2025 3:00 PM] blastbeats
+i've a neuropathic problem that makes keyboard and mouse impossible to use for any real stretch of time. kinda sucks because i used to be a big fps guy in the 90s
+
+
+[10/7/2025 3:01 PM] blastbeats
+gamepad isn't perfect but i get a lot more mileage from one
+
+
+[10/7/2025 3:01 PM] ursorenda
+The important keybinds are in the install guide if you wanna try sausages method
+
+
+[10/7/2025 3:02 PM] blastbeats
+yeah i'll give it a go later once i get some food inside of me
+
+
+[10/7/2025 3:02 PM] blastbeats
+i appreciate the help 🙂
+
+
+[10/7/2025 7:31 PM] blastbeats
+isn't the steam overlay required for steam controller input to work?
+
+
+[10/7/2025 8:36 PM] ursorenda
+I don't believe so
+
+
+[10/7/2025 8:46 PM] blastbeats
+ok i think i might have worked it out now
+
+
+[10/7/2025 8:47 PM] blastbeats
+how exactly are you supposed to save after the mcm settings are applied?
+
+
+[10/7/2025 8:48 PM] ursorenda
+we keep forgetting to add them to backgrounds
+
+Open the ESP explorer with backslash (the key under backspace). You may have to press it a few times. Then once it's open hit R and search for cig
+
+
+[10/7/2025 9:01 PM] blastbeats
+amazing, that's got it working!
+
+
+[10/7/2025 9:01 PM] blastbeats
+thank you so much sovereign 🙂
+
+
+[10/7/2025 9:07 PM] blastbeats
+when i previously tried to reset the controls to the defaults they would remain the same. but when i deleted the custom control map file from the anomaly masters mod and tried it again it worked
+
+
+[10/7/2025 9:07 PM] blastbeats
+not sure if this is what fixed it
+
+
+[10/7/2025 9:09 PM] blastbeats
+i'm using salmandr's profile btw. without the controller support mod installed
+
+{Reactions}
+🫡 (3)
+
+[10/8/2025 10:06 PM] selura
+Can you share this profile?
+
+
+[10/8/2025 10:06 PM] selura
+And a step-by-step on how you did it?
+
+
+[10/8/2025 10:29 PM] blastbeats
+yeah click this link in your browser and apply this preset in steam input - steam://controllerconfig/377160/3482465058
+go to this path in your falloutanomaly directory - FalloutAnomaly\mods\Fallout Anomaly Master Files\F4SE - and delete CustomControlMap.txt
+disable the controller support mod and load fallout anomaly. navigate the menu to enable your controller ingame then go to the customise controls screen and reset everything to default
+hopefully that fixes everything for you
+
+{Reactions}
+💯 👍 (5)
+
+[10/8/2025 10:30 PM] blastbeats
+this post and some of the ones below it should be read as well
+
+
+[10/8/2025 10:39 PM] selura
+I will give it a try and report back
+
+
+[10/8/2025 10:55 PM] selura
+Yesss!, it worked! Oh my god, so much suffering. Please, devs, make it simple like this from the get go.
+
+
+[10/8/2025 11:45 PM] selura
+Outside of the scope of this channel, but my 21:9 aspect screen, even with the mod activated, still have some elements of the UI outside the sides.
+
+
+[10/9/2025 12:44 AM] blastbeats
+glad i could help 🙂
+
+
+[10/9/2025 7:15 AM] ursorenda
+Do a server search for “high DPI” and find the instructions to disable it
+
+
+[10/12/2025 9:50 PM] crotchpunchr95
+how do you get the crossair to show up?
+
+
+[10/13/2025 3:21 AM] blastbeats
+just tried out the controller setup with the new update and it seems to work. is it normal that most of the B tap functions have been replaced by I guess, long taps? There seems to be a new type of press inbetween a tap and a long 😄
+
+
+[10/13/2025 3:22 AM] blastbeats
+also crouching doesn't seem to work (using an xbox controller btw)
+
+
+[10/14/2025 2:45 PM] ursorenda
+to be perfectly frank, we have no track on controllers atm. It's a bit of a mystery why it changes at all
+
+
+[10/16/2025 3:50 PM] kingfireball0101
+Is anyone playing it on a Legion Lenovo Go?
+
+
+[10/29/2025 5:16 PM] supereagledrz
+im unable to bring up my pipboy on controller but on keyboard and mouse i can anyone n
+
+
+[10/29/2025 5:16 PM] supereagledrz
+know a fix cause iv tried about everything i know
+
+
+[11/1/2025 1:31 AM] stoveman_x
+@Crimson-valtrax SO i restarted the launcher and set controller settings to default in the main menu before loading the game, seemed to work bringing up the pipboy.
+
+
+[11/2/2025 11:45 PM] stoveman_x
+also went into the documents-My Games- FO4prefs.ini folder a few times and toggled on and off bGamepadenable= 0/1 until everything ran smoothly
+
+
+[11/2/2025 11:45 PM] stoveman_x
+ctrl f to search in the ini's btw
+
+
+[11/12/2025 4:45 PM] pyromunky8347
+This seems to be the best fix for this issue
+
+
+[12/3/2025 7:10 PM] genghis871412
+Legend! Finally I can start playing 👍
+
+
+[1/16/2026 5:34 PM] stealthavenger
+legend got it working,cheers
+
+
+[1/19/2026 8:13 PM] foxtrot8184
+I think i got it working, just wish it showed PS glyphs rather than Xbox ones
+
+
+[1/24/2026 7:44 PM] dylan17082
+you sir are a god send
+
+
+==============================================================
+Exported 298 message(s)
+==============================================================

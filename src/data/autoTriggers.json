@@ -1,0 +1,110 @@
+[
+    {
+        "keywords": ["bless", "world", "better place", "philosophy", "meaning", "life", "spiritual", "purpose"],
+        "response": "This is a great philosophical question, but I'm an **Anomaly Modpack Support Bot** specialized in technical help for Fallout 4 with the Anomaly modpack. 😊\n\nFor game-related questions about gameplay, mechanics, or troubleshooting, I'm your bot! For broader life questions, you might want to chat with the community or ask a staff member."
+    },
+    {
+        "keywords": ["relationship", "dating", "girlfriend", "boyfriend", "wife", "husband", "crush", "love"],
+        "response": "I appreciate the trust, but I'm an **Anomaly Modpack Support Bot** designed for technical gaming help, not relationship advice! 💔\n\nFor personal matters, I'd recommend talking to friends, family, or a counselor. But if you need help with Fallout 4 or the Anomaly modpack, I'm here for that!"
+    },
+    {
+        "keywords": ["homework", "essay", "exam", "study", "math", "science", "history"],
+        "response": "I'm an **Anomaly Modpack Support Bot** for Fallout 4, not a homework helper! 📚\n\nFor academic questions, try checking your textbooks, asking your teacher, or using educational resources. I'm only useful for Anomaly modpack support!"
+    },
+    {
+        "keywords": ["therapy", "depression", "anxiety", "mental health", "suicidal", "help me"],
+        "response": "If you're experiencing mental health struggles, **please reach out to a professional**:\n- **National Suicide Prevention Lifeline**: 988 (US)\n- **Crisis Text Line**: Text HOME to 741741\n- **International Association for Suicide Prevention**: https://www.iasp.info/resources/Crisis_Centres/\n\nI'm just a support bot for a Fallout modpack, not equipped to help with serious personal issues. Take care of yourself! ❤️"
+    },
+    {
+        "keywords": ["advice", "what should i do", "how should i", "what would you", "should i break up"],
+        "response": "I'm an **Anomaly Modpack Support Bot**, not a life coach! 🤖\n\nFor personal advice, it's best to talk to friends, family, or professionals. I'm only good at helping with Fallout 4 and the Anomaly modpack. Need help with that instead?"
+    },
+    {
+        "keywords": ["bitcoin", "cryptocurrency", "forex", "stock market", "money"],
+        "response": "I'm an **Anomaly Modpack Support Bot** for Fallout 4, not a financial advisor! 💰\n\nFor investing and financial questions, consult with a licensed financial professional. I can only help with Anomaly modpack issues!"
+    },
+    {
+        "keywords": ["politics", "election", "vote", "government", "controversial", "debate"],
+        "response": "I'm an **Anomaly Modpack Support Bot** and don't engage in political discussions. 🗳️\n\nThis is a gaming support community, not a place for political debate. Keep discussions focused on Fallout 4 and the Anomaly modpack! If you need help with the game, I'm here for it."
+    },
+    {
+        "keywords": ["why are you", "what are you", "who are you", "can you", "do you have"],
+        "response": "I'm the **Anomaly AI Assistant Bot**! I exist to help with:\n- **Fallout 4 Anomaly Modpack** gameplay, mechanics, and troubleshooting\n- **Installation issues** and setup problems\n- **Game system explanations** (radiation, healing, combat, etc.)\n- **Quest guidance** and content questions\n\nI'm not a general-purpose AI, so off-topic questions won't get good answers. Ask me about Anomaly instead! 🎮"
+    },
+    {
+        "keywords": ["hotkey", "keybind", "key bind", "what key", "default key", "vafs", "default hotkey"],
+        "response": "**Anomaly Hotkey Reference**:\n\n**Combat**: G (VAFs) | Z (Criticals) | Q/E (Lean) | Alt (Bash/Grenades) | Spacebar (Jump)\n**Utilities**: H (Radial Menu) | Shift+K (Wipe Mask) | Shift+U (Night Vision) | F2 (HUD Toggle)\n**UI**: I (Inventory) | M (Map) | \\ (Mod Explorer) | Home (Workshop) | End/Delete (ENB)\n**Movement**: C/Caps (Walk/Run) | Ctrl (Sneak) | N (Dodge) | Tab (Flashlight)\n**Anomaly Specific**: Y (Armor Plates) | K (Examine Prey)\n\n*Most controls are remappable in MCM. Check your MCM for mod-specific keybinds!*"
+    },
+    {
+        "keywords": ["modlist", "size", "gigabyte", "download", "mods", "wabbajack"],
+        "response": "**Check Wabbajack Directly!** 📦\n\nYou can see the current download size and exact number of mods listed on the **Wabbajack application** itself - it shows this information before and during installation.\n\n**To Save Space:**\n1. After installation completes, you can safely **delete the entire `downloads` folder**.\n2. The mods are already extracted to your modlist, so the downloads folder is just temporary staging space.\n3. Deleting it will free up significant disk space without affecting your installation.\n\nFor the exact current specs, check the official Wabbajack page for Anomaly!"
+    },
+    {
+        "keywords": ["screen", "tiny", "corner", "upper left", "small box"],
+        "response": "**Fix for Small/Corner Screen Issue**:\n1. Open your MO2 folder.\n2. Run `BethINI.exe` as Administrator.\n3. Verify your resolution is correct.\n4. Check `Fallout4Prefs.ini` in MO2: ensure `bFullscreen=1` OR `bBorderless=1`, but not both.\n5. (Nvidia) Go to Control Panel -> Adjust Desktop Size -> Scaling -> Full Screen."
+    },
+    {
+        "keywords": ["freeze", "vault", "stuck", "pipboy", "mcm"],
+        "response": "**Initial Freeze is Normal**:\nWhen you first pick up the Pip-Boy or open MCM, dozens of scripts fire at once. The game may freeze for 1-3 minutes. **Please wait** and let it finish."
+    },
+    {
+        "keywords": ["falling", "floor", "falling through", "void"],
+        "response": "**Falling Through Floor Fix**:\nThis is usually caused by the 'Uneducated Shooter' mod being active too early. Disable it in MO2, complete the Vault sequence, and re-enable it after you exit the Vault."
+    },
+    {
+        "keywords": ["download", "failed", "enb", "error"],
+        "response": "**Wabbajack Download Error**:\n1. If it's an ENB error, download it manually from enbdev.com and put the ZIP in your `downloads` folder.\n2. If it's a 'Fallout 76' error, it's a false positive.\n3. Restart Wabbajack and try again."
+    },
+    {
+        "keywords": ["crash", "startup", "ctd", "launcher"],
+        "response": "**Startup Crash Fixes**:\n1. **Overlays**: Disable Discord/Steam/Medal overlays.\n2. **Antivirus**: Exclude the Modlist folder.\n3. **Page File**: Ensure you have a 20GB+ Page File set on your SSD."
+    },
+    {
+        "keywords": ["naked", "raiders", "body", "invisible"],
+        "response": "**Naked Raiders Issue**:\nThis is a known issue with the Merc Veteran armor integration. It is purely visual. Ensure you have the latest patches enabled in MO2."
+    },
+    {
+        "keywords": ["controller", "gamepad", "input"],
+        "response": "**Controller Support**:\n1. Use the official Steam Input config tailored for Anomaly.\n2. Ensure 'Gamepad' is enabled in settings.\n3. Do not use external mappers like DS4Windows if Steam Input is active."
+    },
+    {
+        "keywords": ["save", "saving", "how to save", "sleep", "cigarette"],
+        "response": "**How to Save**:\nAnomaly restricts standard saving. You can save by:\n1. **Sleeping** in a bed for at least 1 hour.\n2. **Smoking** a cigarette (Use from Radial Menu 'H', weapon holstered).\n3. Reaching specific safe zones (like Vault 111 security room)."
+    },
+    {
+        "keywords": ["heal", "health", "broken", "limb", "stimpak"],
+        "response": "**Healing System**:\n- **Stimpaks**: Heal over time. SP-2 requires weapon holstered.\n- **IFAK**: Stops bleeding and heals slowly.\n- **Splints**: Fix broken limbs (sets to 1HP).\n*Note: Sleeping does not auto-heal limbs.*"
+    },
+    {
+        "keywords": ["rads", "radiation", "radaway", "poisoning"],
+        "response": "**Radiation System**:\n- **RadAway**: Removed. Use **Ca-DTPA Injectors** instead.\n- **Rad-X**: Removed. Use **Potassium Iodide**.\n- **Cleansing Tonic**: Cures Radiation Poisoning.\n- **Alcohol**: Lowers internal radiation (IRA)."
+    },
+    {
+        "keywords": ["flashlight", "torch", "light"],
+        "response": "**Using the Flashlight**:\nHold the `Tab` key (Pip-Boy key) to toggle your flashlight/headlamp."
+    },
+    {
+        "keywords": ["black face", "dark face", "face bug"],
+        "response": "**Black Face Bug**:\nThis usually happens if you:\n1. Modified the load order.\n2. Loaded a save from a different modlist.\nTry creating a new character to verify if the issue persists."
+    },
+    {
+        "keywords": ["add mod", "install mod", "my own mods"],
+        "response": "**Adding Mods**:\nAdding your own mods is **not recommended** and voids official support. If you must, ensure they are compatible with complex systems like MAIM and SCOURGE."
+    },
+    {
+        "keywords": ["clean", "mask", "wipe", "visor"],
+        "response": "**Gas Mask Wiping**:\nPress `Shift + K` to wipe rain or blood off your gas mask visor."
+    },
+    {
+        "keywords": ["night vision", "nvg"],
+        "response": "**Night Vision**:\nPress `Shift + U` to toggle Night Vision (if you have the equipment)."
+    },
+    {
+        "keywords": ["build", "planner", "calculator"],
+        "response": "**Character Builder**:\nPlan your build using our interactive tool: [Fallout Anomaly Character Builder](https://fallout-anomaly.github.io/websitedev/pages/guide.html#ai-assistant)"
+    },
+    {
+        "keywords": ["power armor", "fusion core", "enter power armor"],
+        "response": "**Power Armor Training**:\nYou cannot use Power Armor immediately. You must receive training from a faction (e.g., Brotherhood of Steel) via their questline first."
+    }
+]

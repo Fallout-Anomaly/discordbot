@@ -1,5 +1,3 @@
-const { ButtonInteraction } = require("discord.js");
-const DiscordBot = require("../../client/DiscordBot");
 const Component = require("../../structure/Component");
 
 module.exports = new Component({
@@ -11,11 +9,9 @@ module.exports = new Component({
      * @param {ButtonInteraction} interaction 
      */
     run: async (client, interaction) => {
-
-        await interaction.reply({
-            content: 'Replied from a Button interaction!',
-            ephemeral: true
+        await interaction.deferReply({ flags: 64 });
+        await interaction.editReply({
+            content: 'Replied from a Button interaction!'
         });
-
     }
-}).toJSON();
+});

@@ -1,5 +1,4 @@
-const { AttachmentBuilder, Message } = require("discord.js");
-const DiscordBot = require("../../client/DiscordBot");
+const { AttachmentBuilder } = require("discord.js");
 const MessageCommand = require("../../structure/MessageCommand");
 const config = require("../../config");
 
@@ -18,7 +17,7 @@ module.exports = new MessageCommand({
      * @param {Message} message 
      * @param {string[]} args
      */
-    run: async (client, message, args) => {
+    run: async (client, message, _args) => {
         message = await message.reply({
             content: 'Please wait...'
         });

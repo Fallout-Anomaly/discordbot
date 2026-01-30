@@ -1,4 +1,4 @@
-const DiscordBot = require('../client/DiscordBot');
+
 
 class ApplicationCommand {
     data;
@@ -15,7 +15,11 @@ class ApplicationCommand {
     }
 
     toJSON = () => {
-        return { ...this.data }
+        const data = { ...this.data };
+        if (data.command && typeof data.command.defaultMemberPermissions !== 'undefined') {
+            data.command.defaultMemberPermissions = data.command.defaultMemberPermissions.toString();
+        }
+        return data;
     }
 }
 

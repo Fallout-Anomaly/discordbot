@@ -2,10 +2,11 @@ const { success } = require("../../utils/Console");
 const Event = require("../../structure/Event");
 
 module.exports = new Event({
-    event: 'ready',
+    event: 'clientReady',
     once: true,
-    run: (__client__, client) => {
-        success('Logged in as ' + client.user.displayName + ', took ' + ((Date.now() - __client__.login_timestamp) / 1000) + "s.")
-        success("Joined Guilds: " + client.guilds.cache.map(g => `${g.name} (${g.id})`).join(", "));
+    run: (client) => {
+        const loginDuration = ((Date.now() - client.login_timestamp) / 1000).toFixed(2);
+        success(`Logged in as ${client.user.tag}, took ${loginDuration}s.`);
+        success(`Active in ${client.guilds.cache.size} guild(s).`);
     }
 }).toJSON();
