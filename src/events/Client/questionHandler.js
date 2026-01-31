@@ -32,7 +32,18 @@ module.exports = new Event({
         // If it's neither, we might still want to respond if the bot is mentioned
         const isMentioned = message.mentions.has(client.user.id) && !message.mentions.everyone;
 
-        if (!isAskChannel && !isForumThread && !isMentioned) return;
+        // Logic check:
+        // 1. If Ask Channel -> Always respond
+        // 2. If Support Forum -> Only respond to Starter Message OR if Mentioned (User Request)
+        // 3. Any other channel -> Only respond if Mentioned
+
+        if (isForumThread) {
+            // In forums, Thread ID === Starter Message ID
+            const isStarterMessage = message.id === message.channel.id;
+            if (!isStarterMessage && !isMentioned) return;
+        } else {
+            if (!isAskChannel && !isMentioned) return;
+        }
         
         // Rate limit check for AI
         const lastAsk = userCooldowns.get(message.author.id);
