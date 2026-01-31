@@ -114,12 +114,12 @@ class SupportUtil {
     /**
      * Runs a full cleanup cycle across all configured forum channels
      */
-    static async runCleanupCycle(client, options = { action: 'both', limit: 50 }) {
+    static async runCleanupCycle(client, options = { action: 'both', limit: 50, minAge: 14 }) {
         const forumChannels = config.channels.forum_support || [];
         if (forumChannels.length === 0) return { scanned: 0, followups: 0, closed: 0, errors: 0 };
 
         let stats = { scanned: 0, followups: 0, closed: 0, errors: 0 };
-        const { action, limit } = options;
+        const { action, limit, minAge } = options;
 
         await this.initializeTable();
 
@@ -129,7 +129,7 @@ class SupportUtil {
 
             try {
                 const fetchedThreads = await forum.threads.fetchActive();
-                const archivedThreads = await forum.threads.fetchArchived({ limit });
+                const archivedThreads = await forum.threads.fetchArchived({ limit: Math.min(limit, 100) });
 
                 const allThreads = [...fetchedThreads.threads.values(), ...archivedThreads.threads.values()]
                     .filter(thread => !thread.locked)
@@ -147,8 +147,8 @@ class SupportUtil {
                         const daysSinceLastActivity = (Date.now() - lastActiveTime) / (1000 * 60 * 60 * 24);
                         const followupData = await this.getFollowupData(thread.id);
 
-                        // 1. Force-close 14+ days old
-                        if ((action === 'close' || action === 'both') && daysSinceLastActivity >= 14) {
+                        // 1. Force-close older than minAge (default 14 days)
+                        if ((action === 'close' || action === 'both') && daysSinceLastActivity >= minAge) {
                             await this.closeThread(thread, true);
                             stats.closed++;
                             continue;

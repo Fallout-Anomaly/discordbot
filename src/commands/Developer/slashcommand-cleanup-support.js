@@ -24,6 +24,13 @@ module.exports = new ApplicationCommand({
                 description: 'Max threads to process per forum (default 50)',
                 type: ApplicationCommandOptionType.Integer,
                 required: false
+            },
+            {
+                name: 'min_age',
+                description: 'Minimum days of inactivity to force close (default 14)',
+                type: ApplicationCommandOptionType.Integer,
+                required: false,
+                minValue: 1
             }
         ]
     },
@@ -36,15 +43,16 @@ module.exports = new ApplicationCommand({
 
         const action = interaction.options.getString('action');
         const limit = interaction.options.getInteger('limit') || 50;
+        const minAge = interaction.options.getInteger('min_age') || 14;
 
         const forumChannels = config.channels.forum_support || [];
         if (forumChannels.length === 0) {
             return interaction.editReply({ content: '❌ No forum support channels configured in config.js.' });
         }
 
-        await interaction.editReply({ content: `🔍 Scanning forum threads for cleanup (action: ${action})...` });
+        await interaction.editReply({ content: `🔍 Scanning forum threads for cleanup (action: ${action}, min_age: ${minAge} days)...` });
 
-        const stats = await SupportUtil.runCleanupCycle(client, { action, limit });
+        const stats = await SupportUtil.runCleanupCycle(client, { action, limit, minAge });
 
         const embed = new EmbedBuilder()
             .setTitle('🧹 Support Cleanup Complete')
