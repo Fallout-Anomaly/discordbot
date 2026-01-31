@@ -37,25 +37,30 @@ module.exports = new Event({
         // Check permissions before fetching audit logs
         if (message.guild.members.me.permissions.has('ViewAuditLog')) {
              let deletionLog;
-             // Retry mechanism: Try up to 3 times for slow audit logs (reduced from 5 to avoid 5s lag)
+             // Retry mechanism: Try up to 3 times for slow audit logs
              for (let i = 0; i < 3; i++) {
                  try {
                      const fetchedLogs = await message.guild.fetchAuditLogs({
-                         limit: 1,
+                         limit: 5, // Fetch more logs to handle race conditions
                          type: AuditLogEvent.MessageDelete,
                      });
-                     const log = fetchedLogs.entries.first();
-                     // Match criteria: Target is author, created recently (within 15s)
-                     if (log && log.target.id === message.author.id && 
-                         (Date.now() - log.createdTimestamp) < 15000) {
+                     
+                     // Find a log where target is the message author
+                     const log = fetchedLogs.entries.find(entry => 
+                        entry.target.id === message.author.id && 
+                        entry.extra.channel.id === message.channel.id &&
+                        (Date.now() - entry.createdTimestamp) < 20000
+                     );
+
+                     if (log) {
                          deletionLog = log;
                          break;
                      }
                 } catch {
                      // Ignore errors
                  }
-                 // Wait 1s between retries
-                 await new Promise(resolve => setTimeout(resolve, 1000));
+                 // Wait shorter time for quicker resolution
+                 await new Promise(resolve => setTimeout(resolve, 500));
              }
 
              if (deletionLog) {
