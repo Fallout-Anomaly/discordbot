@@ -2,6 +2,7 @@ const { Events } = require('discord.js');
 const Event = require('../../structure/Event');
 const config = require('../../config');
 const AutoResponder = require('../../utils/AutoResponder');
+const { error } = require('../../utils/Console');
 
 module.exports = new Event({
     event: Events.MessageCreate,
@@ -24,7 +25,7 @@ module.exports = new Event({
         try {
             await AutoResponder.checkAndRespond(message);
         } catch (err) {
-            console.error('[ChatAutoResponder] Error in checkAndRespond:', err);
+            error('[ChatAutoResponder] Error in checkAndRespond:', err);
         }
         
         // No AI generation here.

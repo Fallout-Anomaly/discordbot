@@ -1,19 +1,21 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const { info, error } = require('./Console');
 
 // Ensure database file exists
 const dbPath = path.resolve(__dirname, '../../economy.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
-        console.error('Could not connect to economy database:', err.message);
+        error('Could not connect to economy database:', err.message);
     } else {
-        console.log('Connected to economy database.');
+        info('Connected to economy database.');
         db.run('PRAGMA foreign_keys = ON;'); // Enforce foreign key constraints
     }
 });
 
 // Initialize tables
 db.serialize(() => {
+
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         balance INTEGER DEFAULT 0,
@@ -35,7 +37,9 @@ db.serialize(() => {
         hourly_last_claim INTEGER DEFAULT 0,
         daily_quest_count INTEGER DEFAULT 0,
         last_quest_reset INTEGER DEFAULT 0
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create users table:', err.message);
+    });
 
     // Migration for existing tables
     const columnsToAdd = [
@@ -65,7 +69,7 @@ db.serialize(() => {
     // Check which columns exist before attempting ALTER TABLE
     db.all(`PRAGMA table_info(users)`, (err, columns) => {
         if (err) {
-            console.error('Error checking table schema:', err.message);
+            error('Error checking table schema:', err.message);
             return;
         }
 
@@ -75,7 +79,7 @@ db.serialize(() => {
             const colName = col.split(' ')[0]; // Extract column name from definition
             if (!existingColumns.has(colName)) {
                 db.run(`ALTER TABLE users ADD COLUMN ${col}`, (alterErr) => {
-                    if (alterErr) console.error(`Error adding column ${colName}:`, alterErr.message);
+                    if (alterErr) error(`Error adding column ${colName}:`, alterErr.message);
                 });
             }
         });
@@ -87,7 +91,7 @@ db.serialize(() => {
              WHERE balance IS NULL OR balance = '' OR balance = 'null'`,
             (normalizeErr) => {
                 if (normalizeErr) {
-                    console.error('Error normalizing user balances:', normalizeErr.message);
+                    error('Error normalizing user balances:', normalizeErr.message);
                 }
             }
         );
@@ -97,32 +101,42 @@ db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS xp_cooldowns (
         user_id TEXT PRIMARY KEY,
         cooldown_expiry INTEGER NOT NULL
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create xp_cooldowns table:', err.message);
+    });
 
     // Hunt cooldown table
     db.run(`CREATE TABLE IF NOT EXISTS hunt_cooldown (
         user_id TEXT PRIMARY KEY,
         cooldown_expiry INTEGER NOT NULL
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create hunt_cooldown table:', err.message);
+    });
 
     // Fish cooldown table
     db.run(`CREATE TABLE IF NOT EXISTS fish_cooldown (
         user_id TEXT PRIMARY KEY,
         cooldown_expiry INTEGER NOT NULL
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create fish_cooldown table:', err.message);
+    });
 
     // Rob cooldown table
     db.run(`CREATE TABLE IF NOT EXISTS rob_cooldown (
         user_id TEXT PRIMARY KEY,
         cooldown_expiry INTEGER NOT NULL
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create rob_cooldown table:', err.message);
+    });
 
     // Scavenge Timer Table
     db.run(`CREATE TABLE IF NOT EXISTS scavenge (
         user_id TEXT PRIMARY KEY,
         start_time INTEGER,
         duration INTEGER
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create scavenge table:', err.message);
+    });
 
     // Items Table (Static Data Cache)
     db.run(`CREATE TABLE IF NOT EXISTS items (
@@ -136,7 +150,9 @@ db.serialize(() => {
         damage INTEGER DEFAULT 0,
         defense INTEGER DEFAULT 0,
         effect_full TEXT DEFAULT 'none'
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create items table:', err.message);
+    });
     
     db.run(`CREATE TABLE IF NOT EXISTS inventory (
         user_id TEXT,
@@ -146,7 +162,7 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`, (err) => {
         if (err) {
-            console.error('Failed to create inventory table:', err.message);
+            error('Failed to create inventory table:', err.message);
         }
     });
 
@@ -165,7 +181,9 @@ db.serialize(() => {
         duration INTEGER,
         UNIQUE(user_id),
         FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create quest_journal table:', err.message);
+    });
 
     // Active Faction Quests Table
     db.run(`CREATE TABLE IF NOT EXISTS active_quests (
@@ -177,7 +195,9 @@ db.serialize(() => {
         complete_at INTEGER NOT NULL,
         UNIQUE(user_id),
         FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create active_quests table:', err.message);
+    });
 
     // Donor/Supporter System
     db.run(`CREATE TABLE IF NOT EXISTS donors (
@@ -187,7 +207,9 @@ db.serialize(() => {
         raffle_entries INTEGER DEFAULT 0,
         custom_badge TEXT DEFAULT '',
         referred_by TEXT
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create donors table:', err.message);
+    });
 
     // Referral Tracking
     db.run(`CREATE TABLE IF NOT EXISTS referrals (
@@ -195,7 +217,9 @@ db.serialize(() => {
         referred_id TEXT,
         join_date INTEGER,
         PRIMARY KEY (referrer_id, referred_id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create referrals table:', err.message);
+    });
 
     // Raffle Pool (monthly)
     db.run(`CREATE TABLE IF NOT EXISTS raffle_pool (
@@ -203,7 +227,9 @@ db.serialize(() => {
         user_id TEXT,
         entries INTEGER,
         month_year TEXT
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create raffle_pool table:', err.message);
+    });
 
     // Stash System (NPC-managed savings with interest)
     db.run(`CREATE TABLE IF NOT EXISTS stash (
@@ -211,7 +237,9 @@ db.serialize(() => {
         amount INTEGER DEFAULT 0,
         created_at INTEGER DEFAULT 0,
         FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create stash table:', err.message);
+    });
 
     // Quest History (Track completed quests for stats)
     db.run(`CREATE TABLE IF NOT EXISTS quest_history (
@@ -222,7 +250,9 @@ db.serialize(() => {
         reward_xp INTEGER,
         timestamp INTEGER,
         FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create quest_history table:', err.message);
+    });
 
     // Indexes for Performance
     const indexes = [
@@ -242,7 +272,9 @@ db.serialize(() => {
         attacker_cooldown_expires INTEGER,
         defender_cooldown_expires INTEGER,
         FOREIGN KEY(user_id) REFERENCES users(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create pvp_cooldowns table:', err.message);
+    });
 
     // Faction Metadata
     db.run(`CREATE TABLE IF NOT EXISTS factions (
@@ -252,7 +284,9 @@ db.serialize(() => {
         description TEXT,
         type TEXT,
         emoji TEXT
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create factions table:', err.message);
+    });
 
     // Player Faction Standings
     db.run(`CREATE TABLE IF NOT EXISTS player_factions (
@@ -264,7 +298,9 @@ db.serialize(() => {
         PRIMARY KEY (user_id, faction_id),
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(faction_id) REFERENCES factions(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create player_factions table:', err.message);
+    });
 
     // Player Allegiance (one major faction per player)
     db.run(`CREATE TABLE IF NOT EXISTS player_allegiance (
@@ -273,7 +309,9 @@ db.serialize(() => {
         allegiance_locked INTEGER DEFAULT 0,
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(faction_id) REFERENCES factions(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create player_allegiance table:', err.message);
+    });
 
     // Faction Hostility (tracks which factions are hostile to the player)
     db.run(`CREATE TABLE IF NOT EXISTS faction_hostility (
@@ -285,7 +323,9 @@ db.serialize(() => {
         PRIMARY KEY (user_id, faction_id),
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(faction_id) REFERENCES factions(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create faction_hostility table:', err.message);
+    });
 
     // Territory Control
     db.run(`CREATE TABLE IF NOT EXISTS territories (
@@ -294,7 +334,9 @@ db.serialize(() => {
         last_contested INTEGER,
         contested_by TEXT,
         FOREIGN KEY(controlling_faction) REFERENCES factions(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create territories table:', err.message);
+    });
     // Reputation Log (for proper daily cap tracking)
     db.run(`CREATE TABLE IF NOT EXISTS faction_rep_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -305,11 +347,13 @@ db.serialize(() => {
         timestamp INTEGER,
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(faction_id) REFERENCES factions(id)
-    )`);
+    )`, (err) => {
+        if (err) error('Failed to create faction_rep_log table:', err.message);
+    });
 
     indexes.forEach(idx => {
         db.run(idx, (err) => {
-            if (err) console.error("Index Error:", err.message);
+            if (err) error("Index Error:", err.message);
         });
     });
 
@@ -330,7 +374,9 @@ db.serialize(() => {
         db.run(
             `INSERT OR IGNORE INTO factions (id, name, color, type, emoji) VALUES (?, ?, ?, ?, ?)`,
             [f.id, f.name, f.color, f.type, f.emoji],
-            () => {}
+            (err) => {
+                if (err) error(`Failed to insert/ignore faction ${f.id}:`, err.message);
+            }
         );
     });
 
@@ -342,7 +388,7 @@ db.serialize(() => {
             `INSERT OR IGNORE INTO territories (territory_id, controlling_faction) VALUES (?, ?)`,
             [tid, null],
             (err) => {
-                if (err) console.error(`Territory init error for ${tid}:`, err.message);
+                if (err) error(`Territory init error for ${tid}:`, err.message);
             }
         );
     });

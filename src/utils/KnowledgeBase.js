@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { info, error, warn } = require('./Console');
 
 const STOP_WORDS = new Set(['a', 'an', 'the', 'and', 'or', 'but', 'for', 'is', 'it', 'in', 'on', 'at', 'to', 'from', 'with', 'by', 'of', 'how', 'do', 'i', 'the', 'that', 'this', 'there', 'what', 'where']);
 
@@ -49,9 +50,9 @@ class KnowledgeBase {
                 try {
                     await fs.promises.access(this.knowledgeDir);
                 } catch {
-                    console.error(`KnowledgeBase directory not found at ${this.knowledgeDir}`);
+                    error(`KnowledgeBase directory not found at ${this.knowledgeDir}`);
                     await fs.promises.mkdir(this.knowledgeDir, { recursive: true });
-                    console.log("Created knowledge base directory.");
+                    info("Created knowledge base directory.");
                     return;
                 }
 
@@ -109,9 +110,9 @@ class KnowledgeBase {
                 this.documentFrequency = tempDocFreq;
                 this.totalDocuments = tempIndex.length;
                 this.loaded = true;
-                console.log(`Knowledge Base indexed: ${this.totalDocuments} chunks from ${files.length} files.`);
-            } catch (error) {
-                console.error("Failed to load knowledge base:", error);
+                info(`Knowledge Base indexed: ${this.totalDocuments} chunks from ${files.length} files.`);
+            } catch (err) {
+                error("Failed to load knowledge base:", err);
                 this.index = [];
             } finally {
                 this.loadingPromise = null;
@@ -123,7 +124,7 @@ class KnowledgeBase {
 
     search(query) {
         if (!this.loaded) {
-            console.warn("KnowledgeBase search called before load complete.");
+            warn("KnowledgeBase search called before load complete.");
             return [];
         }
         
@@ -174,7 +175,7 @@ class KnowledgeBase {
         return results.slice(0, 3);
     }
     async reload() {
-        console.log("Reloading knowledge base...");
+        info("Reloading knowledge base...");
         this.loaded = false;
         this.index = [];
         this.documentFrequency = new Map();

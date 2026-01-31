@@ -2,6 +2,7 @@ const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const DonorSystem = require('../../utils/DonorSystem');
 const config = require('../../config');
+const { info, warn, error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -64,10 +65,10 @@ module.exports = new ApplicationCommand({
             const shouldBeDonors = new Set();
 
             // Fetch all members but with exponential backoff to avoid rate limits
-            console.log('[SYNC DONORS] Starting member fetch...');
+            info('[SYNC DONORS] Starting member fetch...');
             await interaction.guild.members.fetch({ limit: 1000 }).catch(err => {
                 if (err.code === 'RESTRateLimited') {
-                    console.warn('[SYNC DONORS] Rate limited during fetch, retrying with backoff...');
+                    warn('[SYNC DONORS] Rate limited during fetch, retrying with backoff...');
                 }
             });
             
@@ -137,7 +138,7 @@ module.exports = new ApplicationCommand({
             return interaction.editReply({ embeds: [embed] });
 
         } catch (err) {
-            console.error('[SYNC DONORS] Error:', err);
+            error('[SYNC DONORS] Error:', err);
             return interaction.editReply({ content: `❌ Error syncing donors: ${err.message}` });
         }
     }

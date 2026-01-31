@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const FactionManager = require('../../utils/FactionManager');
+const { warn, error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -66,10 +67,10 @@ module.exports = new ApplicationCommand({
         let result;
         try {
             result = await FactionManager.modifyReputation(targetUser.id, factionId, amount, 'admin');
-        } catch (error) {
-            console.error('Modify reputation error:', error);
+        } catch (err) {
+            error('Modify reputation error:', err);
             return interaction.editReply({ 
-                content: `❌ Failed to modify reputation: ${error.message}` 
+                content: `❌ Failed to modify reputation: ${err.message}` 
             });
         }
 
@@ -130,7 +131,7 @@ module.exports = new ApplicationCommand({
 
             await targetUser.send({ embeds: [userEmbed] });
         } catch (dmError) {
-            console.log(`Could not DM ${targetUser.tag} about reputation change:`, dmError.message);
+            warn(`Could not DM ${targetUser.tag} about reputation change:`, dmError.message);
         }
     }
 }).toJSON();

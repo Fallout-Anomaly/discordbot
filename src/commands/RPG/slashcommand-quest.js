@@ -4,6 +4,7 @@ const ApplicationCommand = require("../../structure/ApplicationCommand");
 const AIService = require('../../utils/AIService');
 const { checkLevelUp } = require('../../utils/LevelSystem');
 const { QUEST_TEMPLATES } = require('../../utils/Constants');
+const { error } = require('../../utils/Console');
 
 // Quest templates for variety (fallback if AI is down)
 // Imported from Constants.js
@@ -156,7 +157,7 @@ module.exports = new ApplicationCommand({
                     }
 
                 } catch (e) {
-                    console.error("Quest Gen Error:", e);
+                    error("Quest Gen Error:", e);
                     return interaction.editReply({ content: '❌ Failed to generate quest docket. The terminal is glitching.' });
                 }
 
@@ -170,7 +171,7 @@ module.exports = new ApplicationCommand({
                     [userId, newQuest.title, newQuest.description, newQuest.objective, newQuest.difficulty, newQuest.reward_caps, newQuest.reward_xp, newQuest.reward_item || null, startTime, durationMs],
                     (err) => {
                         if (err) {
-                            console.error('Quest Journal insert error:', err);
+                            error('Quest Journal insert error:', err);
                             return interaction.editReply({ content: '❌ Failed to save quest to Pip-Boy database.' });
                         }
 

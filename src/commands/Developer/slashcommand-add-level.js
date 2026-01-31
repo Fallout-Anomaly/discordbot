@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const { calculateLevel, calculateTotalXP } = require('../../utils/LevelSystem');
+const { warn, error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -51,7 +52,7 @@ module.exports = new ApplicationCommand({
         const userData = await new Promise((resolve) => {
             db.get('SELECT xp, level FROM users WHERE id = ?', [targetUser.id], (err, row) => {
                 if (err) {
-                    console.error('Database error:', err);
+                    error('Database error:', err);
                     resolve(null);
                 } else {
                     resolve(row);
@@ -85,7 +86,10 @@ module.exports = new ApplicationCommand({
             db.run(
                 'UPDATE users SET xp = ? WHERE id = ?',
                 [newXP, targetUser.id],
-                () => resolve()
+                (err) => {
+                    if (err) error('Failed to update user level:', err);
+                    resolve();
+                }
             );
         });
 
@@ -130,7 +134,7 @@ module.exports = new ApplicationCommand({
 
             await targetUser.send({ embeds: [userEmbed] });
         } catch (dmError) {
-            console.log(`Could not DM ${targetUser.tag} about level change:`, dmError.message);
+            warn(`Could not DM ${targetUser.tag} about level change:`, dmError.message);
         }
     }
 }).toJSON();

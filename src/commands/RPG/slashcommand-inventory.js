@@ -1,6 +1,7 @@
 const db = require('../../utils/EconomyDB');
 const { EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const { error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -22,7 +23,7 @@ module.exports = new ApplicationCommand({
 
         db.all(query, [userId], (err, rows) => {
             if (err) {
-                console.error(err);
+                error(err);
                 return interaction.reply({ content: '❌ Database error.', flags: 64 });
             }
 

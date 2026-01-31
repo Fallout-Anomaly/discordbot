@@ -35,7 +35,7 @@ module.exports = new ApplicationCommand({
         // ATOMIC DEDUCTION: Check balance and deduct in a single operation
         // This prevents double-spending where multiple spins could use the same balance
         db.run(
-            'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+            'UPDATE users SET balance = IFNULL(balance, 0) - ? WHERE id = ? AND IFNULL(balance, 0) >= ?',
             [amount, userId, amount],
             function (err) {
                 if (err) return interaction.editReply({ content: '❌ Database error.' });
@@ -75,7 +75,7 @@ module.exports = new ApplicationCommand({
 
                 // Update DB if won (using atomic increment)
                 if (winnings > 0) {
-                    db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [winnings, userId]);
+                    db.run('UPDATE users SET balance = IFNULL(balance, 0) + ? WHERE id = ?', [winnings, userId]);
                 }
 
                 // Build Embed

@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const Event = require('../../structure/Event');
+const { error } = require('../../utils/Console');
 
 module.exports = new Event({
     event: Events.MessageUpdate,
@@ -49,6 +50,6 @@ module.exports = new Event({
             )
             .setTimestamp();
 
-        logChannel.send({ embeds: [embed] }).catch(err => console.error("[LOGGING] Failed to send edit log:", err));
+        logChannel.send({ embeds: [embed] }).catch(err => error("[LOGGING] Failed to send edit log:", err));
     }
 }).toJSON();

@@ -154,7 +154,7 @@ async function processScavengeResult(client, interaction) {
     const levelCheck = checkLevelUp(oldXp, newXp);
 
     await new Promise((resolve) => {
-        db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?', [caps, xp, levelCheck.levelsGained, userId], () => resolve());
+        db.run('UPDATE users SET balance = IFNULL(balance, 0) + ?, xp = IFNULL(xp, 0) + ?, stat_points = IFNULL(stat_points, 0) + ? WHERE id = ?', [caps, xp, levelCheck.levelsGained, userId], () => resolve());
     });
 
     const embed = new EmbedBuilder()

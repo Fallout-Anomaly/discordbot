@@ -1,6 +1,7 @@
 const { Events } = require('discord.js');
 const Event = require('../../structure/Event');
 const db = require('../../utils/EconomyDB');
+const { error } = require('../../utils/Console');
 
 // Simple XP System
 // 10-20 XP per message
@@ -24,7 +25,7 @@ module.exports = new Event({
         // Check if user has active cooldown in database
         db.get('SELECT cooldown_expiry FROM xp_cooldowns WHERE user_id = ?', [userId], async (err, row) => {
             if (err) {
-                console.error('XP Cooldown Check Error:', err);
+                error('XP Cooldown Check Error:', err);
                 return;
             }
 
@@ -41,10 +42,10 @@ module.exports = new Event({
             const xpQuery = `
                 INSERT INTO users (id, balance, xp) 
                 VALUES (?, 0, ?) 
-                ON CONFLICT(id) DO UPDATE SET xp = xp + ?
+                ON CONFLICT(id) DO UPDATE SET xp = IFNULL(xp, 0) + ?
             `;
             db.run(xpQuery, [userId, xpGain, xpGain], (err) => {
-                if (err) console.error('XP Update Error:', err);
+                if (err) error('XP Update Error:', err);
             });
 
             // Update cooldown in database
@@ -54,7 +55,7 @@ module.exports = new Event({
                 ON CONFLICT(user_id) DO UPDATE SET cooldown_expiry = ?
             `;
             db.run(cooldownQuery, [userId, cooldownExpiry, cooldownExpiry], (err) => {
-                if (err) console.error('XP Cooldown Update Error:', err);
+                if (err) error('XP Cooldown Update Error:', err);
             });
         });
     }

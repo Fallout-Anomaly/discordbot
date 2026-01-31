@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const db = require("./EconomyDB");
 const config = require("../config");
-const { error, info } = require("./Console");
+const { error } = require("./Console");
 
 /**
  * Utility functions for managing support threads
@@ -29,6 +29,7 @@ class SupportUtil {
     static getFollowupData(threadId) {
         return new Promise((resolve) => {
             db.get('SELECT * FROM support_followups WHERE thread_id = ?', [threadId], (err, row) => {
+                if (err) error(`Error getting followup data for ${threadId}:`, err.message);
                 resolve(row || null);
             });
         });
@@ -55,7 +56,10 @@ class SupportUtil {
      */
     static removeFollowup(threadId) {
         return new Promise((resolve) => {
-            db.run('DELETE FROM support_followups WHERE thread_id = ?', [threadId], () => resolve());
+            db.run('DELETE FROM support_followups WHERE thread_id = ?', [threadId], (err) => {
+                if (err) error(`Error removing followup for ${threadId}:`, err.message);
+                resolve();
+            });
         });
     }
 
@@ -128,7 +132,7 @@ class SupportUtil {
                 const archivedThreads = await forum.threads.fetchArchived({ limit });
 
                 const allThreads = [...fetchedThreads.threads.values(), ...archivedThreads.threads.values()]
-                    .filter(thread => !thread.locked && !thread.archived)
+                    .filter(thread => !thread.locked)
                     .slice(0, limit);
 
                 for (const thread of allThreads) {
@@ -152,6 +156,8 @@ class SupportUtil {
 
                         // 2. Follow-up 7+ days inactive
                         if ((action === 'followup' || action === 'both') && daysSinceLastActivity >= 7 && !followupData) {
+                            // If thread is archived, unarchive it to send message
+                            if (thread.archived) await thread.setArchived(false);
                             await this.sendFollowupMessage(thread);
                             stats.followups++;
                             continue;
@@ -160,14 +166,22 @@ class SupportUtil {
                         // 3. Close after follow-up (24h)
                         if ((action === 'close' || action === 'both') && followupData) {
                             const hoursSinceFollowup = (Date.now() - followupData.followup_time) / (1000 * 60 * 60);
+                            
+                            // If user responded, clear cleanup flag to reset cycle
+                            const recentMessages = await thread.messages.fetch({ limit: 20 }).catch(() => null);
+                            const userResponded = recentMessages?.some(m => m.createdTimestamp > followupData.followup_time && !m.author.bot);
+                            
+                            if (userResponded) {
+                                await this.removeFollowup(thread.id);
+                                continue;
+                            }
+
                             if (hoursSinceFollowup >= 24) {
-                                const recentMessages = await thread.messages.fetch({ limit: 20 }).catch(() => null);
-                                const userResponded = recentMessages?.some(m => m.createdTimestamp > followupData.followup_time && !m.author.bot);
-                                
-                                if (!userResponded) {
-                                    await this.closeThread(thread);
-                                    stats.closed++;
-                                }
+                                // If thread is archived, unarchive momentarily to post closing message? 
+                                // Actually, closeThread handles posting. We might need to unarchive first if posting fails on archived threads.
+                                // Discord allows posting in archived threads (it unarchives them).
+                                await this.closeThread(thread);
+                                stats.closed++;
                             }
                         }
                     } catch (err) {

@@ -2,6 +2,7 @@ const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const FactionManager = require('../../utils/FactionManager');
 const EconomyDB = require('../../utils/EconomyDB');
+const { error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -55,8 +56,8 @@ module.exports = new ApplicationCommand({
             } else if (subcommand === 'claim') {
                 await claimTerritory(interaction, userId, db);
             }
-        } catch (error) {
-            console.error('Territory command error:', error);
+        } catch (err) {
+            error('Territory command error:', err);
             await interaction.editReply({ content: 'Error processing territory command' });
         }
     }
@@ -135,8 +136,8 @@ async function showIncome(interaction, userId) {
         }
 
         await interaction.editReply({ embeds: [embed] });
-    } catch (error) {
-        console.error('Income command error:', error);
+    } catch (err) {
+        error('Income command error:', err);
         await interaction.editReply({ content: 'Error calculating income' });
     }
 }
@@ -219,8 +220,8 @@ async function claimTerritory(interaction, userId, db) {
                 );
             });
         });
-    } catch (error) {
-        console.error('Claim territory error:', error);
+    } catch (err) {
+        error('Claim territory error:', err);
         await interaction.editReply({ content: 'Error claiming territory' });
     }
 }

@@ -1,6 +1,7 @@
 const { EmbedBuilder, StringSelectMenuBuilder, ActionRowBuilder, ComponentType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const config = require('../../config');
+const { error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -25,8 +26,8 @@ module.exports = new ApplicationCommand({
         // Categorize staff commands
         commands.forEach((cmd) => {
             const name = cmd.command.name;
-            const desc = cmd.command.description;
-            const line = `\`/${name}\` - ${desc}`;
+            const description = cmd.command.description;
+            const line = `\`/${name}\` - ${description}`;
 
             // Moderation
             if (['ban', 'kick', 'mute', 'timeout', 'lock', 'unlock', 'clear', 'setup-verify', 'addrole', 'setnick'].includes(name)) {
@@ -102,7 +103,7 @@ module.exports = new ApplicationCommand({
 
                 await i.editReply({ embeds: [categoryEmbed], components: [row] });
             } catch (err) {
-                console.error('[STAFFGUIDE COLLECT] Error:', err);
+                error('[STAFFGUIDE COLLECT] Error:', err);
             }
         });
 

@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const Event = require('../../structure/Event');
+const { warn, error } = require('../../utils/Console');
 
 module.exports = new Event({
     event: Events.GuildMemberAdd,
@@ -7,7 +8,7 @@ module.exports = new Event({
     run: async (client, member) => {
         const welcomeChannelId = process.env.WELCOME_CHANNEL_ID;
         if (!welcomeChannelId) {
-            console.warn("[WELCOME] WELCOME_CHANNEL_ID is not set. Skipping welcome message.");
+            warn("[WELCOME] WELCOME_CHANNEL_ID is not set. Skipping welcome message.");
             return;
         }
 
@@ -17,7 +18,7 @@ module.exports = new Event({
         const verifyText = isValidVerifyId ? `<#${verifyChannelId}>` : "**verification channel**";
 
         if (!isValidVerifyId) {
-            console.warn(`[WELCOME] VERIFY_CHANNEL_ID is missing or invalid: ${verifyChannelId}`);
+            warn(`[WELCOME] VERIFY_CHANNEL_ID is missing or invalid: ${verifyChannelId}`);
         }
 
         let welcomeChannel = client.channels.cache.get(welcomeChannelId);
@@ -52,9 +53,9 @@ module.exports = new Event({
             welcomeChannel.send({ 
                 content: `<@${member.user.id}> has joined the server! You are our **${ordinalCount}** member!`, 
                 embeds: [embed] 
-            }).catch(err => console.error("[WELCOME] Failed to send message:", err));
+            }).catch(err => error("[WELCOME] Failed to send message:", err));
         } else {
-             console.warn(`[WELCOME] Welcome channel ${welcomeChannelId} not found in cache.`);
+             warn(`[WELCOME] Welcome channel ${welcomeChannelId} not found in cache.`);
         }
     }
 }).toJSON();

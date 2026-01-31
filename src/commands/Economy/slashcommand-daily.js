@@ -58,7 +58,7 @@ module.exports = new ApplicationCommand({
         db.run(
             `INSERT INTO users (id, balance, daily_last_claim) VALUES (?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET 
-                balance = balance + ?,
+                balance = IFNULL(balance, 0) + ?,
                 daily_last_claim = ?
              WHERE daily_last_claim IS NULL OR daily_last_claim < ?`,
             [userId, finalCaps, now, finalCaps, now, cooldownCheck],

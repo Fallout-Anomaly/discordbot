@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const Event = require('../../structure/Event');
+const { info, warn, error } = require('../../utils/Console');
 
 let helpInterval = null;
 
@@ -17,7 +18,7 @@ module.exports = new Event({
 
             const channel = client.channels.cache.get(channelId);
             if (!channel) {
-                console.warn(`[AutoHelp] Channel ${channelId} not found.`);
+                warn(`[AutoHelp] Channel ${channelId} not found.`);
                 return;
             }
 
@@ -79,10 +80,10 @@ module.exports = new Event({
             try {
                 if (embeds.length > 0) {
                     await channel.send({ embeds: embeds.slice(0, 10) }); // Cap at 10 embeds per message
-                    console.log(`[AutoHelp] Posted daily command list (${embeds.length} embed${embeds.length > 1 ? 's' : ''}).`);
+                    info(`[AutoHelp] Posted daily command list (${embeds.length} embed${embeds.length > 1 ? 's' : ''}).`);
                 }
             } catch (err) {
-                console.error('[AutoHelp] Failed to send message:', err);
+                error('[AutoHelp] Failed to send message:', err);
             }
 
         }, 24 * 60 * 60 * 1000); // 24 hours

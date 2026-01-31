@@ -2,6 +2,7 @@ const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
 const { calculateLevel } = require('../../utils/LevelSystem');
+const { warn, error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -63,7 +64,7 @@ module.exports = new ApplicationCommand({
                 }
             );
         }).catch(err => {
-            console.error('[ADD-STAT-POINTS] Database error:', err);
+            error('[ADD-STAT-POINTS] Database error:', err);
             return interaction.editReply({ content: '❌ Database error occurred.' });
         });
 
@@ -101,7 +102,7 @@ module.exports = new ApplicationCommand({
 
             await targetUser.send({ embeds: [userEmbed] });
         } catch (dmError) {
-            console.log(`Could not DM ${targetUser.tag} about perk points:`, dmError.message);
+            warn(`Could not DM ${targetUser.tag} about perk points:`, dmError.message);
         }
     }
 }).toJSON();
