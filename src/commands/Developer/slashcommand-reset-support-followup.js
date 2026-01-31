@@ -2,6 +2,7 @@ const { ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const db = require("../../utils/EconomyDB");
 const config = require('../../config');
+const { error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -41,7 +42,7 @@ module.exports = new ApplicationCommand({
                         [...archivedThreads.threads.values()]
                     );
                 } catch (err) {
-                    console.error('[RESET FOLLOWUP] Error fetching threads:', err);
+                    error('[RESET FOLLOWUP] Error fetching threads:', err);
                 }
             }
             
@@ -58,7 +59,7 @@ module.exports = new ApplicationCommand({
                 { name: 'No support threads found', value: 'none' }
             ]);
         } catch (err) {
-            console.error('[RESET FOLLOWUP AUTOCOMPLETE] Error:', err);
+            error('[RESET FOLLOWUP AUTOCOMPLETE] Error:', err);
             await interaction.respond([{ name: 'Error loading threads', value: 'error' }]);
         }
     },
@@ -111,7 +112,7 @@ module.exports = new ApplicationCommand({
             });
 
         } catch (err) {
-            console.error('[RESET FOLLOWUP] Error:', err);
+            error('[RESET FOLLOWUP] Error:', err);
             return interaction.reply({ 
                 content: `❌ Error clearing follow-up tracking: ${err.message}`, 
                 flags: 64 

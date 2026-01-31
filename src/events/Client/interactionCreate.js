@@ -197,8 +197,13 @@ module.exports = new Event({
             // instead of interaction.reply() to avoid "Interaction already acknowledged" error
             const shouldDefer = command.defer || command.command?.defer;
             if (shouldDefer) {
-                const flags = shouldDefer === 'ephemeral' ? 64 : undefined;
-                await interaction.deferReply(flags ? { flags } : {}).catch(() => {});
+                let options = {};
+                if (shouldDefer === 'ephemeral') {
+                    options = { flags: 64 };
+                } else if (typeof shouldDefer === 'object') {
+                    options = shouldDefer;
+                }
+                await interaction.deferReply(options).catch(() => {});
             }
 
             await command.run(client, interaction);

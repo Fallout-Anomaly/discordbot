@@ -2,6 +2,7 @@ const { EmbedBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, 
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
 const { checkLevelUp } = require('../../utils/LevelSystem');
+const { error } = require('../../utils/Console');
 
 const ENEMIES = {
     'radroach': { name: '🪳 Radroach', hp: 15, damage: 3, special: { str: 1, agi: 2 }, loot: { caps: 10, item: null } },
@@ -195,7 +196,7 @@ async function fightNPC(interaction, userId, client, db) {
         await new Promise((resolve) => {
             db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, 1) ON CONFLICT(user_id, item_id) DO UPDATE SET amount = amount + 1',
                 [userId, enemy.loot.item], (_err) => {
-                    if (_err) console.error('Loot drop error:', _err);
+                    if (_err) error('Loot drop error:', _err);
                     resolve();
                 });
         });

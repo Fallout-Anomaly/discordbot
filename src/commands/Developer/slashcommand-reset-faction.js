@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const FactionManager = require('../../utils/FactionManager');
+const { warn } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -127,7 +128,7 @@ module.exports = new ApplicationCommand({
 
             await targetUser.send({ embeds: [userEmbed] });
         } catch (dmError) {
-            console.log(`Could not DM ${targetUser.tag} about faction reset:`, dmError.message);
+            warn(`Could not DM ${targetUser.tag} about faction reset:`, dmError.message);
         }
     }
 }).toJSON();

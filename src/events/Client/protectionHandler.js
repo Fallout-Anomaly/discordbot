@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const Event = require('../../structure/Event');
+const { info, warn, error } = require('../../utils/Console');
 
 // Cache for spam detection
 const messageHistory = new Map();
@@ -44,17 +45,17 @@ const loadBlacklist = async () => {
                     pattern = pattern.replace(/\*/g, '.*');
                     return new RegExp(pattern, 'i');
                 });
-            console.log(`[PROTECTION] Async loaded ${blacklistCache.length} domains from uBlacklist.txt`);
+            info(`[PROTECTION] Async loaded ${blacklistCache.length} domains from uBlacklist.txt`);
         } catch (err) {
             if (err.code === 'ENOENT') {
-                console.warn('[PROTECTION] uBlacklist.txt not found. Link filtering disabled.');
+                warn('[PROTECTION] uBlacklist.txt not found. Link filtering disabled.');
                 blacklistCache = [];
             } else {
                 throw err;
             }
         }
     } catch (e) {
-        console.error('[PROTECTION] Failed to load blacklist (Async):', e);
+        error('[PROTECTION] Failed to load blacklist (Async):', e);
         blacklistCache = []; // Default to empty to prevent loops
     } finally {
         blacklistLoading = false;
@@ -104,7 +105,7 @@ module.exports = new Event({
                 const canManage = message.channel.permissionsFor(client.user)?.has('ManageMessages');
                 
                 if (canManage) {
-                    await message.delete().catch(e => console.error(`[PROTECTION] Failed to delete message: ${e.message}`));
+                    await message.delete().catch(e => error(`[PROTECTION] Failed to delete message: ${e.message}`));
                 }
 
                 // Only send warning if we have permission
@@ -128,7 +129,7 @@ module.exports = new Event({
                 }
                 return; // Stop further checks if deleted
             } catch (e) {
-                console.error("[PROTECTION] Link delete logic failed:", e.message);
+                error("[PROTECTION] Link delete logic failed:", e.message);
             }
         }
 
@@ -183,7 +184,7 @@ module.exports = new Event({
                 // Clear history to prevent double trigger
                 messageHistory.delete(message.author.id);
             } catch (e) {
-                console.error("[PROTECTION] Spam timeout failed:", e.message);
+                error("[PROTECTION] Spam timeout failed:", e.message);
             }
         }
     }

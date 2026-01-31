@@ -1,6 +1,7 @@
 const Event = require('../../structure/Event');
 const DonorSystem = require('../../utils/DonorSystem');
 const { Events } = require('discord.js');
+const { info, error } = require('../../utils/Console');
 
 module.exports = new Event({
     event: Events.ClientReady,
@@ -18,7 +19,7 @@ module.exports = new Event({
             if (!isFirstDay || !isFirstHour) return;
 
             try {
-                console.log('[RAFFLE] Monthly raffle entry award cycle starting...');
+                info('[RAFFLE] Monthly raffle entry award cycle starting...');
 
                 // Get all donors
                 const donors = await DonorSystem.getTopDonors(10000);
@@ -41,12 +42,12 @@ module.exports = new Event({
                 // Clear expired raffle data (older than 3 months)
                 await DonorSystem.clearExpiredRaffles();
 
-                console.log(`[RAFFLE] Monthly cycle complete: ${entriesToAward.length} donors awarded raffle entries`);
+                info(`[RAFFLE] Monthly cycle complete: ${entriesToAward.length} donors awarded raffle entries`);
             } catch (err) {
-                console.error('[RAFFLE] Error in monthly cycle:', err);
+                error('[RAFFLE] Error in monthly cycle:', err);
             }
         }, 60 * 60 * 1000); // Check every hour
 
-        console.log('[RAFFLE] Monthly raffle entry award system initialized');
+        info('[RAFFLE] Monthly raffle entry award system initialized');
     }
 }).toJSON();

@@ -1,6 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const config = require('../../config');
+const { error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -84,12 +85,12 @@ module.exports = new ApplicationCommand({
                             stats.skipped++;
                         }
                     } catch (err) {
-                        console.error(`Error processing thread ${thread.name}:`, err);
+                        error(`Error processing thread ${thread.name}:`, err);
                         stats.errors++;
                     }
                 }
             } catch (err) {
-                console.error(`Error processing channel ${channelId}:`, err);
+                error(`Error processing channel ${channelId}:`, err);
             }
         }
 

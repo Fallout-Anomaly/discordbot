@@ -39,7 +39,7 @@ module.exports = new ApplicationCommand({
         // ATOMIC DEDUCTION: Check balance and deduct in a single operation
         // This prevents race conditions where multiple requests could spend the same balance
         db.run(
-            'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+            'UPDATE users SET balance = IFNULL(balance, 0) - ? WHERE id = ? AND IFNULL(balance, 0) >= ?',
             [amount, senderId, amount],
             function (err) {
                 if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
@@ -61,7 +61,7 @@ module.exports = new ApplicationCommand({
                 db.serialize(() => {
                     // Ensure target exists
                     db.run('INSERT OR IGNORE INTO users (id, balance) VALUES (?, 0)', [targetId]);
-                    db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [amount, targetId]);
+                    db.run('UPDATE users SET balance = IFNULL(balance, 0) + ? WHERE id = ?', [amount, targetId]);
                 });
 
                 interaction.reply({ 

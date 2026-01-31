@@ -1,10 +1,11 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const { info, error } = require('./Console');
 
 const dbPath = path.resolve(__dirname, '../../economy.sqlite');
 const db = new sqlite3.Database(dbPath);
 
-console.log('--- Starting Database Repair ---');
+info('--- Starting Database Repair ---');
 
 db.serialize(() => {
     const columnsToAdd = [
@@ -24,16 +25,16 @@ db.serialize(() => {
 
     columnsToAdd.forEach(col => {
         const colName = col.split(' ')[0];
-        console.log(`Attempting to add column: ${colName}`);
+        info(`Attempting to add column: ${colName}`);
         db.run(`ALTER TABLE users ADD COLUMN ${col}`, (err) => {
             if (err) {
                 if (err.message.includes('duplicate column name')) {
-                    console.log(`  -> Column ${colName} already exists.`);
+                    info(`  -> Column ${colName} already exists.`);
                 } else {
-                    console.error(`  -> Failed to add ${colName}:`, err.message);
+                    error(`  -> Failed to add ${colName}:`, err.message);
                 }
             } else {
-                console.log(`  -> Successfully added ${colName}!`);
+                info(`  -> Successfully added ${colName}!`);
             }
         });
     });
@@ -51,11 +52,11 @@ db.serialize(() => {
         defense INTEGER DEFAULT 0,
         effect_full TEXT DEFAULT 'none'
     )`, (err) => {
-        if(err) console.error("Error creating items table:", err);
-        else console.log("Items table check passed.");
+        if(err) error("Error creating items table:", err);
+        else info("Items table check passed.");
     });
 });
 
 setTimeout(() => {
-    console.log('--- Repair Complete (Wait 2s before closing) ---');
+    info('--- Repair Complete (Wait 2s before closing) ---');
 }, 2000);

@@ -1,5 +1,6 @@
 const { ApplicationCommandOptionType, PermissionFlagsBits, EmbedBuilder } = require("discord.js");
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const { warn, error } = require("../../utils/Console");
 
 module.exports = new ApplicationCommand({
     command: {
@@ -46,7 +47,7 @@ module.exports = new ApplicationCommand({
                 try {
                     members = await interaction.guild.members.fetch({ time: 60000 }); // 60s timeout
                 } catch (err) {
-                    console.warn('Failed to fetch all members, proceeding with cached members:', err);
+                    warn('Failed to fetch all members, proceeding with cached members:', err);
                 }
             }
 
@@ -72,7 +73,7 @@ module.exports = new ApplicationCommand({
                     successCount++;
                 } catch (e) {
                     errorCount++;
-                    console.error(`[AddRole] Failed for ${member.user.tag}: ${e.message}`);
+                    error(`[AddRole] Failed for ${member.user.tag}: ${e.message}`);
                 }
                 
                 processed++;
@@ -120,7 +121,7 @@ module.exports = new ApplicationCommand({
             }
 
         } catch (e) {
-            console.error(e);
+            error(e);
             await interaction.editReply(`❌ detailed error: ${e.message}`);
         }
     }

@@ -2,6 +2,7 @@ const { EmbedBuilder, ApplicationCommandOptionType, ActionRowBuilder, ButtonBuil
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const FactionManager = require('../../utils/FactionManager');
 const { FACTION_QUESTS, QUEST_ENCOUNTERS } = require('../../utils/FactionQuestData');
+const { error } = require('../../utils/Console');
 
 module.exports = new ApplicationCommand({
     command: {
@@ -63,8 +64,8 @@ module.exports = new ApplicationCommand({
             } else if (subcommand === 'complete') {
                 await completeQuest(interaction, userId);
             }
-        } catch (error) {
-            console.error('Faction quest error:', error);
+        } catch (err) {
+            error('Faction quest error:', err);
             await interaction.editReply({ content: 'Error processing quest command' });
         }
     },
@@ -100,8 +101,8 @@ module.exports = new ApplicationCommand({
             } else {
                 await interaction.respond(filtered.length > 0 ? filtered : allQuests.slice(0, 25));
             }
-        } catch (error) {
-            console.error('Quest autocomplete error:', error);
+        } catch (err) {
+            error('Quest autocomplete error:', err);
             // Return empty array on error
             try {
                 await interaction.respond([]);
@@ -161,8 +162,8 @@ async function listQuests(interaction, userId) {
         });
 
         await interaction.editReply({ embeds: [embed] });
-    } catch (error) {
-        console.error('List quests error:', error);
+    } catch (err) {
+        error('List quests error:', err);
         await interaction.editReply({ content: 'Error listing quests' });
     }
 }
@@ -253,7 +254,7 @@ async function acceptQuest(interaction, userId) {
                 [userId, questId, questFaction, Date.now(), completeTime],
                 function(err) {
                     if (err) {
-                        console.error('Error inserting quest:', err);
+                        error('Error inserting quest:', err);
                         reject(err);
                     } else {
                         resolve();
@@ -275,8 +276,8 @@ async function acceptQuest(interaction, userId) {
             .setFooter({ text: `Use /faction-quest complete when timer expires` });
 
         await interaction.editReply({ embeds: [embed] });
-    } catch (error) {
-        console.error('Accept quest error:', error);
+    } catch (err) {
+        error('Accept quest error:', err);
         await interaction.editReply({ content: 'Error accepting quest' });
     }
 }
@@ -292,7 +293,7 @@ async function completeQuest(interaction, userId) {
                 [userId],
                 (err, row) => {
                     if (err) {
-                        console.error('Error querying active quest:', err);
+                        error('Error querying active quest:', err);
                         reject(err);
                     } else {
                         resolve(row);
@@ -325,8 +326,8 @@ async function completeQuest(interaction, userId) {
 
         // Trigger random encounter instead of instant rewards
         await triggerEncounter(interaction, userId, activeQuest, quest);
-    } catch (error) {
-        console.error('Complete quest error:', error);
+    } catch (err) {
+        error('Complete quest error:', err);
         await interaction.editReply({ content: 'Error completing quest' });
     }
 }
@@ -350,7 +351,7 @@ async function triggerEncounter(interaction, userId, activeQuest, _quest) {
                 .setCustomId(`quest_talk_${userId}_${activeQuest.quest_id}`)
                 .setLabel(scenario.options.talk.label)
                 .setStyle(ButtonStyle.Primary)
-        );
+            );
 
         const embed = new EmbedBuilder()
             .setTitle(`⚠️ ${scenario.title}`)
@@ -363,8 +364,8 @@ async function triggerEncounter(interaction, userId, activeQuest, _quest) {
             .setColor(0xFF8800);
 
         await interaction.editReply({ embeds: [embed], components: [row] });
-    } catch (error) {
-        console.error('Trigger encounter error:', error);
+    } catch (err) {
+        error('Trigger encounter error:', err);
         await interaction.editReply({ content: 'Error triggering quest encounter' });
     }
 }

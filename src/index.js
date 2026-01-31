@@ -1,3 +1,5 @@
+const { info, error } = require('./utils/Console');
+
 require('dotenv').config();
 const fs = require('fs');
 const DiscordBot = require('./client/DiscordBot');
@@ -9,18 +11,18 @@ module.exports = client;
 
 client.connect();
 
-process.on('unhandledRejection', console.error);
-process.on('uncaughtException', console.error);
+process.on('unhandledRejection', (err) => error('Unhandled Rejection:', err));
+process.on('uncaughtException', (err) => error('Uncaught Exception:', err));
 
 const db = require('./utils/EconomyDB');
 
 const gracefulShutdown = () => {
-    console.log('Received kill signal, shutting down gracefully...');
+    info('Received kill signal, shutting down gracefully...');
     db.close((err) => {
         if (err) {
-            console.error('Error closing database:', err.message);
+            error('Error closing database:', err.message);
         } else {
-            console.log('Database connection closed.');
+            info('Database connection closed.');
         }
         client.destroy();
         process.exit(0);

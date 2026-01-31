@@ -2,6 +2,7 @@ const { Events, PermissionFlagsBits } = require('discord.js');
 const Event = require('../../structure/Event');
 const fs = require('fs');
 const path = require('path');
+const { error } = require('../../utils/Console');
 
 module.exports = new Event({
     event: Events.MessageReactionAdd,
@@ -59,7 +60,7 @@ module.exports = new Event({
             }
 
         } catch (err) {
-            console.error('[ReactionLearn] Failed to save:', err);
+            error('[ReactionLearn] Failed to save:', err);
             if (reaction.message.channel.permissionsFor(client.user)?.has(PermissionFlagsBits.AddReactions)) {
                 await reaction.message.react('❌').catch(() => {});
             }

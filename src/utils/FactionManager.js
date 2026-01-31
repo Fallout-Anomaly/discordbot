@@ -1,5 +1,6 @@
 // Import inside functions to avoid circular dependency issues
 const getDb = () => require('./EconomyDB');
+const { error } = require('./Console');
 
 // Hostility states for faction relationships
 const HOSTILITY_STATES = {
@@ -254,7 +255,7 @@ async function modifyReputation(userId, factionId, amount, _source = 'quest') {
                         [userId, factionId, actualCap, _source, now],
                         (logErr) => {
                             if (logErr) {
-                                console.error('Rep log error:', logErr.message);
+                                error('Rep log error:', logErr.message);
                                 db.run('ROLLBACK');
                                 return reject(logErr);
                             }
@@ -268,14 +269,14 @@ async function modifyReputation(userId, factionId, amount, _source = 'quest') {
                         [userId, factionId, actualNewRep, actualNewRank, now, actualNewRep, actualNewRank, now],
                         (updateErr) => {
                             if (updateErr) {
-                                console.error('Player faction update error:', updateErr.message);
+                                error('Player faction update error:', updateErr.message);
                                 db.run('ROLLBACK');
                                 return reject(updateErr);
                             }
 
                             db.run('COMMIT', (commitErr) => {
                                 if (commitErr) {
-                                    console.error('Transaction commit error:', commitErr.message);
+                                    error('Transaction commit error:', commitErr.message);
                                     return reject(commitErr);
                                 }
 
@@ -425,7 +426,8 @@ async function initializePlayerFactions(userId) {
                     `INSERT OR IGNORE INTO player_factions (user_id, faction_id, reputation, rank) 
                      VALUES (?, ?, -100, 'Outsider')`,
                     [userId, factionId],
-                    () => {
+                    (err) => {
+                        if (err) error(`Failed to init faction for user ${userId}:`, err.message);
                         completed++;
                         if (completed === factionIds.length) resolve();
                     }

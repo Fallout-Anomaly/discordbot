@@ -54,7 +54,7 @@ module.exports = new ApplicationCommand({
         // Add caps
         await new Promise((resolve) => {
             db.run(
-                `INSERT INTO users (id, balance) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET balance = balance + ?`,
+                `INSERT INTO users (id, balance) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET balance = IFNULL(balance, 0) + ?`,
                 [targetUser.id, amount, amount],
                 () => resolve()
             );

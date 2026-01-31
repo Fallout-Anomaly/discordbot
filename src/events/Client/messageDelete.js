@@ -1,5 +1,6 @@
 const { Events, EmbedBuilder, AuditLogEvent } = require('discord.js');
 const Event = require('../../structure/Event');
+const { error } = require('../../utils/Console');
 
 module.exports = new Event({
     event: Events.MessageDelete,
@@ -18,7 +19,6 @@ module.exports = new Event({
                 await message.fetch();
             } catch {
                // Log debug if needed, but acceptable to fail if message is gone
-               // console.debug(`[LOGS] Could not fetch partial message ${message.id}:`, e.message);
             }
         }
         
@@ -94,6 +94,6 @@ module.exports = new Event({
             embed.addFields({ name: 'Attachments', value: `${message.attachments.size} file(s) deleted.` });
         }
 
-        logChannel.send({ embeds: [embed] }).catch(err => console.error("[LOGGING] Failed to send delete log:", err));
+        logChannel.send({ embeds: [embed] }).catch(err => error("[LOGGING] Failed to send delete log:", err));
     }
 }).toJSON();

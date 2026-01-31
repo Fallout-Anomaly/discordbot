@@ -65,7 +65,7 @@ module.exports = new ApplicationCommand({
         // ATOMIC DEDUCTION: Check balance and deduct in a single operation
         // This prevents double-spending where multiple requests could use the same balance
         db.run(
-            'UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+            'UPDATE users SET balance = IFNULL(balance, 0) - ? WHERE id = ? AND IFNULL(balance, 0) >= ?',
             [amount, userId, amount],
             function (err) {
                 if (err) return interaction.editReply({ content: '❌ Database error.' });
@@ -93,7 +93,7 @@ module.exports = new ApplicationCommand({
                     // Give back the bet + the win (total payout = amount * 2)
                     const payout = amount * 2;
                     db.run(
-                        'UPDATE users SET balance = balance + ? WHERE id = ?',
+                        'UPDATE users SET balance = IFNULL(balance, 0) + ? WHERE id = ?',
                         [payout, userId],
                         () => {
                             interaction.editReply({ 
