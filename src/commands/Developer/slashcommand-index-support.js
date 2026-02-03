@@ -69,11 +69,12 @@ module.exports = new ApplicationCommand({
                     if (!question || question.length < 5) continue;
 
                     // 1. Auto-Trigger Check
-                    const handledByAuto = await AutoResponder.checkAndRespond(starterMessage).catch(() => false);
-                    if (handledByAuto) {
-                        totalReplied++;
-                        continue;
-                    }
+                    // DISABLED: Temporarily disabled until triggers are configured properly
+                    // const handledByAuto = await AutoResponder.checkAndRespond(starterMessage).catch(() => false);
+                    // if (handledByAuto) {
+                    //     totalReplied++;
+                    //     continue;
+                    // }
 
                     // 2. AI Response
                     const contextItems = client.knowledge.search(question.toLowerCase());
