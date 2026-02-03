@@ -22,11 +22,12 @@ module.exports = new Event({
         if (!monitorChannels.includes(message.channel.id)) return;
 
         // Run Auto Responder with error handling to prevent crash on database timeout or API error
-        try {
-            await AutoResponder.checkAndRespond(message);
-        } catch (err) {
-            error('[ChatAutoResponder] Error in checkAndRespond:', err);
-        }
+        // DISABLED: Temporarily disabled until triggers are configured properly
+        // try {
+        //     await AutoResponder.checkAndRespond(message);
+        // } catch (err) {
+        //     console.error('[ChatAutoResponder] Error in checkAndRespond:', err);
+        // }
         
         // No AI generation here.
     }

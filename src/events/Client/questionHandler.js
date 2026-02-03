@@ -73,12 +73,13 @@ module.exports = new Event({
         if (otherMentions.size > 0) return;
 
         // 0. Auto-Trigger Check (The "Smart" Layer)
-        try {
-            const handledByAuto = await AutoResponder.checkAndRespond(message);
-            if (handledByAuto) return;
-        } catch (autoErr) {
-            error('[AUTO RESPONDER] Error:', autoErr);
-        }
+        // DISABLED: Temporarily disabled until triggers are configured properly
+        // try {
+        //     const handledByAuto = await AutoResponder.checkAndRespond(message);
+        //     if (handledByAuto) return;
+        // } catch (autoErr) {
+        //     error('[AUTO RESPONDER] Error:', autoErr);
+        // }
 
         // Start typing to show activity
         await message.channel.sendTyping().catch(() => {});

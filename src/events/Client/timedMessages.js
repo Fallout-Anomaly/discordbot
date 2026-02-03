@@ -2,7 +2,6 @@ const { Events } = require('discord.js');
 const Event = require('../../structure/Event');
 const fs = require('fs');
 const path = require('path');
-const { error } = require('../../utils/Console');
 
 const TIMED_MESSAGES_FILE = path.resolve(__dirname, '../../data/timedMessages.json');
 
@@ -42,7 +41,7 @@ module.exports = new Event({
                         timedMsg.last_sent = now;
                         saveTimedMessages(messages);
                     } catch (err) {
-                        error(`[TimedMessages] Failed to send message ${timedMsg.id}:`, err.message);
+                        console.error(`[TimedMessages] Failed to send message ${timedMsg.id}:`, err.message);
                     }
                 }
             }
