@@ -1,7 +1,7 @@
 const { EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const AIService = require("../../utils/AIService");
-const AutoResponder = require("../../utils/AutoResponder");
+// const AutoResponder = require("../../utils/AutoResponder"); // Disabled - auto-triggers turned off
 const config = require("../../config");
 const { error } = require("../../utils/Console");
 
