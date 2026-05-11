@@ -7,6 +7,24 @@ const { handleApplicationCommandOptions } = require("../../client/handler/Comman
 module.exports = new Event({
     event: 'interactionCreate',
     run: async (client, interaction) => {
+        // 1. Acknowledge IMMEDIATELY for component interactions to stop "Interaction Failed"
+        if (interaction.isButton() || interaction.isAnySelectMenu() || interaction.isModalSubmit()) {
+            if (!interaction.deferred && !interaction.replied) {
+                try {
+                    const start = Date.now();
+                    await interaction.deferReply({ flags: 64 });
+                    info(`[DEBUG] claimed interaction ${interaction.customId} in ${Date.now() - start}ms`);
+                } catch (err) {
+                    if (err.code === 40060 || err.message.includes('already been acknowledged')) {
+                        info(`[DEBUG] interaction ${interaction.customId} already acknowledged, proceeding...`);
+                    } else {
+                        error(`[DEBUG] FAILED to claim interaction ${interaction.customId}:`, err.message);
+                        return; // Stop processing for other errors
+                    }
+                }
+            }
+        }
+
         info(`[EVENT DEBUG] Received interaction: ${interaction.commandName || interaction.customId} (Type: ${interaction.type})`);
 
         // AUTOCOMPLETE INTERACTIONS
@@ -28,7 +46,7 @@ module.exports = new Event({
             if (component.options?.public === false && interaction.user.id !== interaction.message.interaction?.user?.id) {
                 const replyData = {
                     content: config.messages.COMPONENT_NOT_PUBLIC,
-                    ephemeral: true
+                    flags: 64 // Use flags for ephemeral in v14
                 };
 
                 if (interaction.deferred || interaction.replied) {
@@ -42,21 +60,42 @@ module.exports = new Event({
         }
 
         try {
-            if (interaction.isButton()) {
-                let component = client.collection.components.buttons.get(interaction.customId);
-                
-                // If no exact match, try regex patterns
-                if (!component) {
-                    for (const [pattern, comp] of client.collection.components.buttons) {
-                        if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
-                            component = comp;
-                            break;
+            if (interaction.isButton() || interaction.isAnySelectMenu() || interaction.isModalSubmit()) {
+                let component;
+                if (interaction.isButton()) {
+                    component = client.collection.components.buttons.get(interaction.customId);
+                    if (!component) {
+                        for (const [pattern, comp] of client.collection.components.buttons) {
+                            if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
+                                component = comp;
+                                break;
+                            }
+                        }
+                    }
+                } else if (interaction.isAnySelectMenu()) {
+                    component = client.collection.components.selects.get(interaction.customId);
+                    if (!component) {
+                        for (const [pattern, comp] of client.collection.components.selects) {
+                            if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
+                                component = comp;
+                                break;
+                            }
+                        }
+                    }
+                } else if (interaction.isModalSubmit()) {
+                    component = client.collection.components.modals.get(interaction.customId);
+                    if (!component) {
+                        for (const [pattern, comp] of client.collection.components.modals) {
+                            if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
+                                component = comp;
+                                break;
+                            }
                         }
                     }
                 }
 
                 if (!component) {
-                    info(`[BUTTON] Handler not found for button: ${interaction.customId}`);
+                    info(`[COMPONENT] Handler not found for: ${interaction.customId}`);
                     return;
                 }
 
@@ -65,85 +104,16 @@ module.exports = new Event({
                 try {
                     await component.run(client, interaction);
                 } catch (err) {
-                    error('[BUTTON]', err);
-                }
-                return;
-            }
-
-            if (interaction.isAnySelectMenu()) {
-                // Try exact match first
-                let component = client.collection.components.selects.get(interaction.customId);
-                
-                // If no exact match, try regex patterns
-                if (!component) {
-                    for (const [pattern, comp] of client.collection.components.selects) {
-                        if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
-                            component = comp;
-                            break;
-                        }
-                    }
-                }
-
-                // Only defer if we have a handler - otherwise let collectors handle it
-                if (component) {
-
-
-                    if (!(await checkUserPermissions(component))) return;
-
-                    try {
-                        await component.run(client, interaction);
-                    } catch (err) {
-                        error('[SELECT MENU]', err);
-                    }
-                }
-                return;
-            }
-
-            if (interaction.isModalSubmit()) {
-                // MUST acknowledge IMMEDIATELY for modal interactions
-                if (!interaction.deferred && !interaction.replied) {
-                    await interaction.deferReply({ ephemeral: true }).catch(() => {});
-                }
-
-                // Try exact match first
-                let component = client.collection.components.modals.get(interaction.customId);
-                
-                // If no exact match, try regex patterns
-                if (!component) {
-                    for (const [pattern, comp] of client.collection.components.modals) {
-                        if (pattern instanceof RegExp && pattern.test(interaction.customId)) {
-                            component = comp;
-                            break;
-                        }
-                    }
-                }
-
-                if (!component) {
-                    info(`[MODAL] Handler not found for modal: ${interaction.customId}`);
-                    return;
-                }
-
-                try {
-                    await component.run(client, interaction);
-                } catch (err) {
-                    error('[MODAL]', err);
+                    error(`[COMPONENT ERROR] ${interaction.customId}:`, err);
+                    // Try to notify the user if possible
+                    const errorMsg = { content: '❌ An error occurred while processing this interaction.', flags: 64 };
+                    if (interaction.deferred) await interaction.editReply(errorMsg).catch(() => {});
+                    else if (!interaction.replied) await interaction.reply(errorMsg).catch(() => {});
                 }
                 return;
             }
         } catch (err) {
-            error('[COMPONENT HANDLER]', err);
-            // Try to acknowledge if possible
-            if (!interaction.replied && !interaction.deferred) {
-                try {
-                    if (interaction.isButton() || interaction.isAnySelectMenu()) {
-                        await interaction.deferUpdate().catch(() => {});
-                    } else if (interaction.isModalSubmit()) {
-                        await interaction.deferReply({ ephemeral: true }).catch(() => {});
-                    }
-                } catch (ackErr) {
-                    error('[COMPONENT HANDLER ACK ERROR]', ackErr);
-                }
-            }
+            error('[GLOBAL COMPONENT HANDLER]', err);
             return;
         }
 
@@ -197,13 +167,15 @@ module.exports = new Event({
             // instead of interaction.reply() to avoid "Interaction already acknowledged" error
             const shouldDefer = command.defer || command.command?.defer;
             if (shouldDefer) {
-                let options = {};
-                if (shouldDefer === 'ephemeral') {
-                    options = { flags: 64 };
-                } else if (typeof shouldDefer === 'object') {
-                    options = shouldDefer;
+                if (!interaction.deferred && !interaction.replied) {
+                    let options = {};
+                    if (shouldDefer === 'ephemeral') {
+                        options = { flags: 64 };
+                    } else if (typeof shouldDefer === 'object') {
+                        options = shouldDefer;
+                    }
+                    await interaction.deferReply(options).catch(() => {});
                 }
-                await interaction.deferReply(options).catch(() => {});
             }
 
             await command.run(client, interaction);
@@ -220,10 +192,3 @@ module.exports = new Event({
         }
     }
 }).toJSON();
-
-// Periodic cleanup of all cooldown collections to prevent memory bloat (Issue 2.3)
-// While entries are deleted by setTimeout, this ensures very old/stale collections are reviewed
-setInterval(() => {
-    // Note: 'client' isn't easily accessible here without a reference
-    // This would typically go in DiscordBot.js or be attached to client
-}, 3600000); // Hourly
