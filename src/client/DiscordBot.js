@@ -94,14 +94,17 @@ class DiscordBot extends Client {
             const ItemLoader = require('../utils/ItemLoader');
             await ItemLoader.syncItems();
             
+            // LOAD HANDLERS (Critical!)
             this.commands_handler.load();
             this.components_handler.load();
             this.events_handler.load();
+            
             this.startStatusRotation();
 
-            warn('Attempting to register application commands... (this might take a while!)');
-            await this.commands_handler.registerApplicationCommands(config.development);
-            success('Successfully registered application commands. For specific guild? ' + (config.development.enabled ? 'Yes' : 'No'));
+            // Registration is now handled manually or only when needed to prevent boot-time latency
+            // warn('Attempting to register application commands... (this might take a while!)');
+            // await this.commands_handler.registerApplicationCommands(config.development);
+            // success('Successfully registered application commands. For specific guild? ' + (config.development.enabled ? 'Yes' : 'No'));
         } catch (err) {
             error('Failed to connect to the Discord bot, retrying...');
             error(err);
