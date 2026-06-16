@@ -30,12 +30,28 @@ module.exports = new ApplicationCommand({
         if (role.permissions.has(PermissionFlagsBits.Administrator) || role.permissions.has(PermissionFlagsBits.ManageGuild)) {
             return interaction.reply({
                  content: '❌ Safety Catch: You cannot mass-assign a role with Administrator or Manage Guild permissions.',
-                 ephemeral: true
+                 flags: 64
             });
         }
 
         // 1. Defer immediately to avoid timeout
         await interaction.deferReply();
+
+        // Preflight: confirm the bot can actually assign this role before we
+        // hammer the API with N calls that would all fail.
+        const me = interaction.guild.members.me ?? await interaction.guild.members.fetchMe().catch(() => null);
+        if (!me || !me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+            return interaction.editReply('❌ I need the **Manage Roles** permission to do this.');
+        }
+        if (role.managed) {
+            return interaction.editReply(`❌ **${role.name}** is managed by an integration (bot/booster role) and cannot be assigned manually.`);
+        }
+        if (role.position >= me.roles.highest.position) {
+            return interaction.editReply(`❌ **${role.name}** is higher than or equal to my highest role. Move my role above it in **Server Settings → Roles**, then try again.`);
+        }
+        if (role.id === interaction.guild.id) {
+            return interaction.editReply('❌ That is the @everyone role — it cannot be assigned.');
+        }
 
         try {
             // 2. Try to use cache first

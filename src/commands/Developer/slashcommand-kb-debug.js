@@ -1,5 +1,6 @@
-const { ApplicationCommandOptionType, EmbedBuilder } = require("discord.js");
+const { ApplicationCommandOptionType, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const config = require("../../config");
 
 module.exports = new ApplicationCommand({
     command: {
@@ -15,8 +16,9 @@ module.exports = new ApplicationCommand({
         ]
     },
     run: async (client, interaction) => {
-        // Admin/Dev only
-        if (interaction.user.id !== process.env.OWNER_ID && !interaction.member?.permissions.has('ADMINISTRATOR')) {
+        // Admin/Dev only. NOTE: v14 uses PascalCase permission flags — 'ADMINISTRATOR'
+        // (v13 style) throws BitFieldInvalid, which previously broke this check entirely.
+        if (interaction.user.id !== config.users.ownerId && !interaction.member?.permissions.has(PermissionFlagsBits.Administrator)) {
             return interaction.reply({ 
                 content: '❌ Dev command only.', 
                 flags: 64 

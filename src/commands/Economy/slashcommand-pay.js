@@ -51,7 +51,7 @@ module.exports = new ApplicationCommand({
                         const currentBalance = row ? (row.balance ?? 0) : 0;
                         return interaction.reply({ 
                             content: `❌ You don't have enough Caps to cover that transaction. Balance: **${currentBalance}**`, 
-                            ephemeral: true 
+                            flags: 64 
                         });
                     });
                     return;

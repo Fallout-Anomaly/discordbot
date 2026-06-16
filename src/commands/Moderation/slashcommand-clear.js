@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType, PermissionFlagsBits } = require("discord.js");
 const ApplicationCommand = require("../../structure/ApplicationCommand");
 const { error } = require("../../utils/Console");
+const { logModAction } = require("../../utils/ModLog");
 
 module.exports = new ApplicationCommand({
     command: {
@@ -32,6 +33,7 @@ module.exports = new ApplicationCommand({
             }
 
             await interaction.editReply({ content: `✅ Deleted ${deleted.size} messages.` });
+            logModAction(client, { action: 'Clear', moderator: interaction.user, channel: interaction.channel, fields: [{ name: 'Messages Deleted', value: `${deleted.size}`, inline: true }] });
         } catch (err) {
             error('Clear command error:', err);
             await interaction.editReply({ content: `❌ Failed to delete messages: ${err.message}` });

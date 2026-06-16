@@ -20,7 +20,7 @@ const handleApplicationCommandOptions = async (interaction, options, _command) =
         if (!isOwner) {
             await interaction.reply({
                 content: '❌ You do not have permission to run this command (Bot Owner only).',
-                ephemeral: true
+                flags: 64
             });
 
             return false;
@@ -31,7 +31,7 @@ const handleApplicationCommandOptions = async (interaction, options, _command) =
         if (config.users?.developers?.length > 0 && !config.users?.developers?.includes(interaction.user.id)) {
             await interaction.reply({
                 content: config.messages.NOT_BOT_DEVELOPER,
-                ephemeral: true
+                flags: 64
             });
 
             return false;
@@ -42,7 +42,7 @@ const handleApplicationCommandOptions = async (interaction, options, _command) =
         if (interaction.user.id !== interaction.guild.ownerId) {
             await interaction.reply({
                 content: config.messages.NOT_GUILD_OWNER,
-                ephemeral: true
+                flags: 64
             });
 
             return false;
@@ -77,7 +77,7 @@ const handleApplicationCommandOptions = async (interaction, options, _command) =
                 const expiredTimestamp = Math.floor((Date.now() + options.cooldown) / 1000);
                 await interaction.reply({
                     content: config.messages.GUILD_COOLDOWN.replace(/%cooldown%/g, `<t:${expiredTimestamp}:R>`),
-                    ephemeral: true
+                    flags: 64
                 });
 
                 return false;

@@ -21,7 +21,7 @@ module.exports = new ApplicationCommand({
         db.get('SELECT balance FROM users WHERE id = ?', [target.id], (err, row) => {
             if (err) {
                 console.error(err);
-                return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+                return interaction.reply({ content: '❌ Database error.', flags: 64 });
             }
 
             const balance = row ? (row.balance ?? 0) : 0;

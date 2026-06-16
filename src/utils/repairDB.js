@@ -1,9 +1,17 @@
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const { info, error } = require('./Console');
 
 const dbPath = path.resolve(__dirname, '../../economy.sqlite');
-const db = new sqlite3.Database(dbPath);
+
+// Same runtime-aware driver as EconomyDB (bun:sqlite shim under Bun).
+let db;
+if (typeof Bun !== 'undefined') {
+    const BunSqliteDatabase = require('./BunSqliteDatabase');
+    db = new BunSqliteDatabase(dbPath);
+} else {
+    const sqlite3 = require('sqlite3').verbose();
+    db = new sqlite3.Database(dbPath);
+}
 
 info('--- Starting Database Repair ---');
 

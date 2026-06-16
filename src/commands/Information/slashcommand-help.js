@@ -6,6 +6,7 @@ module.exports = new ApplicationCommand({
         name: 'help',
         description: 'Show available commands and resources.'
     },
+    allowDM: true,
     run: async (client, interaction) => {
         const embed = new EmbedBuilder()
             .setTitle('☢️ Anomaly Support - Help')

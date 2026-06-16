@@ -1,17 +1,30 @@
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const { info, error } = require('./Console');
 
 // Ensure database file exists
 const dbPath = path.resolve(__dirname, '../../economy.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        error('Could not connect to economy database:', err.message);
-    } else {
-        info('Connected to economy database.');
-        db.run('PRAGMA foreign_keys = ON;'); // Enforce foreign key constraints
-    }
-});
+
+// Runtime-aware driver: under Bun, node-sqlite3's native addon misbehaves
+// (e.g. `this.changes` is undefined), so use a bun:sqlite-backed shim that
+// preserves the same callback API. Under Node, use node-sqlite3 as before.
+let db;
+if (typeof Bun !== 'undefined') {
+    const BunSqliteDatabase = require('./BunSqliteDatabase');
+    db = new BunSqliteDatabase(dbPath, (err) => {
+        if (err) error('Could not connect to economy database:', err.message);
+        else info('Connected to economy database (bun:sqlite).');
+    });
+} else {
+    const sqlite3 = require('sqlite3').verbose();
+    db = new sqlite3.Database(dbPath, (err) => {
+        if (err) {
+            error('Could not connect to economy database:', err.message);
+        } else {
+            info('Connected to economy database.');
+            db.run('PRAGMA foreign_keys = ON;'); // Enforce foreign key constraints
+        }
+    });
+}
 
 // Initialize tables
 db.serialize(() => {
@@ -211,6 +224,17 @@ db.serialize(() => {
         if (err) error('Failed to create donors table:', err.message);
     });
 
+    // Migrate donors: add first_bonus_claimed if missing (older DBs)
+    db.all(`PRAGMA table_info(donors)`, (err, columns) => {
+        if (err) { error('Error checking donors schema:', err.message); return; }
+        const existing = new Set((columns || []).map(c => c.name));
+        if (!existing.has('first_bonus_claimed')) {
+            db.run(`ALTER TABLE donors ADD COLUMN first_bonus_claimed INTEGER DEFAULT 0`, (e) => {
+                if (e) error('Error adding donors.first_bonus_claimed:', e.message);
+            });
+        }
+    });
+
     // Referral Tracking
     db.run(`CREATE TABLE IF NOT EXISTS referrals (
         referrer_id TEXT,
@@ -252,6 +276,40 @@ db.serialize(() => {
         FOREIGN KEY(user_id) REFERENCES users(id)
     )`, (err) => {
         if (err) error('Failed to create quest_history table:', err.message);
+    });
+
+    // Gambling lifetime stats (per player) — see utils/Gambling.js
+    db.run(`CREATE TABLE IF NOT EXISTS gambling_stats (
+        user_id TEXT PRIMARY KEY,
+        games_played INTEGER DEFAULT 0,
+        total_wagered INTEGER DEFAULT 0,
+        total_won INTEGER DEFAULT 0,
+        total_lost INTEGER DEFAULT 0,
+        biggest_win INTEGER DEFAULT 0,
+        jackpots INTEGER DEFAULT 0,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )`, (err) => {
+        if (err) error('Failed to create gambling_stats table:', err.message);
+    });
+
+    // Single-row table holding the progressive slots jackpot pool
+    const JACKPOT_SEED = 5000;
+    db.run(`CREATE TABLE IF NOT EXISTS gamble_meta (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        jackpot INTEGER DEFAULT 0
+    )`, (err) => {
+        if (err) { error('Failed to create gamble_meta table:', err.message); return; }
+        db.run('INSERT OR IGNORE INTO gamble_meta (id, jackpot) VALUES (1, ?)', [JACKPOT_SEED]);
+    });
+
+    // Restart-safe per-game cooldowns (replaces in-memory Maps)
+    db.run(`CREATE TABLE IF NOT EXISTS gamble_cooldown (
+        user_id TEXT,
+        game TEXT,
+        expires INTEGER,
+        PRIMARY KEY (user_id, game)
+    )`, (err) => {
+        if (err) error('Failed to create gamble_cooldown table:', err.message);
     });
 
     // Indexes for Performance

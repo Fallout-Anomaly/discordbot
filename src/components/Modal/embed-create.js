@@ -9,7 +9,7 @@ module.exports = new Component({
         const draft = client.embedDrafts?.get(interaction.user.id);
 
         if (!draft) {
-            return interaction.reply({ 
+            return interaction.editReply({ 
                 content: '❌ Session expired. Please run `/embed` again.', 
                 flags: 64
             });
@@ -31,14 +31,14 @@ module.exports = new Component({
         try {
             const channel = await client.channels.fetch(draft.channelId);
             if (!channel) {
-                 return interaction.reply({ content: '❌ Target channel not found.', flags: 64 });
+                 return interaction.editReply({ content: '❌ Target channel not found.', flags: 64 });
             }
 
             // Send the embed
             await channel.send({ embeds: [embed] });
 
             // Confirm to user
-            await interaction.reply({ 
+            await interaction.editReply({ 
                 content: `✅ Embed sent to ${channel}!`, 
                 flags: 64
             });
@@ -48,7 +48,7 @@ module.exports = new Component({
 
         } catch (err) {
             console.error(err);
-            await interaction.reply({ 
+            await interaction.editReply({ 
                 content: `❌ Failed to send embed: ${err.message}`, 
                 flags: 64
             });

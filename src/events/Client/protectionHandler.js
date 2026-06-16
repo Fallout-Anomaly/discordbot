@@ -70,6 +70,9 @@ module.exports = new Event({
     once: false,
     run: async (client, message) => {
         if (message.author.bot || !message.guild) return;
+        // Partials.Message is enabled, so member can be null on some messages.
+        // Without a resolvable member we can't check roles or time out anyway.
+        if (!message.member) return;
 
         // Ensure blacklist is loaded (if it failed initially or wasn't ready, we check again or wait)
         if (blacklistCache === null) {

@@ -1,5 +1,6 @@
 const { ApplicationCommandOptionType, PermissionFlagsBits } = require("discord.js");
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const { logModAction } = require("../../utils/ModLog");
 
 module.exports = new ApplicationCommand({
     command: {
@@ -15,9 +16,10 @@ module.exports = new ApplicationCommand({
             },
             {
                 name: 'nickname',
-                description: 'The new nickname',
+                description: 'The new nickname (max 32 characters)',
                 type: ApplicationCommandOptionType.String,
-                required: true
+                required: true,
+                maxLength: 32
             }
         ],
         defaultMemberPermissions: PermissionFlagsBits.ManageNicknames.toString()
@@ -52,6 +54,7 @@ module.exports = new ApplicationCommand({
         try {
             await member.setNickname(nickname);
             await interaction.editReply({ content: `✅ Substituted nickname for **${user.tag}** to **${nickname}**.` });
+            logModAction(client, { action: 'Nickname', moderator: interaction.user, target: user, fields: [{ name: 'New Nickname', value: nickname.slice(0, 256), inline: true }] });
         } catch (err) {
             console.error(err);
             await interaction.editReply({ content: '❌ Failed to change nickname. Please check my permissions and role position.' });

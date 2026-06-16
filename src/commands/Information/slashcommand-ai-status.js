@@ -6,6 +6,7 @@ module.exports = new ApplicationCommand({
         name: 'ai-status',
         description: 'View the AI assistant\'s knowledge base status and capabilities'
     },
+    allowDM: true,
     run: async (client, interaction) => {
         await interaction.deferReply();
 

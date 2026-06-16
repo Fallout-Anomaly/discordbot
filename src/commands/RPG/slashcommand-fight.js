@@ -188,7 +188,7 @@ async function fightNPC(interaction, userId, client, db) {
 
     const won = enemyHp <= 0;
     const caps = won ? enemy.loot.caps : Math.floor(enemy.loot.caps * 0.25);
-    const xp = won ? 50 + (enemy.hp / 10) : 5;
+    const xp = won ? 50 + Math.floor(enemy.hp / 10) : 5;
 
     // FIX: Award loot drops
     let loot = '';
@@ -263,66 +263,6 @@ async function initiatePvP(interaction, attackerId, opponent, client, db) {
     }
 }
 
-// Execute PvP
-async function executePvP(attId, defId, client, db, respond, attName) {
-    const attStats = await getPlayerStats(attId, db);
-    const defStats = await getPlayerStats(defId, db);
-
-    let defName = 'Opponent';
-    try {
-        const user = await client.users.fetch(defId);
-        defName = user.username;
-    } catch {}
-
-    let attHp = attStats.maxHp, defHp = defStats.maxHp;
-    const log = [];
-    let turn = 0;
-
-    while (attHp > 0 && defHp > 0 && turn < 100) {
-        turn++;
-
-        if (Math.random() * 100 > defStats.dodge) {
-            let dmg = attStats.damage + Math.floor(Math.random() * attStats.damage * 0.5);
-            dmg = Math.max(1, dmg - defStats.defense);
-            log.push(`✅ ${attName}: ${dmg} dmg`);
-            defHp -= dmg;
-        } else {
-            log.push(`❌ ${defName} dodges`);
-        }
-
-        if (defHp <= 0) break;
-
-        if (Math.random() * 100 > attStats.dodge) {
-            let dmg = defStats.damage + Math.floor(Math.random() * defStats.damage * 0.5);
-            dmg = Math.max(1, dmg - attStats.defense);
-            log.push(`💥 ${defName}: ${dmg} dmg`);
-            attHp -= dmg;
-        } else {
-            log.push(`🛡️ ${attName} dodges`);
-        }
-    }
-
-    const attWon = attHp > 0;
-    if (attWon) {
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100 WHERE id = ?', [attId], () => r()));
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25 WHERE id = ?', [defId], () => r()));
-    } else {
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25 WHERE id = ?', [attId], () => r()));
-        await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100 WHERE id = ?', [defId], () => r()));
-    }
-
-    const report = new EmbedBuilder()
-        .setTitle('⚔️ PvP RESULT')
-        .setColor(attWon ? '#FFD700' : '#C0C0C0')
-        .addFields(
-            { name: attName, value: `DMG: ${attStats.damage} | DEF: ${attStats.defense}`, inline: true },
-            { name: defName, value: `DMG: ${defStats.damage} | DEF: ${defStats.defense}`, inline: true },
-            { name: 'Battle', value: log.slice(-20).join('\n').slice(0, 1024) },
-            { name: 'Result', value: attWon ? `🎉 ${attName} WINS!\n💰 +100\n✨ +100 XP` : `🎉 ${defName} WINS!\n💰 +100\n✨ +100 XP` }
-        );
-
-    return respond.editReply({ embeds: [report] });
-}
-
-module.exports.executePvP = executePvP;
+// NOTE: PvP fight resolution lives in src/components/Button/pvp.js (the accept
+// button handler). getPlayerStats is shared with it.
 module.exports.getPlayerStats = getPlayerStats;

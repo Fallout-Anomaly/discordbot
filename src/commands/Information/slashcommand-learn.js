@@ -26,7 +26,7 @@ module.exports = new ApplicationCommand({
     run: async (client, interaction) => {
         // Double check permissions
         if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
-            return interaction.reply({ content: '❌ Only staff can teach the bot.', ephemeral: true });
+            return interaction.reply({ content: '❌ Only staff can teach the bot.', flags: 64 });
         }
 
         const topic = interaction.options.getString('topic');
@@ -38,7 +38,7 @@ module.exports = new ApplicationCommand({
         const entry = `\n\n--- [Learned] ${topic} ---\n${content}`;
 
         try {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: 64 });
 
             await fs.promises.appendFile(knowledgePath, entry, 'utf8');
             

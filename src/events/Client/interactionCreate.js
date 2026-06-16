@@ -43,7 +43,12 @@ module.exports = new Event({
         // COMPONENT INTERACTIONS (Buttons, Select Menus, Modals)
         // These must be acknowledged immediately to prevent 10062 Unknown interaction timeout
         const checkUserPermissions = async (component) => {
-            if (component.options?.public === false && interaction.user.id !== interaction.message.interaction?.user?.id) {
+            // discord.js v14 deprecated message.interaction in favour of
+            // message.interactionMetadata; prefer the new field, fall back to the
+            // old one so this keeps working on either version.
+            const originalInvokerId = interaction.message?.interactionMetadata?.user?.id
+                ?? interaction.message?.interaction?.user?.id;
+            if (component.options?.public === false && interaction.user.id !== originalInvokerId) {
                 const replyData = {
                     content: config.messages.COMPONENT_NOT_PUBLIC,
                     flags: 64 // Use flags for ephemeral in v14
@@ -127,21 +132,36 @@ module.exports = new Event({
             return;
         }
 
+        // DM guard: commands are guild-only by default (most read interaction.member,
+        // roles, or economy state which don't exist in DMs). A command can opt in
+        // to DM usage with `allowDM: true` on its definition.
+        if (!interaction.guild && !command.allowDM) {
+            return interaction.reply({ content: '❌ This command can only be used in a server.', flags: 64 }).catch(() => {});
+        }
+
         // Developer Check
         if (command.developer && !config.users.developers.includes(interaction.user.id)) {
             return interaction.reply({ content: config.messages.NOT_BOT_DEVELOPER, flags: 64 });
         }
 
         // Cooldown Check
+        // NOTE: the command name lives at command.command.name, not command.name.
+        // Use interaction.commandName so each command gets its own cooldown bucket
+        // (keying on command.name was always undefined, giving every command a
+        // single shared cooldown across the whole bot).
+        const commandName = interaction.commandName;
         const { cooldowns } = client.collection;
-        if (!cooldowns.has(command.name)) {
-            cooldowns.set(command.name, new Collection());
+        if (!cooldowns.has(commandName)) {
+            cooldowns.set(commandName, new Collection());
         }
 
         const now = Date.now();
-        const timestamps = cooldowns.get(command.name);
-        // Default cooldown 3 seconds if not set
-        const cooldownAmount = (command.cooldown || 3) * 1000;
+        const timestamps = cooldowns.get(commandName);
+        // Default cooldown 3 seconds if not set. NOTE: top-level command.cooldown
+        // is in SECONDS (this system). The separate options.cooldown is handled in
+        // CommandOptions.js and is in MILLISECONDS — do not read it here or the
+        // units clash.
+        const cooldownAmount = (command.cooldown ?? 3) * 1000;
 
         if (timestamps.has(interaction.user.id)) {
             const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
@@ -165,7 +185,7 @@ module.exports = new Event({
             // Automatic defer if command is marked as slow
             // IMPORTANT: If command.defer is true, command.run() MUST use interaction.editReply() 
             // instead of interaction.reply() to avoid "Interaction already acknowledged" error
-            const shouldDefer = command.defer || command.command?.defer;
+            const shouldDefer = command.defer ?? command.command?.defer ?? command.options?.defer;
             if (shouldDefer) {
                 if (!interaction.deferred && !interaction.replied) {
                     let options = {};

@@ -1,6 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const Component = require('../../structure/Component');
 const db = require('../../utils/EconomyDB');
+const { checkLevelUp } = require('../../utils/LevelSystem');
 
 module.exports = new Component({
     customId: /^pvp_(accept|decline)_\d+_\d+$/,
@@ -11,19 +12,18 @@ module.exports = new Component({
     async run(client, interaction) {
         const [, action, attackerId, defenderId] = interaction.customId.match(/^pvp_(accept|decline)_(\d+)_(\d+)$/);
 
-        // Only the challenged player can respond
+        // interactionCreate already deferred this interaction ephemerally.
+        // Only the challenged player can respond.
         if (interaction.user.id !== defenderId) {
-            return interaction.reply({ content: '❌ Only the challenged player can respond!', ephemeral: true });
+            return interaction.editReply({ content: '❌ Only the challenged player can respond!' });
         }
 
         if (action === 'decline') {
-            await interaction.deferReply({ flags: 64 });
             await interaction.editReply({ content: `❌ ${interaction.user.username} declined the challenge.` });
-            return interaction.message.edit({ components: [] });
+            return interaction.message.edit({ components: [] }).catch(() => {});
         }
 
-        // ACCEPT - execute the fight
-        await interaction.deferReply();
+        // ACCEPT - execute the fight (already deferred; result posted publicly below)
 
         // Get player stats
         const getPlayerStats = async (userId) => {
@@ -120,12 +120,18 @@ module.exports = new Component({
         }
 
         const attWon = attHp > 0;
+        // Reward XP/caps and grant SPECIAL points on level-up (parity with NPC fights).
+        const attReward = attWon ? 100 : 25;
+        const defReward = attWon ? 25 : 100;
+        const attLevels = checkLevelUp(attStats.data.xp || 0, (attStats.data.xp || 0) + attReward).levelsGained;
+        const defLevels = checkLevelUp(defStats.data.xp || 0, (defStats.data.xp || 0) + defReward).levelsGained;
+
         if (attWon) {
-            await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100 WHERE id = ?', [attackerId], () => r()));
-            await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25, health = health - ? WHERE id = ?', [attStats.maxHp - attHp, defenderId], () => r()));
+            await new Promise((r) => db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?', [attReward, attReward, attLevels, attackerId], () => r()));
+            await new Promise((r) => db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ?, health = health - ? WHERE id = ?', [defReward, defReward, defLevels, attStats.maxHp - attHp, defenderId], () => r()));
         } else {
-            await new Promise((r) => db.run('UPDATE users SET balance = balance + 25, xp = xp + 25, health = health - ? WHERE id = ?', [defStats.maxHp - defHp, attackerId], () => r()));
-            await new Promise((r) => db.run('UPDATE users SET balance = balance + 100, xp = xp + 100 WHERE id = ?', [defenderId], () => r()));
+            await new Promise((r) => db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ?, health = health - ? WHERE id = ?', [attReward, attReward, attLevels, defStats.maxHp - defHp, attackerId], () => r()));
+            await new Promise((r) => db.run('UPDATE users SET balance = balance + ?, xp = xp + ?, stat_points = stat_points + ? WHERE id = ?', [defReward, defReward, defLevels, defenderId], () => r()));
         }
 
         const report = new EmbedBuilder()
@@ -138,7 +144,9 @@ module.exports = new Component({
                 { name: 'Result', value: attWon ? `🎉 ${attName} WINS!\n💰 +100\n✨ +100 XP` : `🎉 ${defName} WINS!\n💰 +100\n✨ +100 XP` }
             );
 
-        await interaction.editReply({ embeds: [report] });
-        await interaction.message.edit({ components: [] });
+        // The deferred reply is ephemeral; show the result publicly by editing the
+        // original challenge message, and give the clicker a private acknowledgement.
+        await interaction.message.edit({ embeds: [report], components: [] }).catch(() => {});
+        await interaction.editReply({ content: '⚔️ Fight resolved — see the result above!' });
     }
 });

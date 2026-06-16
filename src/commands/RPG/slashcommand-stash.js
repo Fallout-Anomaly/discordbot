@@ -1,6 +1,9 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const ApplicationCommand = require('../../structure/ApplicationCommand');
 const db = require('../../utils/EconomyDB');
+const DonorSystem = require('../../utils/DonorSystem');
+
+const BASE_STASH_RATE = 0.005; // 0.5% daily base interest
 
 module.exports = new ApplicationCommand({
     command: {
@@ -49,6 +52,11 @@ module.exports = new ApplicationCommand({
             : null;
         const userId = interaction.user.id;
 
+        // Supporters earn boosted stash interest.
+        const perks = await DonorSystem.getPerks(userId, interaction.member);
+        const stashRate = BASE_STASH_RATE + perks.stash_interest_bonus;
+        const ratePct = (stashRate * 100).toFixed(1);
+
         // Get user data
         const userData = await new Promise((resolve) => {
             db.get('SELECT * FROM users WHERE id = ?', [userId], (err, row) => {
@@ -92,7 +100,7 @@ module.exports = new ApplicationCommand({
             const daysSinceCreated = Math.floor((now - stashData.created_at) / 86400000) || 0;
             
             // Calculate interest (0.5% daily on base amount)
-            const dailyInterest = Math.floor(stashData.amount * 0.005);
+            const dailyInterest = Math.floor(stashData.amount * stashRate);
             const accruedInterest = dailyInterest * Math.max(daysSinceCreated, 1);
             
             // Calculate daily fee (5 caps/day automatically)
@@ -114,7 +122,7 @@ module.exports = new ApplicationCommand({
                     },
                     { 
                         name: '📈 Accrued Interest', 
-                        value: `**+${accruedInterest} Caps** (0.5% daily)`, 
+                        value: `**+${accruedInterest} Caps** (${ratePct}% daily${perks.isSupporter ? ' — supporter boost!' : ''})`,
                         inline: true 
                     },
                     { 
@@ -154,11 +162,15 @@ module.exports = new ApplicationCommand({
             const fee = Math.floor(depositAmount * 0.05);
             const actualDeposit = depositAmount - fee;
 
-            // Deduct from balance
-            await new Promise((resolve) => {
-                db.run('UPDATE users SET balance = balance - ? WHERE id = ?', 
-                    [depositAmount, userId], () => resolve());
+            // Atomically deduct from balance (guarded so concurrent deposits can't
+            // overdraw / duplicate caps into the stash).
+            const deducted = await new Promise((resolve) => {
+                db.run('UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?',
+                    [depositAmount, userId, depositAmount], function () { resolve(this.changes > 0); });
             });
+            if (!deducted) {
+                return interaction.editReply({ content: `❌ You don't have ${depositAmount} caps to deposit anymore.` });
+            }
 
             // Add to stash
             if (stashData.amount === 0) {
@@ -207,7 +219,7 @@ module.exports = new ApplicationCommand({
             // Calculate interest earned first
             const now = Date.now();
             const daysSinceCreated = Math.floor((now - stashData.created_at) / 86400000) || 0;
-            const dailyInterest = Math.floor(stashData.amount * 0.005);
+            const dailyInterest = Math.floor(stashData.amount * stashRate);
             const accruedInterest = dailyInterest * Math.max(daysSinceCreated, 1);
             const dailyFee = 5;
             const totalFeeDeducted = dailyFee * Math.max(daysSinceCreated, 1);
@@ -220,16 +232,21 @@ module.exports = new ApplicationCommand({
             // Total payout = withdrawal + net interest
             const totalPayout = actualWithdraw + netGain;
 
-            // Add to balance (withdrawal amount + interest - fees)
+            // Atomically remove the principal from the stash FIRST (guarded so
+            // concurrent withdrawals can't drain it twice / duplicate caps).
+            const withdrawn = await new Promise((resolve) => {
+                db.run('UPDATE stash SET amount = amount - ? WHERE user_id = ? AND amount >= ?',
+                    [withdrawAmount, userId, withdrawAmount], function () { resolve(this.changes > 0); });
+            });
+            if (!withdrawn) {
+                return interaction.editReply({ content: `❌ You don't have ${withdrawAmount} caps in your stash anymore.` });
+            }
+
+            // Credit the player (principal + accrued interest − fees) only after a
+            // successful, guarded stash deduction.
             await new Promise((resolve) => {
                 db.run('UPDATE users SET balance = balance + ? WHERE id = ?',
                     [totalPayout, userId], () => resolve());
-            });
-
-            // Subtract from stash
-            await new Promise((resolve) => {
-                db.run('UPDATE stash SET amount = amount - ? WHERE user_id = ?',
-                    [withdrawAmount, userId], () => resolve());
             });
 
             const embed = new EmbedBuilder()
