@@ -18,6 +18,15 @@ module.exports = new Event({
             // Only run on the first hour of the first day of the month
             if (!isFirstDay || !isFirstHour) return;
 
+            // Idempotency guard: award at most once per month even across restarts
+            // (the hourly tick can fire again within the 00:00 hour after a restart).
+            const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+            try {
+                if (client.database?.get && client.database.get('raffle_last_award_month') === monthKey) {
+                    return; // already awarded this month
+                }
+            } catch { /* if the lookup fails, fall through and award */ }
+
             try {
                 info('[RAFFLE] Monthly raffle entry award cycle starting...');
 
@@ -41,6 +50,9 @@ module.exports = new Event({
 
                 // Clear expired raffle data (older than 3 months)
                 await DonorSystem.clearExpiredRaffles();
+
+                // Mark this month as awarded so a restart can't double-award.
+                try { client.database?.set?.('raffle_last_award_month', monthKey); } catch { /* non-fatal */ }
 
                 info(`[RAFFLE] Monthly cycle complete: ${entriesToAward.length} donors awarded raffle entries`);
             } catch (err) {

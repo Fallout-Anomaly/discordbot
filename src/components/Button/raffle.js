@@ -11,8 +11,11 @@ module.exports = new Component({
     async run(client, interaction) {
         const [, action, raffleId] = interaction.customId.match(/^raffle_(enter|view)_(.+)$/);
 
-        // Defer the interaction ephemeral
-        await interaction.deferReply({ flags: 64 });
+        // interactionCreate already defers component interactions ephemerally;
+        // only defer here if that hasn't happened (avoids "already replied").
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply({ flags: 64 }).catch(() => {});
+        }
 
         // DONATOR TIERS (matching DonorSystem)
         const DONOR_TIERS = {
@@ -129,14 +132,18 @@ module.exports = new Component({
                     });
                 }
 
-                // Deduct cost
-                await new Promise((resolve) => {
+                // Atomically deduct the fee; if it fails (insufficient / raced),
+                // don't record the entry.
+                const paid = await new Promise((resolve) => {
                     db.run(
-                        `UPDATE users SET balance = balance - ? WHERE id = ?`,
-                        [entryFee, interaction.user.id],
-                        () => resolve()
+                        `UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?`,
+                        [entryFee, interaction.user.id, entryFee],
+                        function () { resolve(this.changes > 0); }
                     );
                 });
+                if (!paid) {
+                    return interaction.editReply({ content: `❌ You don't have ${entryFee} caps to enter anymore.` });
+                }
             }
 
             // Add entry with donor tracking

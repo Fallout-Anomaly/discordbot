@@ -56,8 +56,10 @@ module.exports = new ApplicationCommand({
 
 async function executeFish(client, interaction, userId, FISH_COOLDOWN) {
 
-        // Roll for catch
-        const roll = Math.random() * 100;
+        // Catch chances sum to 100; rolling against a larger range leaves a gap
+        // where nothing is caught (the "fish got away" outcome).
+        const FAILURE_CHANCE = 20; // ~17% chance to catch nothing
+        const roll = Math.random() * (100 + FAILURE_CHANCE);
         let cumulativeChance = 0;
         let caught = null;
 

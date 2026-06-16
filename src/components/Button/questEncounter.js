@@ -44,7 +44,7 @@ module.exports = new Component({
             if (interaction.user.id !== buttonUserId) {
                 return interaction.followUp({
                     content: '❌ This is not your quest!',
-                    ephemeral: true
+                    flags: 64
                 });
             }
 

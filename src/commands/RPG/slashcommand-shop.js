@@ -176,22 +176,25 @@ module.exports = new ApplicationCommand({
                         return interaction.reply({ content: `❌ You need **${finalCost} Caps** to buy this (Short by ${finalCost - balance}).`, flags: 64 });
                     }
 
-                    // Transaction
-                    db.serialize(() => {
-                        db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [finalCost, userId]);
-                        
-                        // Check inventory
-                        db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, item.id], (err, invRow) => {
+                    // Atomic deduction — the WHERE balance >= ? guard prevents concurrent
+                    // purchases from duplicating items / overdrawing the balance.
+                    db.run('UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?', [finalCost, userId, finalCost], function () {
+                        if (this.changes === 0) {
+                            return interaction.reply({ content: '❌ You don\'t have enough Caps for that anymore.', flags: 64 });
+                        }
+
+                        // Grant item only after the caps were actually deducted.
+                        db.get('SELECT amount FROM inventory WHERE user_id = ? AND item_id = ?', [userId, item.id], (invErr, invRow) => {
                             if (invRow) {
                                 db.run('UPDATE inventory SET amount = amount + ? WHERE user_id = ? AND item_id = ?', [amount, userId, item.id]);
                             } else {
                                 db.run('INSERT INTO inventory (user_id, item_id, amount) VALUES (?, ?, ?)', [userId, item.id, amount]);
                             }
+
+                            const discountMsg = discountPercent > 0 ? ` (Discount applied: -${Math.floor(discountPercent * 100)}%)` : '';
+                            interaction.reply({ content: `🛍️ Purchase successful! You bought **${amount}x ${item.emoji} ${item.name}** for **${finalCost} Caps**${discountMsg}.` });
                         });
                     });
-
-                    const discountMsg = discountPercent > 0 ? ` (Discount applied: -${Math.floor(discountPercent*100)}%)` : '';
-                    interaction.reply({ content: `🛍️ Purchase successful! You bought **${amount}x ${item.emoji} ${item.name}** for **${finalCost} Caps**${discountMsg}.` });
                 });
             });
         }

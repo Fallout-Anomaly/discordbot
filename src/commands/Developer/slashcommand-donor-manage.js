@@ -36,7 +36,7 @@ module.exports = new ApplicationCommand({
     run: async (client, interaction) => {
         const staffRoleId = config.roles?.staff_role || process.env.STAFF_ROLE_ID;
         if (!interaction.member.roles.cache.has(staffRoleId)) {
-            return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
+            return interaction.reply({ content: '❌ You do not have permission to use this command.', flags: 64 });
         }
         const subcommand = interaction.options.getSubcommand();
         if (subcommand === 'add') {
@@ -44,6 +44,8 @@ module.exports = new ApplicationCommand({
             const tier = interaction.options.getString('tier');
             const badge = interaction.options.getString('badge') || '';
             await DonorSystem.addDonor(user.id, tier, badge);
+            // One-time welcome bonus the first time this user becomes a donor.
+            const bonus = await DonorSystem.grantFirstDonationBonus(user.id).catch(() => 0);
             const tierInfo = DonorSystem.TIERS[tier];
             const embed = new EmbedBuilder()
                 .setTitle('✅ Donor Added')
@@ -54,6 +56,10 @@ module.exports = new ApplicationCommand({
                     { name: 'Raffle Entries/Month', value: `${tierInfo.raffle_entries_per_month}`, inline: true }
                 )
                 .setColor(tierInfo.color).setTimestamp();
+            if (bonus > 0) {
+                embed.addFields({ name: '🎁 First-Donation Bonus', value: `**${bonus.toLocaleString()}** Caps granted`, inline: false });
+                user.send(`🎉 Thank you for supporting the server! You've received a one-time **${bonus.toLocaleString()} Caps** welcome bonus and are now a **${tierInfo.name}**.`).catch(() => {});
+            }
             return interaction.reply({ embeds: [embed] });
         }
         if (subcommand === 'remove') {
@@ -63,7 +69,7 @@ module.exports = new ApplicationCommand({
         }
         if (subcommand === 'list') {
             const donors = await DonorSystem.getTopDonors(50);
-            if (donors.length === 0) return interaction.reply({ content: 'No donors registered yet.', ephemeral: true });
+            if (donors.length === 0) return interaction.reply({ content: 'No donors registered yet.', flags: 64 });
             let desc = '';
             for (const donor of donors) {
                 const tierInfo = DonorSystem.TIERS[donor.tier];

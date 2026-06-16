@@ -1,5 +1,6 @@
 const { ApplicationCommandOptionType, PermissionFlagsBits } = require("discord.js");
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const { logModAction } = require("../../utils/ModLog");
 
 module.exports = new ApplicationCommand({
     command: {
@@ -15,9 +16,11 @@ module.exports = new ApplicationCommand({
             },
             {
                 name: 'duration',
-                description: 'Duration in minutes',
+                description: 'Duration in minutes (1 to 40320 = 28 days)',
                 type: ApplicationCommandOptionType.Integer,
-                required: true
+                required: true,
+                minValue: 1,
+                maxValue: 40320
             },
             {
                 name: 'reason',
@@ -52,6 +55,7 @@ module.exports = new ApplicationCommand({
         try {
             await member.timeout(duration * 60 * 1000, reason);
             await interaction.editReply({ content: `✅ **${user.tag}** has been timed out for ${duration} minutes. Reason: ${reason}` });
+            logModAction(client, { action: 'Timeout', moderator: interaction.user, target: user, reason, fields: [{ name: 'Duration', value: `${duration} minute(s)`, inline: true }] });
         } catch (err) {
             console.error(err);
             await interaction.editReply({ content: '❌ Failed to timeout user.' });

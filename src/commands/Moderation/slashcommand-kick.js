@@ -1,5 +1,6 @@
 const { ApplicationCommandOptionType, PermissionFlagsBits } = require("discord.js");
 const ApplicationCommand = require("../../structure/ApplicationCommand");
+const { logModAction } = require("../../utils/ModLog");
 
 module.exports = new ApplicationCommand({
     command: {
@@ -45,6 +46,7 @@ module.exports = new ApplicationCommand({
         try {
             await member.kick(reason);
             await interaction.editReply({ content: `✅ **${user.tag}** has been kicked. Reason: ${reason}` });
+            logModAction(client, { action: 'Kick', moderator: interaction.user, target: user, reason });
         } catch (err) {
             console.error(err);
             await interaction.editReply({ content: '❌ Failed to kick user.' });

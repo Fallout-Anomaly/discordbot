@@ -8,8 +8,11 @@ module.exports = new Component({
         public: true
     },
     run: async (client, interaction) => {
-        // Defer interaction
-        await interaction.deferReply({ flags: 64 });
+        // interactionCreate already defers component interactions ephemerally;
+        // only defer here if that hasn't happened (avoids "already replied").
+        if (!interaction.deferred && !interaction.replied) {
+            await interaction.deferReply({ flags: 64 }).catch(() => {});
+        }
         const customId = interaction.customId;
         const [, action, messageId] = customId.match(/^feedback_(worked|failed)_(.+)$/);
 

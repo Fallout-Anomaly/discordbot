@@ -117,13 +117,16 @@ module.exports = new ApplicationCommand({
             const protectionDuration = duration * 3600000; // Convert hours to milliseconds
             const newExpiry = Math.max(userData.protection_expires || 0, now) + protectionDuration;
 
-            await new Promise((resolve) => {
+            const hired = await new Promise((resolve) => {
                 db.run(
-                    'UPDATE users SET balance = balance - ?, protection_expires = ? WHERE id = ?',
-                    [cost, newExpiry, userId],
-                    () => resolve()
+                    'UPDATE users SET balance = balance - ?, protection_expires = ? WHERE id = ? AND balance >= ?',
+                    [cost, newExpiry, userId, cost],
+                    function () { resolve(this.changes > 0); }
                 );
             });
+            if (!hired) {
+                return interaction.editReply({ content: `❌ You don't have **${cost} Caps** anymore.` });
+            }
 
             const embed = new EmbedBuilder()
                 .setTitle('💂 Bodyguards Hired!')
@@ -159,13 +162,18 @@ module.exports = new ApplicationCommand({
                 });
             }
 
-            await new Promise((resolve) => {
+            // Guard on both balance AND the current level so a concurrent double-click
+            // can't pay twice for a single tier upgrade.
+            const upgraded = await new Promise((resolve) => {
                 db.run(
-                    'UPDATE users SET balance = balance - ?, insurance_level = ? WHERE id = ?',
-                    [cost, nextLevel, userId],
-                    () => resolve()
+                    'UPDATE users SET balance = balance - ?, insurance_level = ? WHERE id = ? AND balance >= ? AND IFNULL(insurance_level, 0) = ?',
+                    [cost, nextLevel, userId, cost, currentLevel],
+                    function () { resolve(this.changes > 0); }
                 );
             });
+            if (!upgraded) {
+                return interaction.editReply({ content: '❌ Purchase failed — you either lack the Caps or your insurance already changed. Try again.' });
+            }
 
             const insuranceNames = ['None', 'Basic', 'Standard', 'Premium'];
             const insuranceProtection = [0, 10, 25, 40];

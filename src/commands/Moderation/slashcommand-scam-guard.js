@@ -45,7 +45,7 @@ module.exports = new ApplicationCommand({
                 .setDescription('Channel IDs separated by commas, or "all" for all channels')
                 .setRequired(true))),
     options: {
-        cooldown: 5000,
+        cooldown: 5000, // milliseconds (handled by CommandOptions.js)
         isOwnerOnly: false,
         isDeveloperOnly: false,
         isNSFW: false,

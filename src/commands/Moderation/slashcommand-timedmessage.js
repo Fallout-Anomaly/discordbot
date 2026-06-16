@@ -61,7 +61,7 @@ module.exports = new ApplicationCommand({
             .setName('list')
             .setDescription('List all timed messages')),
     options: {
-        cooldown: 5000,
+        cooldown: 5000, // milliseconds (handled by CommandOptions.js)
         isOwnerOnly: false,
         isDeveloperOnly: false,
         isNSFW: false,

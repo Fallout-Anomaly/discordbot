@@ -14,6 +14,7 @@ module.exports = new ApplicationCommand({
             }
         ]
     },
+    allowDM: true,
     run: async (client, interaction) => {
         const user = interaction.options.getUser('user') || interaction.user;
         const avatarUrl = user.displayAvatarURL({ dynamic: true, size: 4096 });

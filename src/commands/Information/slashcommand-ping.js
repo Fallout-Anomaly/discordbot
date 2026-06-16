@@ -6,6 +6,7 @@ module.exports = new ApplicationCommand({
         name: 'ping',
         description: 'Check bot latency.'
     },
+    allowDM: true,
     run: async (client, interaction) => {
         const ping = client.ws.ping;
         const uptime = Math.floor(process.uptime());

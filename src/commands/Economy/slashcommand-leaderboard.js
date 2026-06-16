@@ -26,10 +26,10 @@ module.exports = new ApplicationCommand({
         const unit = type === 'balance' ? 'Caps' : 'XP';
 
         db.all(`SELECT id, ${column} FROM users ORDER BY ${column} DESC LIMIT 10`, [], async (err, rows) => {
-            if (err) return interaction.reply({ content: '❌ Database error.', ephemeral: true });
+            if (err) return interaction.reply({ content: '❌ Database error.', flags: 64 });
 
             if (!rows || rows.length === 0) {
-                return interaction.reply({ content: '🏜️ The wasteland is empty. No data yet.', ephemeral: true });
+                return interaction.reply({ content: '🏜️ The wasteland is empty. No data yet.', flags: 64 });
             }
 
             const description = rows.map((row, index) => {

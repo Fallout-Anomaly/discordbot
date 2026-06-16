@@ -46,7 +46,7 @@ class CommandsListener {
                 if (command.command?.permissions && !message.member.permissions.has(PermissionsBitField.resolve(command.command.permissions))) {
                     await message.reply({
                         content: config.messages.MISSING_PERMISSIONS,
-                        ephemeral: true
+                        flags: 64
                     });
 
                     return;

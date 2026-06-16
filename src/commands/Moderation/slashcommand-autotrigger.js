@@ -64,7 +64,7 @@ module.exports = new ApplicationCommand({
             .setName('clear')
             .setDescription('Clear all auto-response triggers')),
     options: {
-        cooldown: 3000,
+        cooldown: 3000, // milliseconds (handled by CommandOptions.js)
         isOwnerOnly: false,
         isDeveloperOnly: false,
         isNSFW: false,

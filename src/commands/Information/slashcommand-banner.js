@@ -22,7 +22,7 @@ module.exports = new ApplicationCommand({
         const fullUser = await client.users.fetch(user.id, { force: true });
 
         if (!fullUser.banner) {
-            return interaction.reply({ content: `❌ **${user.tag}** does not have a banner.`, ephemeral: true });
+            return interaction.reply({ content: `❌ **${user.tag}** does not have a banner.`, flags: 64 });
         }
 
         const bannerUrl = fullUser.bannerURL({ dynamic: true, size: 4096 });

@@ -64,7 +64,10 @@ module.exports = new ApplicationCommand({
         const luck = userData.stat_luck || 1;
         const successBonus = (perception + agility + luck) / 3;
 
-        const roll = Math.random() * 100;
+        // Encounter chances sum to 100; rolling against a larger range leaves a
+        // gap where nothing is found (the ambush/empty-handed outcome).
+        const FAILURE_CHANCE = 20; // ~17% chance to find no creature
+        const roll = Math.random() * (100 + FAILURE_CHANCE);
         let cumulativeChance = 0;
         let encounter = null;
 
