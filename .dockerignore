@@ -1,0 +1,30 @@
+# Dependencies / build artifacts (reinstalled inside the image)
+node_modules
+package-lock.json
+
+# Secrets & instance config — provide at runtime via env_file / bind mount
+.env
+.env.*
+!.env.example
+src/config.js
+
+# Live data — persist via a named volume, never bake into the image
+*.sqlite
+*.sqlite-*
+database.yml
+
+# Logs & local cruft
+terminal.log
+log.txt
+*.bak
+eslint_report*.txt
+code_analysis_report.txt
+DoNotUpload
+temp_casino
+
+# VCS / editor / tooling
+.git
+.gitignore
+.idea
+.wrangler
+.vscode
