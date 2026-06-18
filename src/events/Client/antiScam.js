@@ -18,8 +18,11 @@ module.exports = new Event({
         const guard = config.moderation?.scam_guard;
         if (!guard?.enabled) return;
 
-        if (guard.ignoreChannels?.includes(message.channel.id)) return;
-        if (guard.monitorChannels?.length && !guard.monitorChannels.includes(message.channel.id)) return;
+        // In a forum/thread, message.channel.id is the thread id; parentId is the forum/text channel.
+        // Match against both so forum-wide ignore/monitor rules apply to posts inside it.
+        const channelIds = [message.channel.id, message.channel.parentId].filter(Boolean);
+        if (guard.ignoreChannels?.some((id) => channelIds.includes(id))) return;
+        if (guard.monitorChannels?.length && !guard.monitorChannels.some((id) => channelIds.includes(id))) return;
 
         const trustedRoleIds = [config.roles?.staff_role, ...(guard.trustedRoles || [])].filter(Boolean);
         if (isTrustedMember(message.member, trustedRoleIds)) return;

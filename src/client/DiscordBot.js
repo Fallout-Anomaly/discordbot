@@ -85,20 +85,23 @@ class DiscordBot extends Client {
         this.login_timestamp = Date.now();
 
         try {
-            await this.login(process.env.CLIENT_TOKEN);
-            
             // Load Knowledge Base
             await this.knowledge.load();
 
             // Sync Items to DB
             const ItemLoader = require('../utils/ItemLoader');
             await ItemLoader.syncItems();
-            
-            // LOAD HANDLERS (Critical!)
+
+            // LOAD HANDLERS (Critical!) — must happen BEFORE login so the
+            // `clientReady` (once) listeners (onReady + chatRelayReady, which starts
+            // the in-game chat relay) are attached before the gateway emits READY.
+            // Registering them after login() races the READY event and misses it.
             this.commands_handler.load();
             this.components_handler.load();
             this.events_handler.load();
-            
+
+            await this.login(process.env.CLIENT_TOKEN);
+
             this.startStatusRotation();
 
             // Registration is now handled manually or only when needed to prevent boot-time latency

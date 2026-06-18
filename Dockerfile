@@ -15,6 +15,13 @@ RUN bun install --frozen-lockfile --production --omit=optional
 # (env_file / bind mount / named volume) — see docker-compose.
 COPY . .
 
+# Run unprivileged (non-root). Create the writable data dir for the SQLite DB +
+# YAML store and hand /app to the bun user (uid 1000) so terminal.log, the SQLite
+# journal and runtime feature files can be written. A named volume mounted at
+# /app/data inherits this bun ownership, so the data persists and stays writable.
+RUN mkdir -p /app/data && chown -R bun:bun /app
+USER bun
+
 ENV NODE_ENV=production
 
 # Entry point is package.json "main" (src/index.js).

@@ -89,6 +89,18 @@ const config = {
             minAccountAgeDays: 7,
             minJoinAgeDays: 1,
             notifyUser: true
+        },
+        // Honeypot: a "do not post here" trap channel that auto-bans accounts which post in it
+        // (catches spam/raider bots). Staff, the bot owner, and Ban-Members/Administrator are exempt.
+        // Leave channelId empty to disable. See src/events/Client/honeypot.js.
+        honeypot: {
+            enabled: false,
+            channelId: '',           // the trap channel's ID
+            // Only ban accounts below these ages (the "new/suspicious" gate). 0 = no age limit (ban anyone non-staff).
+            minAccountAgeDays: 7,
+            minJoinAgeDays: 1,
+            deleteMessageDays: 7,    // purge the banned user's recent messages (max 7)
+            trustedRoles: []
         }
     },
     messages: { // Standard permission/cooldown responses used by the command handlers.

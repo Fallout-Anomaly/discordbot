@@ -6,6 +6,13 @@ src/config.js
 .env
 database.yml
 terminal.log
+
+# SQLite economy DB lives in a persistent volume at runtime (ECONOMY_DB_PATH); never commit it
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+data/
 log.txt
 DoNotUpload
 eslint_report*.txt
