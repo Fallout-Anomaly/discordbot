@@ -11,7 +11,8 @@
 const STRONG_PHRASES = [
     "won't launch", 'wont launch', "won't start", 'wont start',
     "won't install", 'wont install', "won't run", 'wont run',
-    'ctd', 'keeps crashing', 'crash log', 'crashlog', 'buffout',
+    'ctd', 'crash to desktop', 'crashes to desktop', 'crashing to desktop',
+    'keeps crashing', 'crash log', 'crashlog', 'buffout',
     'infinite load', 'infinite loading', 'stuck on load', 'stuck loading', 'stuck on the load',
     'black screen', 'blue screen',
     'load order', 'missing master', 'missing masters', 'missing plugin', 'missing esp', 'missing esm',
@@ -62,24 +63,30 @@ function looksLikeSupportRequest(content, opts = {}) {
     if (typeof content !== 'string') return { match: false, reasons };
 
     const text = content.toLowerCase().trim();
+
+    const strongList = STRONG_PHRASES.concat(
+        (opts.extraKeywords || []).map((k) => String(k).toLowerCase())
+    );
+
+    // Signal 1: an explicit strong phrase. These are unambiguous in a modlist
+    // support context (e.g. "CTD", "crash to desktop", "need help"), so they fire
+    // even on terse messages that fall below the casual-chat length/word floor.
+    if (includesAny(text, strongList)) {
+        return { match: true, reasons: ['strong-phrase'] };
+    }
+
+    // Everything below is an *ambiguous* signal that could just be normal chatter,
+    // so it's gated behind a minimum length/word count (and link-only messages are
+    // ignored) to avoid nagging casual conversation.
     if (text.length < minLength) return { match: false, reasons };
 
     const words = text.split(/\s+/).filter(Boolean);
     if (words.length < minWords) return { match: false, reasons };
 
-    // Ignore messages that are essentially just a link.
     const stripped = text.replace(/https?:\/\/\S+/g, '').trim();
     if (stripped.length < minLength) return { match: false, reasons };
 
-    const strongList = STRONG_PHRASES.concat(
-        (opts.extraKeywords || []).map((k) => String(k).toLowerCase())
-    );
     const hasTech = includesAny(text, TECH_KEYWORDS);
-
-    // Signal 1: an explicit strong phrase.
-    if (includesAny(text, strongList)) {
-        reasons.push('strong-phrase');
-    }
 
     // Signal 2: an ambiguous symptom word, but only alongside something technical.
     if (hasTech && includesAny(text, AMBIGUOUS_PHRASES)) {

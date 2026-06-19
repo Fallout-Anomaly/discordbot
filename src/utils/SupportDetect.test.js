@@ -12,7 +12,13 @@ describe('looksLikeSupportRequest — should fire (belongs in forum)', () => {
         'anyone know why my load order is broken after the update?',
         'wabbajack error failed to download a mod, help please',
         'the game freezes on the main menu after a fresh install',  // ambiguous(freezes)+tech(game/install)
-        'my mod is broken after the last update'                    // ambiguous(broken)+tech(mod/update)
+        'my mod is broken after the last update',                   // ambiguous(broken)+tech(mod/update)
+        // Canonical short support phrases must fire even below the length/word floor.
+        'CTD',
+        'ctd',
+        'Crash to desktop',
+        'crashes to desktop',
+        'need help'
     ];
     for (const msg of positives) {
         test(JSON.stringify(msg), () => {
@@ -34,7 +40,8 @@ describe('looksLikeSupportRequest — should NOT fire (casual chat)', () => {
         "it's freezing outside today brr",            // ambiguous word, no tech
         'my brain is not working today lol',          // ambiguous word, no tech
         'i crashed at like 2am last night',           // ambiguous word, no tech
-        'that strat is broken, so op'                 // ambiguous word, no tech
+        'that strat is broken, so op',                // ambiguous word, no tech
+        'Crashing'                                    // bare ambiguous word, no tech — deliberately too vague to fire
     ];
     for (const msg of negatives) {
         test(JSON.stringify(msg), () => {
