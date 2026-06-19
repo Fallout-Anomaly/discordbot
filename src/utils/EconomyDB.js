@@ -1,8 +1,10 @@
 const path = require('path');
 const { info, error } = require('./Console');
 
-// Ensure database file exists
-const dbPath = path.resolve(__dirname, '../../economy.sqlite');
+// Ensure database file exists. Honor ECONOMY_DB_PATH so the DB can live in a
+// persistent, writable data directory (e.g. a Docker volume at /app/data);
+// defaults to the repo-root economy.sqlite for local `bun .` development.
+const dbPath = process.env.ECONOMY_DB_PATH || path.resolve(__dirname, '../../economy.sqlite');
 
 // Runtime-aware driver: under Bun, node-sqlite3's native addon misbehaves
 // (e.g. `this.changes` is undefined), so use a bun:sqlite-backed shim that
