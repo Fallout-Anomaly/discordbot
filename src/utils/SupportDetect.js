@@ -47,10 +47,21 @@ const TECH_KEYWORDS = [
     'crash log', 'crashlog', 'buffout', 'error code', 'gpu', 'driver', 'enb', 'reshade'
 ];
 
-// Question openers — message that begins like a question.
-const QUESTION_OPENERS = [
-    'how', 'why', 'what', 'where', 'when', 'which', 'can', 'could', 'should', 'is',
-    'are', 'does', 'do', 'did', 'anyone', 'anybody', 'has anyone', 'help'
+// Help-seeking question phrasings. A bare "?" next to a tech word is NOT enough —
+// "how's your experience with this mod?" / "is this one any good?" are casual chat.
+// We only treat a question as support when it's phrased as someone asking for help
+// or describing something going wrong (not asking for opinions).
+const HELP_PHRASES = [
+    'how do i', 'how to', 'how can i', 'how would i',
+    'how do you fix', 'how do you install', 'how do you get', 'how do you make',
+    'where do i', 'where can i', 'where is the', 'where are the',
+    "why won't", 'why wont', "why isn't", 'why isnt', "why doesn't", 'why doesnt',
+    'why does my', 'why is my', 'why are my', 'why did my', "why can't my", 'why cant my',
+    'what do i do', "what's wrong", 'whats wrong', 'what causes', 'what am i doing wrong', 'what did i do wrong',
+    'is there a way', 'is there any way', 'any way to fix', 'any fix for',
+    'any idea why', 'anyone know how', 'anyone know why', 'does anyone know how', 'does anyone know why',
+    'do i need to', 'help with', 'trouble with', 'issue with', 'issues with', 'problem with', 'problems with',
+    "can't figure", 'cant figure', 'not sure how', 'not sure why'
 ];
 
 const includesAny = (haystack, needles) => needles.some((n) => haystack.includes(n));
@@ -101,10 +112,12 @@ function looksLikeSupportRequest(content, opts = {}) {
         reasons.push('ambiguous+tech');
     }
 
-    // Signal 3: looks like a question AND mentions something technical.
-    const isQuestion = text.includes('?') || QUESTION_OPENERS.some((w) => words[0] === w);
-    if (isQuestion && hasTech) {
-        reasons.push('question+tech');
+    // Signal 3: a help-seeking question that also mentions something technical.
+    // Requires explicit "asking for help / something's wrong" phrasing (not just a
+    // "?") so casual questions about a mod — "how's your experience with it?",
+    // "is this one any good?" — don't get nagged.
+    if (includesAny(text, HELP_PHRASES) && hasTech) {
+        reasons.push('help-question+tech');
     }
 
     return { match: reasons.length > 0, reasons };

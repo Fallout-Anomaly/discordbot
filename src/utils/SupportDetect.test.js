@@ -24,6 +24,8 @@ describe('looksLikeSupportRequest — should fire (belongs in forum)', () => {
         'fresh reinstall and the same problem with MO2',
         "can't launch the game after the last update",
         'nothing loads in MO2 anymore',
+        // A help-seeking question about something technical still fires.
+        'where do i put the texture files for this mod?',
         // The full multi-line message that slipped past the detector in #chat.
         "Okay so I did a fresh reinstall, everything is new, I didn't download anything else, and yet the same problem persists\n" +
         "I'm stuck on black\nNothing is loading\nI can't start a new game\nAt all\n" +
@@ -55,7 +57,13 @@ describe('looksLikeSupportRequest — should NOT fire (casual chat)', () => {
         'Crashing',                                   // bare ambiguous word, no tech — deliberately too vague to fire
         "i'm stuck on this puzzle lol",               // 'stuck on' but no tech keyword
         "can't play tonight, maybe tomorrow",         // 'can't play' but no tech keyword
-        'we have the same problem with the weather'   // 'same problem' but no tech keyword
+        'we have the same problem with the weather',  // 'same problem' but no tech keyword
+        // Casual questions ABOUT a mod (opinion/experience) — not asking for help.
+        "Almost got this mod working. So how is your guy's experience with it? What do I have to look forward to?",
+        'is this mod any good?',
+        "what's your favorite mod in the list?",
+        'how is the new update treating everyone?',
+        'anyone else loving this mod as much as me?'
     ];
     for (const msg of negatives) {
         test(JSON.stringify(msg), () => {
