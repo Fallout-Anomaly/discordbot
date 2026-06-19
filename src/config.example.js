@@ -101,6 +101,35 @@ const config = {
             minJoinAgeDays: 1,
             deleteMessageDays: 7,    // purge the banned user's recent messages (max 7)
             trustedRoles: []
+        },
+        // Support deflection: when a message in the main chat looks like a support
+        // request, the bot replies with a "Move to support forum" button. One click
+        // recreates the message as a forum post, pings the author there, and removes
+        // the original. See src/events/Client/supportDeflect.js + components/Button/supportMove.js.
+        support_deflect: {
+            enabled: false,
+            monitorChannels: [],     // channels to watch; empty = reuse channels.auto_response
+            forumChannelId: '',      // target support forum; empty = first channels.forum_support entry
+            defaultTagId: '',        // optional forum tag ID applied to moved posts (set if your forum requires a tag)
+            trustedRoles: [],        // these roles (plus staff/admins) are never nudged
+            cooldownSeconds: 600,    // per-user, so the same person isn't nagged repeatedly
+            minLength: 12,           // ignore very short messages
+            extraKeywords: [],       // server-specific phrases that should always count as support
+            deleteOriginal: true,    // remove the main-chat message after moving it
+            aiAnswer: true,          // post a first-pass AI answer (knowledge base + Groq) in the moved thread
+            // Repeat offenders: each detected support message in main chat is a "strike."
+            // Enough strikes inside the window earns an (escalating) timeout. Moving a
+            // message via the button forgives all strikes. Needs the bot to have the
+            // "Moderate Members" permission and a role above the offender.
+            repeatOffender: {
+                enabled: true,
+                windowMinutes: 60,        // rolling window strikes are counted in
+                strikesBeforeTimeout: 3,  // strikes within the window before a timeout
+                timeoutMinutes: 10,       // base timeout length
+                escalate: true,           // double the length each subsequent timeout...
+                maxTimeoutMinutes: 1440,  // ...capped here (Discord hard max is 28 days)
+                notifyChannelId: ''       // log channel; empty = LOGS_CHANNEL_ID env (or no log)
+            }
         }
     },
     messages: { // Standard permission/cooldown responses used by the command handlers.

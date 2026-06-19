@@ -9,6 +9,16 @@ module.exports.QUEST_TEMPLATES = [
     { title: "Escort the Brahmin", description: "A trader needs help moving stock through super mutant territory.", objective: "Protect the caravan", difficulty: "Medium" }
 ];
 
+// Standard instructions shown on every new support issue. The launcher packages the
+// crash log AND the save together, so users only need to attach that one file — getting
+// it is the single biggest thing that makes a support post actually solvable.
+module.exports.CRASH_LOG_INSTRUCTIONS =
+    `**📎 Please attach your crash log so we can diagnose this:**\n` +
+    `1. Open the **launcher**\n` +
+    `2. Go to **Debug**\n` +
+    `3. Click **Package Crash Log** (this bundles your save too)\n` +
+    `4. Upload the file it creates **in this thread**, along with a description of the issue.\n`;
+
 module.exports.LEVEL_SYSTEM = {
     XP_PER_LEVEL: 1200,
     MAX_LEVEL: 100

@@ -47,6 +47,10 @@ for (const dir of readdirSync(commandsDir)) {
     try {
         const res = await rest.put(Routes.applicationGuildCommands(appId, guildId), { body });
         console.log(`Successfully registered ${res.length} guild application commands.`);
+        // Guild scope is authoritative here, so clear any GLOBAL commands — otherwise
+        // they linger and the guild shows every command twice.
+        await rest.put(Routes.applicationCommands(appId), { body: [] });
+        console.log('Cleared global application commands to prevent duplicates.');
     } catch (err) {
         console.error('Registration failed:', err.message);
         process.exit(1);

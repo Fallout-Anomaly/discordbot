@@ -3,6 +3,7 @@ const Event = require('../../structure/Event');
 const AIService = require('../../utils/AIService');
 const AutoResponder = require('../../utils/AutoResponder');
 const config = require('../../config');
+const { CRASH_LOG_INSTRUCTIONS } = require('../../utils/Constants');
 const { info, error } = require('../../utils/Console');
 
 // User rate limits for AI questions (to prevent API cost spikes)
@@ -243,11 +244,8 @@ module.exports = new Event({
 
             // Add upload reminder for new support threads
             if (isNewThreadStarter) {
-                const uploadReminder = `**📎 Please upload the following to help us assist you faster:**\n` +
-                    `• **Save files** (from your save folder)\n` +
-                    `• **Crash logs** (if applicable)\n` +
-                    `• **Screenshots** of the issue\n\n`;
-                
+                const uploadReminder = CRASH_LOG_INSTRUCTIONS + '\n';
+
                 if (!replyContent) {
                     replyContent = uploadReminder;
                 } else {

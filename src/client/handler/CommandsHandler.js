@@ -94,12 +94,23 @@ class CommandsHandler {
             // We register the commands found in our local codebase.
             // CAUTION: Since a Cloudflare Worker is active, these Slash Commands will NOT work unless the Worker proxies them.
             // However, we run this to ensure any STALE commands (like the broken /addrole) are removed if we deleted the file.
+            const appId = this.client.user.id.toString();
             if (development?.enabled) {
-                await rest.put(Routes.applicationGuildCommands(this.client.user.id.toString(), development.guildId.toString()), { body: this.client.rest_application_commands_array });
-                success(`Successfully updated ${this.client.rest_application_commands_array.length} local application commands.`);
+                await rest.put(Routes.applicationGuildCommands(appId, development.guildId.toString()), { body: this.client.rest_application_commands_array });
+                success(`Successfully updated ${this.client.rest_application_commands_array.length} guild application commands.`);
+                // We register to the guild scope, so any GLOBAL commands are stale and would
+                // show up as duplicates alongside the guild ones. Clear them to stay clean.
+                await rest.put(Routes.applicationCommands(appId), { body: [] });
+                info('Cleared global application commands to prevent duplicates (guild scope is active).');
             } else {
-                await rest.put(Routes.applicationCommands(this.client.user.id.toString()), { body: this.client.rest_application_commands_array });
+                await rest.put(Routes.applicationCommands(appId), { body: this.client.rest_application_commands_array });
                 success(`Successfully updated ${this.client.rest_application_commands_array.length} global application commands.`);
+                // Mirror image: registering globally, so wipe the dev-guild scope so the
+                // guild doesn't show both copies.
+                if (development?.guildId) {
+                    await rest.put(Routes.applicationGuildCommands(appId, development.guildId.toString()), { body: [] });
+                    info('Cleared dev-guild application commands to prevent duplicates (global scope is active).');
+                }
             }
         } catch (err) {
             error('Failed to register application commands: ' + err.message);
