@@ -18,7 +18,18 @@ describe('looksLikeSupportRequest — should fire (belongs in forum)', () => {
         'ctd',
         'Crash to desktop',
         'crashes to desktop',
-        'need help'
+        'need help',
+        // Symptom phrasings + tech context (real misses reported from main chat).
+        "I'm stuck on black, nothing is loading and I can't start a new game",
+        'fresh reinstall and the same problem with MO2',
+        "can't launch the game after the last update",
+        'nothing loads in MO2 anymore',
+        // The full multi-line message that slipped past the detector in #chat.
+        "Okay so I did a fresh reinstall, everything is new, I didn't download anything else, and yet the same problem persists\n" +
+        "I'm stuck on black\nNothing is loading\nI can't start a new game\nAt all\n" +
+        "I don't know what is happening to have caused this\n" +
+        "I don't know if it's a problem with the mods or with the launcher or with MO2\n" +
+        "It was working perfectly before the update, now I can't even play"
     ];
     for (const msg of positives) {
         test(JSON.stringify(msg), () => {
@@ -41,7 +52,10 @@ describe('looksLikeSupportRequest — should NOT fire (casual chat)', () => {
         'my brain is not working today lol',          // ambiguous word, no tech
         'i crashed at like 2am last night',           // ambiguous word, no tech
         'that strat is broken, so op',                // ambiguous word, no tech
-        'Crashing'                                    // bare ambiguous word, no tech — deliberately too vague to fire
+        'Crashing',                                   // bare ambiguous word, no tech — deliberately too vague to fire
+        "i'm stuck on this puzzle lol",               // 'stuck on' but no tech keyword
+        "can't play tonight, maybe tomorrow",         // 'can't play' but no tech keyword
+        'we have the same problem with the weather'   // 'same problem' but no tech keyword
     ];
     for (const msg of negatives) {
         test(JSON.stringify(msg), () => {

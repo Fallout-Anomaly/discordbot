@@ -26,7 +26,15 @@ const STRONG_PHRASES = [
 const AMBIGUOUS_PHRASES = [
     'crash', 'crashing', 'crashed', 'freezing', 'freezes', 'frozen',
     'not working', "doesn't work", 'doesnt work', "won't work", 'wont work',
-    "won't load", 'wont load', "won't open", 'wont open', 'glitch', 'glitched', 'bug', 'broken'
+    "won't load", 'wont load', "won't open", 'wont open', 'glitch', 'glitched', 'bug', 'broken',
+    // Symptom phrasings people actually use to describe a broken modlist/launcher.
+    // Still gated behind a tech keyword, so casual use ("stuck on this puzzle",
+    // "can't play tonight") won't fire unless the game/mods are also mentioned.
+    'stuck on', 'stuck at', 'stuck loading', 'black screen', 'on black',
+    'not loading', 'nothing loads', 'nothing is loading', 'wont load', "won't even", 'wont even',
+    "can't even", 'cant even', "can't start", 'cant start', "can't launch", 'cant launch',
+    "can't play", 'cant play', "can't run", 'cant run', "can't load", 'cant load',
+    'reinstall', 'reinstalled', 'fresh install', 'stopped working', 'no longer works', 'same problem'
 ];
 
 // Words that signal the message is about the modlist / tooling (the "technical" gate).
