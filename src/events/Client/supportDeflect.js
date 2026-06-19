@@ -49,28 +49,41 @@ module.exports = new Event({
         const trustedRoleIds = [config.roles?.staff_role, ...(cfg.trustedRoles || [])].filter(Boolean);
         if (isExempt(member, trustedRoleIds)) return;
 
-        // ── Repeat-offender escalation ───────────────────────────────────────────
-        // Every detected support message in main chat is a "strike." Enough strikes
-        // inside the rolling window = a timeout (escalating in length each time).
+        // ── Decide: stay silent, warn, remind, or time out ───────────────────────
+        // Policy (see SupportStrikes.evaluate): a first-time asker only ever gets a
+        // friendly nudge — strikes accrue ONLY after a prior warning and at most once
+        // per cooldown, so a genuine help-seeker posting a burst of related questions
+        // is never timed out. Real repeat offenders who keep posting across spaced-out
+        // reminders still escalate to a timeout.
         const ro = cfg.repeatOffender || {};
         const windowMs = (ro.windowMinutes ?? 60) * 60000;
-        const strikeCount = strikes.addStrike(message.author.id, windowMs);
+        const cooldownMs = (cfg.cooldownSeconds ?? 600) * 1000;
+        const authorId = message.author.id;
 
-        if (ro.enabled && strikeCount >= (ro.strikesBeforeTimeout ?? 3)) {
+        const decision = strikes.evaluate(authorId, {
+            cooldownMs,
+            windowMs,
+            threshold: ro.strikesBeforeTimeout ?? 3,
+            timeoutsEnabled: !!ro.enabled
+        });
+
+        if (decision.action === 'silent') return;
+
+        if (decision.action === 'timeout') {
             if (member?.moderatable) {
                 const baseMs = (ro.timeoutMinutes ?? 10) * 60000;
                 const maxMs = (ro.maxTimeoutMinutes ?? 1440) * 60000;
-                const durationMs = strikes.timeoutDurationMs(message.author.id, baseMs, maxMs, ro.escalate !== false);
+                const durationMs = strikes.timeoutDurationMs(authorId, baseMs, maxMs, ro.escalate !== false);
                 const reason = 'Repeatedly posting support requests in main chat after being asked to use the support forum';
 
                 const timedOut = await member.timeout(durationMs, reason).then(() => true).catch(() => false);
                 if (timedOut) {
-                    strikes.recordTimeout(message.author.id); // advance escalation only on success
-                    strikes.clearStrikes(message.author.id);
+                    strikes.recordTimeout(authorId); // advance escalation only on success
+                    strikes.clearStrikes(authorId);
                     const minutes = Math.round(durationMs / 60000);
 
                     await message.reply({
-                        content: `⏳ <@${message.author.id}>, you've been timed out for **${minutes} min** for repeatedly posting support questions in main chat. ` +
+                        content: `⏳ <@${authorId}>, you've been timed out for **${minutes} min** for repeatedly posting support questions in main chat after being asked to use the forum. ` +
                             `Please use <#${forumChannelId}> when you're back so we can actually help you.`
                     }).catch(() => {});
 
@@ -81,7 +94,7 @@ module.exports = new Event({
                             .setTitle('⏳ Support Deflect — Auto Timeout')
                             .setColor('#e67e22')
                             .addFields(
-                                { name: 'User', value: `${message.author.tag} (${message.author.id})` },
+                                { name: 'User', value: `${message.author.tag} (${authorId})` },
                                 { name: 'Channel', value: `<#${message.channel.id}>`, inline: true },
                                 { name: 'Duration', value: `${minutes} min`, inline: true },
                                 { name: 'Message', value: message.content.slice(0, 300) || '(none)' }
@@ -95,14 +108,12 @@ module.exports = new Event({
             } else {
                 warn(`[SUPPORT DEFLECT] ${message.author.tag} hit the strike threshold but isn't moderatable (perms/hierarchy).`);
             }
-            // Fall through to nudge if we couldn't time them out.
+            // Fall through to a nudge if we couldn't actually time them out.
         }
 
-        // ── Normal nudge (cooldown-gated) ────────────────────────────────────────
-        const cooldownMs = (cfg.cooldownSeconds ?? 600) * 1000;
-        if (!strikes.shouldNudge(message.author.id, cooldownMs)) return;
-        strikes.markNudged(message.author.id);
-
+        // ── Nudge / reminder ─────────────────────────────────────────────────────
+        // 'nudge' (first contact) and 'remind' (repeat below threshold, or timeouts
+        // disabled, or timeout failed above) both post the same friendly prompt.
         const embed = new EmbedBuilder()
             .setColor('#3498db')
             .setDescription(

@@ -12,7 +12,10 @@ const records = new Map(); // userId -> { strikes: number[], lastNudge: number, 
 function _rec(userId) {
     let r = records.get(userId);
     if (!r) {
-        r = { strikes: [], lastNudge: 0, timeoutCount: 0 };
+        // lastNudge = -Infinity means "never nudged" — so the cooldown/window checks
+        // treat a brand-new user as having last been nudged infinitely long ago
+        // (i.e. not a repeat offender), regardless of the absolute clock value.
+        r = { strikes: [], lastNudge: -Infinity, timeoutCount: 0 };
         records.set(userId, r);
     }
     return r;
@@ -59,10 +62,50 @@ function recordTimeout(userId) {
     _rec(userId).timeoutCount += 1;
 }
 
+/**
+ * Decide what to do about one detected support message, with a "warn first, strike
+ * later" policy so a genuine help-seeker is never timed out for a burst of related
+ * questions. The rules, in order:
+ *
+ *   1. Within the nudge cooldown of the *last* action → 'silent' (say nothing).
+ *      This collapses a multi-message burst ("CTD", "crash to desktop", "help!")
+ *      into a single response instead of one strike per line.
+ *   2. First contact (no nudge inside the rolling window) → 'nudge', NO strike.
+ *      A first-time asker always just gets the friendly "move to forum" button.
+ *   3. They were already nudged earlier in the window → this is a genuine repeat.
+ *      Accrue exactly ONE strike (never more than one per cooldown). If timeouts
+ *      are off, or we're still below threshold → 'remind' (post the nudge again);
+ *      once strikes reach the threshold → 'timeout'.
+ *
+ * Because a strike only accrues *after* a prior warning and at most once per
+ * cooldown, reaching the timeout threshold requires the user to keep posting in
+ * main chat across several spaced-out reminders — not a single confused flurry.
+ *
+ * @returns {{ action: 'silent'|'nudge'|'remind'|'timeout', strikeCount: number }}
+ */
+function evaluate(userId, opts, now = Date.now()) {
+    const { cooldownMs, windowMs, threshold = 3, timeoutsEnabled = true } = opts;
+
+    // Rule 1: still inside the cooldown since we last acted → stay quiet.
+    if (!shouldNudge(userId, cooldownMs, now)) return { action: 'silent', strikeCount: 0 };
+
+    // "Repeat" = we already nudged this user inside the rolling window.
+    const isRepeat = !shouldNudge(userId, windowMs, now);
+    markNudged(userId, now);
+
+    // Rule 2: first contact in the window — warn only, no strike.
+    if (!isRepeat) return { action: 'nudge', strikeCount: 0 };
+
+    // Rule 3: genuine repeat. At most one strike per cooldown.
+    if (!timeoutsEnabled) return { action: 'remind', strikeCount: 0 };
+    const strikeCount = addStrike(userId, windowMs, now);
+    return { action: strikeCount >= threshold ? 'timeout' : 'remind', strikeCount };
+}
+
 /** Test/maintenance helper. */
 function reset(userId) {
     if (userId === undefined) records.clear();
     else records.delete(userId);
 }
 
-module.exports = { addStrike, clearStrikes, shouldNudge, markNudged, timeoutDurationMs, recordTimeout, reset, _records: records };
+module.exports = { addStrike, clearStrikes, shouldNudge, markNudged, timeoutDurationMs, recordTimeout, evaluate, reset, _records: records };
